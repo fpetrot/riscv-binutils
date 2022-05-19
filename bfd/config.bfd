@@ -1220,6 +1220,11 @@ case "${targ}" in
     targ_selvecs="riscv_elf32_vec riscv_elf64_vec riscv_elf32_be_vec riscv_elf64_be_vec"
     want64=true
     ;;
+  riscv128*-*-*)
+    targ_defvec=riscv_elf128_vec
+    targ_selvecs="riscv_elf32_vec riscv_elf64_vec riscv_elf32_be_vec riscv_elf64_be_vec riscv_elf128_vec"
+    want64=true
+    ;;
 #endif
 
   rl78-*-elf)
