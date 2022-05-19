@@ -852,6 +852,7 @@ extern const bfd_target powerpc_xcoff_vec;
 extern const bfd_target pru_elf32_vec;
 extern const bfd_target riscv_elf32_vec;
 extern const bfd_target riscv_elf64_vec;
+extern const bfd_target riscv_elf128_vec;
 extern const bfd_target riscv_elf32_be_vec;
 extern const bfd_target riscv_elf64_be_vec;
 extern const bfd_target rl78_elf32_vec;
@@ -1243,6 +1244,7 @@ static const bfd_target * const _bfd_target_vector[] =
 #ifdef BFD64
 	&riscv_elf32_vec,
 	&riscv_elf64_vec,
+	&riscv_elf128_vec,
 	&riscv_elf32_be_vec,
 	&riscv_elf64_be_vec,
 #endif

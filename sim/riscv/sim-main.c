@@ -158,7 +158,7 @@ execute_i (SIM_CPU *cpu, unsigned_word iw, const struct riscv_opcode *op)
   unsigned_word u_imm = EXTRACT_UTYPE_IMM ((uint64_t) iw);
   unsigned_word s_imm = EXTRACT_STYPE_IMM (iw);
   unsigned_word sb_imm = EXTRACT_BTYPE_IMM (iw);
-  unsigned_word shamt_imm = ((iw >> OP_SH_SHAMT) & OP_MASK_SHAMT);
+  unsigned_word shamt_imm = ((iw >> OP_SH_SHAMTD) & OP_MASK_SHAMTD);
   unsigned_word tmp;
   sim_cia pc = cpu->pc + 4;
 

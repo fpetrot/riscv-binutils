@@ -85,6 +85,7 @@ riscv_scan (const struct bfd_arch_info *info, const char *string)
 /* This enum must be kept in the same order as arch_info_struct.  */
 enum
 {
+  I_riscv128,
   I_riscv64,
   I_riscv32
 };
@@ -95,6 +96,7 @@ enum
    and each entry except the last should end with NN (my enum value).  */
 static const bfd_arch_info_type arch_info_struct[] =
 {
+  N (128, bfd_mach_riscv128, "riscv:rv128", false, NN (I_riscv128)),
   N (64, bfd_mach_riscv64, "riscv:rv64", false, NN (I_riscv64)),
   N (32, bfd_mach_riscv32, "riscv:rv32", false, NULL)
 };
