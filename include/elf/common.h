@@ -1083,6 +1083,11 @@
 #define ELF64_R_TYPE(i)		((i) & 0xffffffff)
 #define ELF64_R_INFO(s,t)	(((bfd_vma) (s) << 31 << 1) + (bfd_vma) (t))
 
+/* FIXME: Quick and dirty hack to progress on 128-bit assembly: make 128 a 64 */
+#define ELF128_R_SYM(i)		((i) >> 32)
+#define ELF128_R_TYPE(i)	((i) & 0xffffffff)
+#define ELF128_R_INFO(s,t)	(((bfd_vma) (s) << 31 << 1) + (bfd_vma) (t))
+
 /* Dynamic section tags.  */
 
 #define DT_NULL		0

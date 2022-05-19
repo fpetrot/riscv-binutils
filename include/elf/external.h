@@ -230,6 +230,21 @@ typedef struct {
   unsigned char r_data[8];	/* RELR entry */
 } Elf64_External_Relr;
 
+typedef struct {
+  unsigned char r_offset[16];	/* Location at which to apply the action */
+  unsigned char	r_info[16];	/* index and type of relocation */
+} Elf128_External_Rel;
+
+typedef struct {
+  unsigned char r_offset[16];	/* Location at which to apply the action */
+  unsigned char	r_info[16];	/* index and type of relocation */
+  unsigned char	r_addend[16];	/* Constant addend used to compute value */
+} Elf128_External_Rela;
+
+typedef struct {
+  unsigned char r_data[16];	/* RELR entry */
+} Elf128_External_Relr;
+
 /* dynamic section structure */
 
 typedef struct {
@@ -247,6 +262,14 @@ typedef struct {
     unsigned char	d_ptr[8];
   } d_un;
 } Elf64_External_Dyn;
+
+typedef struct {
+  unsigned char	d_tag[16];		/* entry tag value */
+  union {
+    unsigned char	d_val[16];
+    unsigned char	d_ptr[16];
+  } d_un;
+} Elf128_External_Dyn;
 
 /* The version structures are currently size independent.  They are
    named without a 32 or 64.  If that ever changes, these structures
@@ -318,6 +341,12 @@ typedef struct
   unsigned char		a_type[8];
   unsigned char		a_val[8];
 } Elf64_External_Auxv;
+
+typedef struct
+{
+  unsigned char		a_type[16];
+  unsigned char		a_val[16];
+} Elf128_External_Auxv;
 
 /* Size of SHT_GROUP section entry.  */
 

@@ -81,12 +81,16 @@ static const char * const riscv_pred_succ[16] =
   ((RV_X(x, 4, 3) << 2) | (RV_X(x, 12, 1) << 5) | (RV_X(x, 2, 2) << 6))
 #define EXTRACT_CITYPE_LDSP_IMM(x) \
   ((RV_X(x, 5, 2) << 3) | (RV_X(x, 12, 1) << 5) | (RV_X(x, 2, 3) << 6))
+#define EXTRACT_CITYPE_LQSP_IMM(x) \
+  ((RV_X(x, 5, 1) << 4) | (RV_X(x, 12, 1) << 5) | (RV_X(x, 2, 4) << 6))
 #define EXTRACT_CSSTYPE_IMM(x) \
   (RV_X(x, 7, 6) << 0)
 #define EXTRACT_CSSTYPE_SWSP_IMM(x) \
   ((RV_X(x, 9, 4) << 2) | (RV_X(x, 7, 2) << 6))
 #define EXTRACT_CSSTYPE_SDSP_IMM(x) \
   ((RV_X(x, 10, 3) << 3) | (RV_X(x, 7, 3) << 6))
+#define EXTRACT_CSSTYPE_SQSP_IMM(x) \
+  ((RV_X(x, 11, 2) << 4) | (RV_X(x, 7, 4) << 6))
 #define EXTRACT_CIWTYPE_IMM(x) \
   (RV_X(x, 5, 8))
 #define EXTRACT_CIWTYPE_ADDI4SPN_IMM(x) \
@@ -97,6 +101,8 @@ static const char * const riscv_pred_succ[16] =
   ((RV_X(x, 6, 1) << 2) | (RV_X(x, 10, 3) << 3) | (RV_X(x, 5, 1) << 6))
 #define EXTRACT_CLTYPE_LD_IMM(x) \
   ((RV_X(x, 10, 3) << 3) | (RV_X(x, 5, 2) << 6))
+#define EXTRACT_CLTYPE_LQ_IMM(x) \
+  ((RV_X(x, 11, 2) << 4) | (RV_X(x, 5, 2) << 6) | (RV_X(x, 10, 1) << 8))
 #define EXTRACT_CBTYPE_IMM(x) \
   ((RV_X(x, 3, 2) << 1) | (RV_X(x, 10, 2) << 3) | (RV_X(x, 2, 1) << 5) | (RV_X(x, 5, 2) << 6) | (-RV_X(x, 12, 1) << 8))
 #define EXTRACT_CJTYPE_IMM(x) \
@@ -132,12 +138,16 @@ static const char * const riscv_pred_succ[16] =
   ((RV_X(x, 2, 3) << 4) | (RV_X(x, 5, 1) << 12) | (RV_X(x, 6, 2) << 2))
 #define ENCODE_CITYPE_LDSP_IMM(x) \
   ((RV_X(x, 3, 2) << 5) | (RV_X(x, 5, 1) << 12) | (RV_X(x, 6, 3) << 2))
+#define ENCODE_CITYPE_LQSP_IMM(x) \
+  ((RV_X(x, 4, 1) << 6) | (RV_X(x, 5, 1) << 12) | (RV_X(x, 6, 4) << 2))
 #define ENCODE_CSSTYPE_IMM(x) \
   (RV_X(x, 0, 6) << 7)
 #define ENCODE_CSSTYPE_SWSP_IMM(x) \
   ((RV_X(x, 2, 4) << 9) | (RV_X(x, 6, 2) << 7))
 #define ENCODE_CSSTYPE_SDSP_IMM(x) \
   ((RV_X(x, 3, 3) << 10) | (RV_X(x, 6, 3) << 7))
+#define ENCODE_CSSTYPE_SQSP_IMM(x) \
+  ((RV_X(x, 4, 2) << 11) | (RV_X(x, 6, 4) << 7))
 #define ENCODE_CIWTYPE_IMM(x) \
   (RV_X(x, 0, 8) << 5)
 #define ENCODE_CIWTYPE_ADDI4SPN_IMM(x) \
@@ -148,6 +158,8 @@ static const char * const riscv_pred_succ[16] =
   ((RV_X(x, 2, 1) << 6) | (RV_X(x, 3, 3) << 10) | (RV_X(x, 6, 1) << 5))
 #define ENCODE_CLTYPE_LD_IMM(x) \
   ((RV_X(x, 3, 3) << 10) | (RV_X(x, 6, 2) << 5))
+#define ENCODE_CLTYPE_LQ_IMM(x) \
+  ((RV_X(x, 6, 2) << 5) | (RV_X(x, 8, 1) << 10) | (RV_X(x, 4, 2) << 11))
 #define ENCODE_CBTYPE_IMM(x) \
   ((RV_X(x, 1, 2) << 3) | (RV_X(x, 3, 2) << 10) | (RV_X(x, 5, 1) << 2) | (RV_X(x, 6, 2) << 5) | (RV_X(x, 8, 1) << 12))
 #define ENCODE_CJTYPE_IMM(x) \
@@ -169,14 +181,17 @@ static const char * const riscv_pred_succ[16] =
 				      && EXTRACT_CITYPE_ADDI16SP_IMM(ENCODE_CITYPE_ADDI16SP_IMM(x)) == (x))
 #define VALID_CITYPE_LWSP_IMM(x) (EXTRACT_CITYPE_LWSP_IMM(ENCODE_CITYPE_LWSP_IMM(x)) == (x))
 #define VALID_CITYPE_LDSP_IMM(x) (EXTRACT_CITYPE_LDSP_IMM(ENCODE_CITYPE_LDSP_IMM(x)) == (x))
+#define VALID_CITYPE_LQSP_IMM(x) (EXTRACT_CITYPE_LQSP_IMM(ENCODE_CITYPE_LQSP_IMM(x)) == (x))
 #define VALID_CSSTYPE_IMM(x) (EXTRACT_CSSTYPE_IMM(ENCODE_CSSTYPE_IMM(x)) == (x))
 #define VALID_CSSTYPE_SWSP_IMM(x) (EXTRACT_CSSTYPE_SWSP_IMM(ENCODE_CSSTYPE_SWSP_IMM(x)) == (x))
 #define VALID_CSSTYPE_SDSP_IMM(x) (EXTRACT_CSSTYPE_SDSP_IMM(ENCODE_CSSTYPE_SDSP_IMM(x)) == (x))
+#define VALID_CSSTYPE_SQSP_IMM(x) (EXTRACT_CSSTYPE_SQSP_IMM(ENCODE_CSSTYPE_SQSP_IMM(x)) == (x))
 #define VALID_CIWTYPE_IMM(x) (EXTRACT_CIWTYPE_IMM(ENCODE_CIWTYPE_IMM(x)) == (x))
 #define VALID_CIWTYPE_ADDI4SPN_IMM(x) (EXTRACT_CIWTYPE_ADDI4SPN_IMM(ENCODE_CIWTYPE_ADDI4SPN_IMM(x)) == (x))
 #define VALID_CLTYPE_IMM(x) (EXTRACT_CLTYPE_IMM(ENCODE_CLTYPE_IMM(x)) == (x))
 #define VALID_CLTYPE_LW_IMM(x) (EXTRACT_CLTYPE_LW_IMM(ENCODE_CLTYPE_LW_IMM(x)) == (x))
 #define VALID_CLTYPE_LD_IMM(x) (EXTRACT_CLTYPE_LD_IMM(ENCODE_CLTYPE_LD_IMM(x)) == (x))
+#define VALID_CLTYPE_LQ_IMM(x) (EXTRACT_CLTYPE_LQ_IMM(ENCODE_CLTYPE_LQ_IMM(x)) == (x))
 #define VALID_CBTYPE_IMM(x) (EXTRACT_CBTYPE_IMM(ENCODE_CBTYPE_IMM(x)) == (x))
 #define VALID_CJTYPE_IMM(x) (EXTRACT_CJTYPE_IMM(ENCODE_CJTYPE_IMM(x)) == (x))
 #define VALID_RVV_VB_IMM(x) (EXTRACT_RVV_VB_IMM(ENCODE_RVV_VB_IMM(x)) == (x))
@@ -231,8 +246,10 @@ static const char * const riscv_pred_succ[16] =
 #define OP_SH_RS3		27
 #define OP_MASK_RD		0x1f
 #define OP_SH_RD		7
-#define OP_MASK_SHAMT		0x3f
+#define OP_MASK_SHAMT		0x7f
 #define OP_SH_SHAMT		20
+#define OP_MASK_SHAMTD		0x3f
+#define OP_SH_SHAMTD		20
 #define OP_MASK_SHAMTW		0x1f
 #define OP_SH_SHAMTW		20
 #define OP_MASK_RM		0x7
@@ -486,10 +503,13 @@ enum
   M_LW,
   M_LWU,
   M_LD,
+  M_LDU,
+  M_LQ,
   M_SB,
   M_SH,
   M_SW,
   M_SD,
+  M_SQ,
   M_FLW,
   M_FLD,
   M_FLQ,

@@ -1956,6 +1956,11 @@ riscv_parse_subset (riscv_parse_subset_t *rps,
       *rps->xlen = 64;
       p += 4;
     }
+  else if (startswith (p, "rv128"))
+    {
+      *rps->xlen = 128;
+      p += 5;
+    }
   else
     {
       /* ISA string shouldn't be NULL or empty here.  For linker,
@@ -1967,7 +1972,7 @@ riscv_parse_subset (riscv_parse_subset_t *rps,
 	 string is empty.  */
       if (strlen (arch))
 	rps->error_handler (
-	  _("%s: ISA string must begin with rv32 or rv64"),
+	  _("%s: ISA string must begin with rv32, rv64 or rv128"),
 	  arch);
       return false;
     }
