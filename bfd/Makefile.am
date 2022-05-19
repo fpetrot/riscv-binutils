@@ -561,6 +561,7 @@ BFD64_BACKENDS = \
 	elf64-ppc.lo \
 	elf32-riscv.lo \
 	elf64-riscv.lo \
+	elf128-riscv.lo \
 	elfxx-riscv.lo \
 	elf64-s390.lo \
 	elf64-sparc.lo \
@@ -676,7 +677,7 @@ BUILD_CFILES = \
 	elf32-aarch64.c elf64-aarch64.c \
 	elf32-ia64.c elf64-ia64.c \
 	elf32-loongarch.c elf64-loongarch.c \
-	elf32-riscv.c elf64-riscv.c \
+	elf32-riscv.c elf64-riscv.c elf128-riscv \
 	peigen.c pepigen.c pex64igen.c pe-aarch64igen.c
 
 CFILES = $(SOURCE_CFILES) $(BUILD_CFILES)
@@ -877,6 +878,10 @@ elf32-riscv.c : elfnn-riscv.c
 elf64-riscv.c : elfnn-riscv.c
 	$(AM_V_at)echo "#line 1 \"elfnn-riscv.c\"" > $@
 	$(AM_V_GEN)$(SED) -e s/NN/64/g < $< >> $@
+
+elf128-riscv.c : elfnn-riscv.c
+	$(AM_V_at)echo "#line 1 \"elfnn-riscv.c\"" > $@
+	$(AM_V_GEN)$(SED) -e s/NN/128/g < $< >> $@
 
 peigen.c : peXXigen.c
 	$(AM_V_at)echo "#line 1 \"peXXigen.c\"" > $@
