@@ -250,18 +250,20 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
 		     (int)EXTRACT_CLTYPE_LD_IMM (l));
 	      break;
 	    case 'g':
-	      print (info->stream, "%d", (int)EXTRACT_CLTYPE_LQ_IMM (l));
+	      print (info->stream, dis_style_address_offset, "%d", 
+	             (int)EXTRACT_CLTYPE_LQ_IMM (l));
 	      break;
 	    case 'm':
 	      print (info->stream, dis_style_address_offset, "%d",
 		     (int)EXTRACT_CITYPE_LWSP_IMM (l));
 	      break;
-	    case 'n':
+	      case 'n':
 	      print (info->stream, dis_style_address_offset, "%d",
 		     (int)EXTRACT_CITYPE_LDSP_IMM (l));
 	      break;
 	    case 'h':
-	      print (info->stream, "%d", (int)EXTRACT_CITYPE_LQSP_IMM (l));
+	      print (info->stream, dis_style_address_offset, "%d", 
+		     (int)EXTRACT_CITYPE_LQSP_IMM (l));
 	      break;
 	    case 'K':
 	      print (info->stream, dis_style_immediate, "%d",
@@ -280,7 +282,8 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
 		     (int)EXTRACT_CSSTYPE_SDSP_IMM (l));
 	      break;
 	    case 'H':
-	      print (info->stream, "%d", (int)EXTRACT_CSSTYPE_SQSP_IMM (l));
+	      print (info->stream, dis_style_address_offset, "%d", 
+	             (int)EXTRACT_CSSTYPE_SQSP_IMM (l));
 	      break;
 	    case 'p':
 	      info->target = EXTRACT_CBTYPE_IMM (l) + pc;
@@ -490,7 +493,8 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
 	  break;
 
 	case '^':
-	  print (info->stream, "0x%x", (int)EXTRACT_OPERAND (SHAMTD, l));
+	  print (info->stream, dis_style_register, "0x%x", 
+	         (int)EXTRACT_OPERAND (SHAMTD, l));
 	  break;
 
 	case '>':
