@@ -680,7 +680,7 @@ BUILD_CFILES = \
 	elf32-aarch64.c elf64-aarch64.c \
 	elf32-ia64.c elf64-ia64.c \
 	elf32-loongarch.c elf64-loongarch.c \
-	elf32-riscv.c elf64-riscv.c elf128-riscv \
+	elf32-riscv.c elf64-riscv.c elf128-riscv elf128-riscv.c \
 	peigen.c pepigen.c pex64igen.c pe-aarch64igen.c pe-loongarch64igen.c
 
 CFILES = $(SOURCE_CFILES) $(BUILD_CFILES)
