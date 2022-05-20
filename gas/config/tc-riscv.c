@@ -1339,7 +1339,8 @@ init_opcode_hash (const struct riscv_opcode *opcodes,
 void
 md_begin (void)
 {
-  unsigned long mach = (xlen == 64 || xlen == 128) ? bfd_mach_riscv64 : bfd_mach_riscv32;
+  unsigned long mach = xlen == 128 ? bfd_mach_riscv128
+                                   : xlen == 64 ? bfd_mach_riscv64 : bfd_mach_riscv32;
 
   if (! bfd_set_arch_mach (stdoutput, bfd_arch_riscv, mach))
     as_warn (_("could not set architecture and machine"));
@@ -4592,7 +4593,8 @@ s_riscv_attribute (int ignored ATTRIBUTE_UNUSED)
       if (old_xlen != xlen)
 	{
 	  /* We must re-init bfd again if xlen is changed.  */
-	  unsigned long mach = xlen == 64 ? bfd_mach_riscv64 : bfd_mach_riscv32;
+          unsigned long mach = xlen == 128 ? bfd_mach_riscv128
+                                           : xlen == 64 ? bfd_mach_riscv64 : bfd_mach_riscv32;
 	  bfd_find_target (riscv_target_format (), stdoutput);
 
 	  if (! bfd_set_arch_mach (stdoutput, bfd_arch_riscv, mach))
