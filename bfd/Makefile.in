@@ -1173,7 +1173,7 @@ SOURCE_HFILES = \
 	xcofflink.h xsym.h
 
 BUILD_HFILES = \
-	bfdver.h elf32-target.h elf64-target.h targmatch.h
+	bfdver.h elf32-target.h elf64-target.h elf128-target.h targmatch.h
 
 
 # Ensure they are built early:
@@ -2359,6 +2359,9 @@ elf32-target.h : elfxx-target.h
 
 elf64-target.h : elfxx-target.h
 	$(AM_V_GEN)$(SED) -e s/NN/64/g < $< > $@
+
+elf128-target.h : elfxx-target.h
+	$(AM_V_GEN)$(SED) -e s/NN/128/g < $< > $@
 
 elf32-aarch64.c : elfnn-aarch64.c
 	$(AM_V_at)echo "#line 1 \"elfnn-aarch64.c\"" > $@

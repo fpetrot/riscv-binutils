@@ -217,8 +217,38 @@ static reloc_howto_type howto_table[] =
 	 false),			/* pcrel_offset */
 
   /* Reserved for future relocs that the dynamic linker must understand.  */
+#if 0
   EMPTY_HOWTO (12),
   EMPTY_HOWTO (13),
+#else
+  HOWTO (R_RISCV_TLS_DTPMOD128, 	/* type */
+	 0,				/* rightshift */
+	 8,				/* size */
+	 128,				/* bitsize */
+	 false,				/* pc_relative */
+	 0,				/* bitpos */
+	 complain_overflow_dont,	/* complain_on_overflow */
+	 bfd_elf_generic_reloc,		/* special_function */
+	 "R_RISCV_TLS_DTPMOD128",	/* name */
+	 false,				/* partial_inplace */
+	 0,				/* src_mask */
+	 MINUS_ONE,			/* dst_mask */
+	 false),			/* pcrel_offset */
+
+  HOWTO (R_RISCV_TLS_TPREL128,		/* type */
+	 0,				/* rightshift */
+	 8,				/* size */
+	 128,				/* bitsize */
+	 false,				/* pc_relative */
+	 0,				/* bitpos */
+	 complain_overflow_dont,	/* complain_on_overflow */
+	 bfd_elf_generic_reloc,		/* special_function */
+	 "R_RISCV_TLS_TPREL128",	/* name */
+	 false,				/* partial_inplace */
+	 0,				/* src_mask */
+	 MINUS_ONE,			/* dst_mask */
+	 false),			/* pcrel_offset */
+#endif
   EMPTY_HOWTO (14),
   EMPTY_HOWTO (15),
 
@@ -844,6 +874,37 @@ static reloc_howto_type howto_table[] =
 	 0,				/* src_mask */
 	 0xffffffff,			/* dst_mask */
 	 false),			/* pcrel_offset */
+
+  /* 128-bit in-place addition, for local label subtraction.  */
+  HOWTO (R_RISCV_ADD128,			/* type */
+	 0,				/* rightshift */
+	 8,				/* size */
+	 128,				/* bitsize */
+	 false,				/* pc_relative */
+	 0,				/* bitpos */
+	 complain_overflow_dont,	/* complain_on_overflow */
+	 riscv_elf_add_sub_reloc,	/* special_function */
+	 "R_RISCV_ADD128",		/* name */
+	 false,				/* partial_inplace */
+	 0,				/* src_mask */
+	 MINUS_ONE,			/* dst_mask */
+	 false),			/* pcrel_offset */
+
+  /* 64-bit in-place addition, for local label subtraction.  */
+  HOWTO (R_RISCV_SUB128,		/* type */
+	 0,				/* rightshift */
+	 8,				/* size */
+	 128,				/* bitsize */
+	 false,				/* pc_relative */
+	 0,				/* bitpos */
+	 complain_overflow_dont,	/* complain_on_overflow */
+	 riscv_elf_add_sub_reloc,	/* special_function */
+	 "R_RISCV_SUB128",		/* name */
+	 false,				/* partial_inplace */
+	 0,				/* src_mask */
+	 MINUS_ONE,			/* dst_mask */
+	 false),	
+
 };
 
 /* A mapping from BFD reloc types to RISC-V ELF reloc types.  */
