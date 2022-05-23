@@ -2041,7 +2041,7 @@ struct reloc_howto_struct
 
   /* The number of bits in the field to be relocated.  This is used
      when doing overflow checking.  */
-  unsigned int bitsize:7;
+  unsigned int bitsize:8;
 
   /* The value the final relocation is shifted right by.  This drops
      unwanted data from the relocation.  */
