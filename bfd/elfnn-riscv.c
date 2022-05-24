@@ -1701,7 +1701,7 @@ perform_relocation (const reloc_howto_type *howto,
     case R_RISCV_SUB16:
     case R_RISCV_SUB32:
     case R_RISCV_SUB64:
-    case R_RISCV_SUB128
+    case R_RISCV_SUB128:
     case R_RISCV_SET6:
     case R_RISCV_SET8:
     case R_RISCV_SET16:
