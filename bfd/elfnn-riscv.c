@@ -145,13 +145,13 @@ struct riscv_elf_link_hash_table
   ((bits) == 16 ? bfd_getl16 (ptr)		\
    : (bits) == 32 ? bfd_getl32 (ptr)		\
    : (bits) == 64 ? bfd_getl64 (ptr)		\
-   : (bits) == 128 ? bfd_get128 (ptr)           \  
+   : (bits) == 128 ? bfd_getl128 (ptr)          \
    : (abort (), (bfd_vma) - 1))
 #define riscv_put_insn(bits, val, ptr)		\
   ((bits) == 16 ? bfd_putl16 (val, ptr)		\
    : (bits) == 32 ? bfd_putl32 (val, ptr)	\
    : (bits) == 64 ? bfd_putl64 (val, ptr)	\
-   : (bits) == 128 ? bfd_put128 (val, ptr)      \
+   : (bits) == 128 ? bfd_putl128 (val, ptr)      \
    : (abort (), (void) 0))
 
 /* Get the RISC-V ELF linker hash table from a link_info structure.  */

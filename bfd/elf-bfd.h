@@ -2630,6 +2630,21 @@ extern void bfd_elf64_write_relocs
 extern bool bfd_elf64_slurp_reloc_table
   (bfd *, asection *, asymbol **, bool);
 
+extern bfd_cleanup bfd_elf128_object_p
+  (bfd *);
+extern bfd_cleanup bfd_elf128_core_file_p
+  (bfd *);
+extern char *bfd_elf128_core_file_failing_command
+  (bfd *);
+extern int bfd_elf128_core_file_failing_signal
+  (bfd *);
+extern bool bfd_elf128_core_file_matches_executable_p
+  (bfd *, bfd *);
+extern int bfd_elf128_core_file_pid
+  (bfd *);
+extern bool _bfd_elf128_core_find_build_id
+  (bfd *, bfd_vma);
+
 extern bool _bfd_elf_default_relocs_compatible
   (const bfd_target *, const bfd_target *);
 
@@ -2922,6 +2937,9 @@ extern bfd *_bfd_elf32_bfd_from_remote_memory
    int (*target_read_memory) (bfd_vma, bfd_byte *, bfd_size_type));
 extern bfd *_bfd_elf64_bfd_from_remote_memory
   (bfd *templ, bfd_vma ehdr_vma, bfd_size_type size, bfd_vma *loadbasep,
+   int (*target_read_memory) (bfd_vma, bfd_byte *, bfd_size_type));
+extern bfd *_bfd_elf128_bfd_from_remote_memory
+  (bfd *templ, bfd_vma ehdr_vma, bfd_size_type size, bfd_vma *loadbasep, 
    int (*target_read_memory) (bfd_vma, bfd_byte *, bfd_size_type));
 
 extern bfd_vma bfd_elf_obj_attr_size (bfd *);
