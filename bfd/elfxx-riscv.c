@@ -249,6 +249,7 @@ static reloc_howto_type howto_table[] =
 	 MINUS_ONE,			/* dst_mask */
 	 false),			/* pcrel_offset */
 #endif
+// TODO add howto reloc for 14 and 15 defined in include/elf/riscv.h
   EMPTY_HOWTO (14),
   EMPTY_HOWTO (15),
 
