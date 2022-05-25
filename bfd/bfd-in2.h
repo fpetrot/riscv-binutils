@@ -78,9 +78,21 @@ extern "C" {
 
 #define BFD_HOST_64BIT_LONG @BFD_HOST_64BIT_LONG@
 
+#define BFD_HOST_128BIT_LONG @BFD_HOST_128BIT_LONG@
+#define BFD_HOST_128BIT_LONG_LONG @BFD_HOST_128BIT_LONG_LONG@
+#if @BFD_HOST_128_BIT_DEFINED@
+#define BFD_HOST_128_BIT @BFD_HOST_128_BIT@
+#define BFD_HOST_U_128_BIT @BFD_HOST_U_128_BIT@
+typedef BFD_HOST_128_BIT bfd_int128_t;
+typedef BFD_HOST_U_128_BIT bfd_uint128_t;
+#endif
+
+
 #include <inttypes.h>
 
-#if BFD_ARCH_SIZE >= 64
+#if BFD_ARCH_SIZE >= 128
+#define BFD128
+#elif BFD_ARCH_SIZE >= 64
 #define BFD64
 #endif
 
@@ -434,6 +446,10 @@ uint64_t bfd_getb64 (const void *);
 uint64_t bfd_getl64 (const void *);
 int64_t bfd_getb_signed_64 (const void *);
 int64_t bfd_getl_signed_64 (const void *);
+__uint128_t bfd_getb128 (const void *);
+__uint128_t bfd_getl128 (const void *);
+__int128_t bfd_getb_signed_128 (const void *);
+__int128_t bfd_getl_signed_128 (const void *);
 bfd_vma bfd_getb32 (const void *);
 bfd_vma bfd_getl32 (const void *);
 bfd_signed_vma bfd_getb_signed_32 (const void *);
@@ -444,6 +460,8 @@ bfd_signed_vma bfd_getb_signed_16 (const void *);
 bfd_signed_vma bfd_getl_signed_16 (const void *);
 void bfd_putb64 (uint64_t, void *);
 void bfd_putl64 (uint64_t, void *);
+void bfd_putb128 (__uint128_t, void *);
+void bfd_putl128 (__uint128_t, void *);
 void bfd_putb32 (bfd_vma, void *);
 void bfd_putl32 (bfd_vma, void *);
 void bfd_putb24 (bfd_vma, void *);
@@ -453,8 +471,8 @@ void bfd_putl16 (bfd_vma, void *);
 
 /* Byte swapping routines which take size and endiannes as arguments.  */
 
-uint64_t bfd_get_bits (const void *, int, bool);
-void bfd_put_bits (uint64_t, void *, int, bool);
+__uint128_t bfd_get_bits (const void *, int, bool);
+void bfd_put_bits (__uint128_t, void *, int, bool);
 
 
 /* mmap hacks */
@@ -649,11 +667,22 @@ bfd_vma bfd_getl24 (const void *p);
 #define bfd_get_signed_64(abfd, ptr) \
   BFD_SEND (abfd, bfd_getx_signed_64, (ptr))
 
+#define bfd_put_128(abfd, val, ptr) \
+  BFD_SEND (abfd, bfd_putx128, ((val), (ptr)))
+#define bfd_put_signed_128 \
+  bfd_put_128
+#define bfd_get_128(abfd, ptr) \
+  BFD_SEND (abfd, bfd_getx128, (ptr))
+#define bfd_get_signed_128(abfd, ptr) \
+  BFD_SEND (abfd, bfd_getx_signed_128, (ptr))
+
 #define bfd_get(bits, abfd, ptr)                       \
   ((bits) == 8 ? bfd_get_8 (abfd, ptr)                 \
    : (bits) == 16 ? bfd_get_16 (abfd, ptr)             \
    : (bits) == 32 ? bfd_get_32 (abfd, ptr)             \
    : (bits) == 64 ? bfd_get_64 (abfd, ptr)             \
+   : (bits) == 64 ? bfd_get_64 (abfd, ptr)             \
+   : (bits) == 128 ? bfd_get_128 (abfd, ptr)             \
    : (abort (), (bfd_vma) - 1))
 
 #define bfd_put(bits, abfd, val, ptr)                  \
@@ -661,6 +690,7 @@ bfd_vma bfd_getl24 (const void *p);
    : (bits) == 16 ? bfd_put_16 (abfd, val, ptr)        \
    : (bits) == 32 ? bfd_put_32 (abfd, val, ptr)        \
    : (bits) == 64 ? bfd_put_64 (abfd, val, ptr)        \
+   : (bits) == 128 ? bfd_put_128 (abfd, val, ptr)             \
    : (abort (), (void) 0))
 
 
@@ -702,20 +732,36 @@ bfd_vma bfd_getl24 (const void *p);
 #define bfd_h_get_signed_64(abfd, ptr) \
   BFD_SEND (abfd, bfd_h_getx_signed_64, (ptr))
 
+
+#define bfd_h_put_128(abfd, val, ptr) \
+  BFD_SEND (abfd, bfd_h_putx128, (val, ptr))
+#define bfd_h_put_signed_128 \
+  bfd_h_put_128
+#define bfd_h_get_128(abfd, ptr) \
+  BFD_SEND (abfd, bfd_h_getx128, (ptr))
+#define bfd_h_get_signed_128(abfd, ptr) \
+  BFD_SEND (abfd, bfd_h_getx_signed_128, (ptr))
+
+
 /* Aliases for the above, which should eventually go away.  */
 
+/* TODO : Check where this byte swapping macros are used to implement the 128 bits extension */
+#define H_PUT_128  bfd_h_put_128
 #define H_PUT_64  bfd_h_put_64
 #define H_PUT_32  bfd_h_put_32
 #define H_PUT_16  bfd_h_put_16
 #define H_PUT_8   bfd_h_put_8
+#define H_PUT_S128 bfd_h_put_signed_128
 #define H_PUT_S64 bfd_h_put_signed_64
 #define H_PUT_S32 bfd_h_put_signed_32
 #define H_PUT_S16 bfd_h_put_signed_16
 #define H_PUT_S8  bfd_h_put_signed_8
+#define H_GET_128  bfd_h_get_128
 #define H_GET_64  bfd_h_get_64
 #define H_GET_32  bfd_h_get_32
 #define H_GET_16  bfd_h_get_16
 #define H_GET_8   bfd_h_get_8
+#define H_GET_S128 bfd_h_get_signed_128
 #define H_GET_S64 bfd_h_get_signed_64
 #define H_GET_S32 bfd_h_get_signed_32
 #define H_GET_S16 bfd_h_get_signed_16
@@ -7426,6 +7472,9 @@ typedef struct bfd_target
   uint64_t       (*bfd_getx64) (const void *);
   int64_t        (*bfd_getx_signed_64) (const void *);
   void           (*bfd_putx64) (uint64_t, void *);
+  __uint128_t   (*bfd_getx128) (const void *);
+  __int128_t    (*bfd_getx_signed_128) (const void *);
+  void           (*bfd_putx128) (__uint128_t, void *);
   bfd_vma        (*bfd_getx32) (const void *);
   bfd_signed_vma (*bfd_getx_signed_32) (const void *);
   void           (*bfd_putx32) (bfd_vma, void *);
@@ -7437,6 +7486,9 @@ typedef struct bfd_target
   uint64_t       (*bfd_h_getx64) (const void *);
   int64_t        (*bfd_h_getx_signed_64) (const void *);
   void           (*bfd_h_putx64) (uint64_t, void *);
+  __uint128_t    (*bfd_h_getx128) (const void *);
+  __int128_t     (*bfd_h_getx_signed_128) (const void *);
+  void           (*bfd_h_putx128) (__uint128_t, void *); 
   bfd_vma        (*bfd_h_getx32) (const void *);
   bfd_signed_vma (*bfd_h_getx_signed_32) (const void *);
   void           (*bfd_h_putx32) (bfd_vma, void *);

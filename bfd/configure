@@ -657,6 +657,11 @@ zlibdir
 EXEEXT_FOR_BUILD
 CC_FOR_BUILD
 BFD_HOST_64BIT_LONG
+BFD_HOST_U_128_BIT
+BFD_HOST_128_BIT
+BFD_HOST_128_BIT_DEFINED
+BFD_HOST_128BIT_LONG_LONG
+BFD_HOST_128BIT_LONG
 HDEFINES
 MSGMERGE
 MSGFMT
@@ -12703,6 +12708,21 @@ $as_echo "found xgettext program is not GNU xgettext; ignore it" >&6; }
 
 
 
+
+BFD_HOST_64BIT_LONG=0
+BFD_HOST_64BIT_LONG_LONG=0
+BFD_HOST_64_BIT_DEFINED=0
+BFD_HOST_64_BIT=
+BFD_HOST_U_64_BIT=
+BFD_HOSTPTR_T="unsigned long"
+
+BFD_HOST_128BIT_LONG=0
+BFD_HOST_128BIT_LONG_LONG=0
+BFD_HOST_128_BIT_DEFINED=0
+BFD_HOST_128_BIT=
+BFD_HOST_U_128_BIT=
+#TODO : verify which primitive type we should
+BFD_HOSTPTR_T="unsigned long"
 
 # The cast to long int works around a bug in the HP C Compiler
 # version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
