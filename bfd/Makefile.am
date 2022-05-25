@@ -570,6 +570,7 @@ BFD64_BACKENDS = \
 	elfxx-x86.lo \
 	elf64-bpf.lo \
 	elf64.lo \
+	elf128.lo \
 	mach-o-aarch64.lo \
 	mach-o-x86-64.lo \
 	mmo.lo \

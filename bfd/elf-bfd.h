@@ -2648,6 +2648,39 @@ extern int bfd_elf128_core_file_pid
 extern bool _bfd_elf128_core_find_build_id
   (bfd *, bfd_vma);
 
+extern bool bfd_elf128_swap_symbol_in
+  (bfd *, const void *, const void *, Elf_Internal_Sym *);
+extern void bfd_elf128_swap_symbol_out
+  (bfd *, const Elf_Internal_Sym *, void *, void *);
+extern void bfd_elf128_swap_reloc_in
+  (bfd *, const bfd_byte *, Elf_Internal_Rela *);
+extern void bfd_elf128_swap_reloc_out
+  (bfd *, const Elf_Internal_Rela *, bfd_byte *);
+extern void bfd_elf128_swap_reloca_in
+  (bfd *, const bfd_byte *, Elf_Internal_Rela *);
+extern void bfd_elf128_swap_reloca_out
+  (bfd *, const Elf_Internal_Rela *, bfd_byte *);
+extern void bfd_elf128_swap_phdr_in
+  (bfd *, const Elf128_External_Phdr *, Elf_Internal_Phdr *);
+extern void bfd_elf128_swap_phdr_out
+  (bfd *, const Elf_Internal_Phdr *, Elf128_External_Phdr *);
+extern void bfd_elf128_swap_dyn_in
+  (bfd *, const void *, Elf_Internal_Dyn *);
+extern void bfd_elf128_swap_dyn_out
+  (bfd *, const Elf_Internal_Dyn *, void *);
+extern long bfd_elf128_slurp_symbol_table
+  (bfd *, asymbol **, bool);
+extern bool bfd_elf128_write_shdrs_and_ehdr
+  (bfd *);
+extern int bfd_elf128_write_out_phdrs
+  (bfd *, const Elf_Internal_Phdr *, unsigned int);
+extern bool bfd_elf128_checksum_contents
+  (bfd * , void (*) (const void *, size_t, void *), void *);
+extern void bfd_elf128_write_relocs
+  (bfd *, asection *, void *);
+extern bool bfd_elf128_slurp_reloc_table
+  (bfd *, asection *, asymbol **, bool);
+
 extern bool _bfd_elf_default_relocs_compatible
   (const bfd_target *, const bfd_target *);
 
@@ -3012,6 +3045,9 @@ extern bool _bfd_elf_allocate_ifunc_dyn_relocs
 extern void elf_append_rela (bfd *, asection *, Elf_Internal_Rela *);
 extern void elf_append_rel (bfd *, asection *, Elf_Internal_Rela *);
 
+// TODO bfd_vma is 64 bits
+extern bfd_vma elf128_r_info (bfd_vma, bfd_vma);
+extern bfd_vma elf128_r_sym (bfd_vma);
 extern bfd_vma elf64_r_info (bfd_vma, bfd_vma);
 extern bfd_vma elf64_r_sym (bfd_vma);
 extern bfd_vma elf32_r_info (bfd_vma, bfd_vma);
