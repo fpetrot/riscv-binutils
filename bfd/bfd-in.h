@@ -69,9 +69,22 @@ extern "C" {
 /* The word size of the default bfd target.  */
 #define BFD_DEFAULT_TARGET_SIZE @bfd_default_target_size@
 
+#define BFD_HOST_64BIT_LONG @BFD_HOST_64BIT_LONG@
+
+#define BFD_HOST_128BIT_LONG @BFD_HOST_128BIT_LONG@
+#define BFD_HOST_128BIT_LONG_LONG @BFD_HOST_128BIT_LONG_LONG@
+#if @BFD_HOST_128_BIT_DEFINED@
+#define BFD_HOST_128_BIT @BFD_HOST_128_BIT@
+#define BFD_HOST_U_128_BIT @BFD_HOST_U_128_BIT@
+typedef BFD_HOST_128_BIT bfd_int128_t;
+typedef BFD_HOST_U_128_BIT bfd_uint128_t;
+#endif
+
 #include <inttypes.h>
 
-#if BFD_ARCH_SIZE >= 64
+#if BFD_ARCH_SIZE >= 128
+#define BFD128
+#elif BFD_ARCH_SIZE >= 64
 #define BFD64
 #endif
 
@@ -97,6 +110,8 @@ typedef struct bfd bfd;
 /* Also prevent non-zero offsets from being applied to a null pointer.  */
 #define NPTR_ADD(P,A) ((P) != NULL ? (P) + (A) : (P))
 
+
+/* TODO: Do the same definitions for BFD128 */
 #ifdef BFD64
 
 /* Represent a target address.  Also used as a generic unsigned type
@@ -406,6 +421,10 @@ uint64_t bfd_getb64 (const void *);
 uint64_t bfd_getl64 (const void *);
 int64_t bfd_getb_signed_64 (const void *);
 int64_t bfd_getl_signed_64 (const void *);
+__uint128_t bfd_getb128 (const void *);
+__uint128_t bfd_getl128 (const void *);
+__int128_t bfd_getb_signed_128 (const void *);
+__int128_t bfd_getl_signed_128 (const void *);
 bfd_vma bfd_getb32 (const void *);
 bfd_vma bfd_getl32 (const void *);
 bfd_signed_vma bfd_getb_signed_32 (const void *);
@@ -416,6 +435,8 @@ bfd_signed_vma bfd_getb_signed_16 (const void *);
 bfd_signed_vma bfd_getl_signed_16 (const void *);
 void bfd_putb64 (uint64_t, void *);
 void bfd_putl64 (uint64_t, void *);
+void bfd_putb128 (__uint128_t, void *);
+void bfd_putl128 (__uint128_t, void *);
 void bfd_putb32 (bfd_vma, void *);
 void bfd_putl32 (bfd_vma, void *);
 void bfd_putb24 (bfd_vma, void *);
@@ -425,8 +446,8 @@ void bfd_putl16 (bfd_vma, void *);
 
 /* Byte swapping routines which take size and endiannes as arguments.  */
 
-uint64_t bfd_get_bits (const void *, int, bool);
-void bfd_put_bits (uint64_t, void *, int, bool);
+__uint128_t bfd_get_bits (const void *, int, bool);
+void bfd_put_bits (__uint128_t, void *, int, bool);
 
 
 /* mmap hacks */
