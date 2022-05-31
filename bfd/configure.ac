@@ -836,34 +836,34 @@ case ${host128}-${target128}-${want128} in
        fi
     fi
     ;;
-  false-false-false)
-   case ${host64}-${target64}-${want64} in
-     *true*)
-       wordsize=64
-       bfd64_libs='$(BFD64_LIBS)'
-       all_backends='$(BFD64_BACKENDS) $(BFD32_BACKENDS)'
-       if test $BFD_HOST_64_BIT_DEFINED = 0; then
-         AC_MSG_WARN([You have requested a 64 bit BFD configuration, but])
-         AC_MSG_WARN([your compiler may not have a 64 bit integral type])
+esac
+
+case ${host64}-${target64}-${want64} in
+   *true*)
+     wordsize=64
+     bfd64_libs='$(BFD64_LIBS)'
+     all_backends='$(BFD64_BACKENDS) $(BFD32_BACKENDS)'
+     if test $BFD_HOST_64_BIT_DEFINED = 0; then
+       AC_MSG_WARN([You have requested a 64 bit BFD configuration, but])
+       AC_MSG_WARN([your compiler may not have a 64 bit integral type])
+     fi
+     if test -n "$GCC" ; then
+       bad_64bit_gcc=no;
+       AC_MSG_CHECKING([for gcc version with buggy 64-bit support])
+       # Add more tests for gcc versions with non-working 64-bit support here.
+       AC_EGREP_CPP([: 2 : 91 : 1 :],[:__GNUC__:__GNUC_MINOR__:__i386__:],
+ 	      bad_64bit_gcc=yes;
+              AC_MSG_RESULT([yes: egcs-1.1.2 on ix86 spotted]),
+	      AC_MSG_RESULT(no))
+       if test $bad_64bit_gcc = yes ; then
+         AC_MSG_ERROR([A newer version of gcc is needed for the requested 64-bit BFD configuration])
        fi
-       if test -n "$GCC" ; then
-         bad_64bit_gcc=no;
-         AC_MSG_CHECKING([for gcc version with buggy 64-bit support])
-         # Add more tests for gcc versions with non-working 64-bit support here.
-         AC_EGREP_CPP([: 2 : 91 : 1 :],[:__GNUC__:__GNUC_MINOR__:__i386__:],
-	  	      bad_64bit_gcc=yes;
-		      AC_MSG_RESULT([yes: egcs-1.1.2 on ix86 spotted]),
-		      AC_MSG_RESULT(no))
-         if test $bad_64bit_gcc = yes ; then
-	   AC_MSG_ERROR([A newer version of gcc is needed for the requested 64-bit BFD configuration])
-         fi
-      fi
-      ;;
-    false-false-false)
-      wordsize=32
-      all_backends='$(BFD32_BACKENDS)'
-      ;;
-    esac
+     fi
+     ;;
+   false-false-false)
+    wordsize=32
+    all_backends='$(BFD32_BACKENDS)'
+    ;;
 esac
 
 tdefaults=""

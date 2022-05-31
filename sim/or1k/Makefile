@@ -1,7 +1,8 @@
-# Makefile fragment for common parts of all simulators.
-# Copyright 1997-2022 Free Software Foundation, Inc.
-# Contributed by Cygnus Support.
-
+# Makefile template for configure for the or1k simulator
+# Copyright (C) 2017-2022 Free Software Foundation, Inc.
+#
+# This file is part of GDB, the GNU debugger.
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
@@ -15,33 +16,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# This Makefile fragment consists of two separate parts.
-# They are merged into the final Makefile at points denoted by
-# "## COMMON_PRE_CONFIG_FRAG" and "## COMMON_POST_CONFIG_FRAG".
-#
-# The target Makefile should look like:
-#
-#># Copyright blah blah
-#>
-#>## COMMON_PRE_CONFIG_FRAG
-#>
-#># Any overrides necessary for the SIM_FOO config vars.
-#>SIM_FOO = ...
-#>
-#>## COMMON_POST_CONFIG_FRAG
-#>
-#># Rules to build target specific .o's.
-
+## COMMON_PRE_CONFIG_FRAG
 ## COMMON_PRE_CONFIG_FRAG
 
-srcdir = @abs_srcdir@
-VPATH = $(srcdir):$(srccom)
+srcdir = /work/sylvain/binutils-gdb/sim/or1k
+VPATH = $(srccom)
 srccom = $(srcdir)/../common
 srcroot = $(srcdir)/../..
 srcsim = $(srcdir)/..
 
-@SIM_COMMON_BUILD_FALSE@config.status = config.status
-@SIM_COMMON_BUILD_TRUE@config.status = ../config.status
+config.status = config.status
+#config.status = ../config.status
 
 include $(srcroot)/gdb/silent-rules.mk
 
@@ -59,28 +44,28 @@ include $(GNULIB_PARENT_DIR)/gnulib/Makefile.gnulib.inc
 # Settings from top-level configure.
 include ../arch-subdir.mk
 
-prefix = @prefix@
-exec_prefix = @exec_prefix@
+prefix = /usr/local
+exec_prefix = ${prefix}
 
-bindir = @bindir@
+bindir = ${exec_prefix}/bin
 
-libdir = @libdir@
+libdir = ${exec_prefix}/lib
 tooldir = $(libdir)/$(target_alias)
 
-datadir = @datadir@
-datarootdir = @datarootdir@
-mandir = @mandir@
+datadir = ${datarootdir}
+datarootdir = ${prefix}/share
+mandir = ${datarootdir}/man
 man1dir = $(mandir)/man1
-infodir = @infodir@
-includedir = @includedir@
+infodir = ${datarootdir}/info
+includedir = ${prefix}/include
 
 # This can be referenced by the gettext configuration code.
 top_builddir = ..
 
-SHELL = @SHELL@
+SHELL = /bin/bash
 
-SIM_BITSIZE = @sim_bitsize@
-SIM_FLOAT = @sim_float@
+SIM_BITSIZE =  -DWITH_TARGET_WORD_BITSIZE=32 -DWITH_TARGET_WORD_MSB=31
+SIM_FLOAT = 
 SIM_WARN_CFLAGS = $(WARN_CFLAGS)
 SIM_WERROR_CFLAGS = $(WERROR_CFLAGS)
 
@@ -195,6 +180,42 @@ CGEN_INCLUDE_DEPS = \
 
 ## End COMMON_PRE_CONFIG_FRAG
 
+OR1K_OBJS = \
+	or1k.o \
+	arch.o \
+	cpu.o \
+	decode.o \
+	model.o \
+	sem.o \
+	mloop.o \
+	sim-if.o \
+	traps.o
+
+SIM_OBJS = \
+	$(SIM_NEW_COMMON_OBJS) \
+	cgen-utils.o \
+	cgen-trace.o \
+	cgen-scache.o \
+	cgen-run.o \
+	cgen-fpu.o \
+	cgen-accfp.o
+
+SIM_OBJS += $(OR1K_OBJS)
+
+# Extra headers included by sim-main.h.
+SIM_EXTRA_DEPS = \
+	$(CGEN_INCLUDE_DEPS) \
+	or1k-sim.h \
+	$(srcdir)/../../opcodes/or1k-desc.h \
+	arch.h \
+	cpuall.h \
+	decode.h
+
+SIM_EXTRA_CFLAGS =
+
+SIM_EXTRA_LIBS = -lm
+
+## COMMON_POST_CONFIG_FRAG
 ## COMMON_POST_CONFIG_FRAG
 
 CONFIG_CFLAGS = \
@@ -223,7 +244,7 @@ ZLIB = $(zlibdir) -lz
 LIBIBERTY_LIB = ../../libiberty/libiberty.a
 BFD_LIB = ../../bfd/libbfd.a
 OPCODES_LIB = ../../opcodes/libopcodes.a
-CONFIG_LIBS = $(COMMON_LIBS) @LIBS@ $(ZLIB)
+CONFIG_LIBS = $(COMMON_LIBS)  $(ZLIB)
 LIBDEPS = $(BFD_LIB) $(OPCODES_LIB) $(LIBINTL_DEP) $(LIBIBERTY_LIB)
 EXTRA_LIBS = $(BFD_LIB) $(OPCODES_LIB) $(LIBINTL) $(LIBIBERTY_LIB) \
 	$(CONFIG_LIBS) $(SIM_EXTRA_LIBS) $(LIBDL) $(LIBGNU) $(LIBGNU_EXTRA_LIBS)
@@ -238,7 +259,7 @@ COMMON_OBJS_NAMES = \
 	target-newlib-signal.o \
 	target-newlib-syscall.o \
 	version.o
-COMMON_OBJS = $(COMMON_OBJS_NAMES:%=../common/libcommon_a-%)
+COMMON_OBJS = $(COMMON_OBJS_NAMES:%=../common/common_libcommon_a-%)
 
 LIB_OBJS = modules.o $(COMMON_OBJS) $(SIM_OBJS)
 
@@ -514,12 +535,12 @@ distclean maintainer-clean realclean: clean $(SIM_EXTRA_DISTCLEAN)
 force:
 
 Makefile: Makefile.in $(srccom)/Make-common.in $(config.status)
-@SIM_COMMON_BUILD_FALSE@	$(ECHO_GEN) CONFIG_HEADERS= $(SHELL) ./config.status
-@SIM_COMMON_BUILD_TRUE@	$(ECHO_GEN) pwd=`pwd` && subdir=`basename "$$pwd"` && cd .. && \
-@SIM_COMMON_BUILD_TRUE@		$(SHELL) ./config.status Make-common.sim $$subdir/Makefile.sim $$subdir/Makefile
+	$(ECHO_GEN) CONFIG_HEADERS= $(SHELL) ./config.status
+#	$(ECHO_GEN) pwd=`pwd` && subdir=`basename "$$pwd"` && cd .. && \
+#		$(SHELL) ./config.status Make-common.sim $$subdir/Makefile.sim $$subdir/Makefile
 
-@SIM_COMMON_BUILD_FALSE@config.status: configure
-@SIM_COMMON_BUILD_FALSE@	$(ECHO_GEN) $(SHELL) ./config.status --recheck
+config.status: configure
+	$(ECHO_GEN) $(SHELL) ./config.status --recheck
 
 
 # CGEN support
@@ -590,3 +611,59 @@ cgen-desc: force
 		$(archfile) ignored $(opcfile)
 
 ## End COMMON_POST_CONFIG_FRAG
+
+arch = or1k
+
+# or1k32bf
+
+OR1K32BF_INCLUDE_DEPS = \
+	$(CGEN_MAIN_CPU_DEPS) \
+	cpu.h \
+	decode.h \
+	eng.h
+
+or1k.o: or1k.c $(OR1K32BF_INCLUDE_DEPS)
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+sim-if.o: sim-if.c $(SIM_MAIN_DEPS) $(srcdir)/../common/sim-core.h eng.h
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+traps.o: traps.c $(SIM_MAIN_DEPS) eng.h
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+stamps: stamp-arch stamp-cpu
+
+# NOTE: Generated source files are specified as full paths,
+# e.g. $(srcdir)/arch.c, because make may decide the files live
+# in objdir otherwise.
+
+OR1K_CGEN_DEPS = \
+	$(CPU_DIR)/or1k.cpu \
+	$(CPU_DIR)/or1k.opc \
+	$(CPU_DIR)/or1kcommon.cpu \
+	$(CPU_DIR)/or1korbis.cpu \
+	$(CPU_DIR)/or1korfpx.cpu \
+	Makefile
+
+stamp-arch: $(CGEN_READ_SCM) $(CGEN_ARCH_SCM) $(OR1K_CGEN_DEPS)
+	$(MAKE) cgen-arch $(CGEN_FLAGS_TO_PASS) \
+	  mach=or32,or32nd \
+	  archfile=$(CPU_DIR)/or1k.cpu \
+	  FLAGS="with-scache"
+	$(SILENCE) touch $@
+$(srcdir)/arch.h $(srcdir)/arch.c $(srcdir)/cpuall.h: $(CGEN_MAINT) stamp-arch
+	@true
+
+stamp-cpu: $(CGEN_READ_SCM) $(CGEN_CPU_SCM) $(OR1K_CGEN_DEPS)
+	$(MAKE) cgen-cpu-decode $(CGEN_FLAGS_TO_PASS) \
+	  cpu=or1k32bf \
+	  mach=or32,or32nd \
+	  archfile=$(CPU_DIR)/or1k.cpu \
+	  FLAGS="with-scache" \
+	  EXTRAFILES="$(CGEN_CPU_SEM) $(CGEN_CPU_SEMSW)"
+	$(SILENCE) touch $@
+$(srcdir)/cpu.h $(srcdir)/cpu.c $(srcdir)/model.c $(srcdir)/sem.c $(srcdir)/sem-switch.c $(srcdir)/decode.c $(srcdir)/decode.h: $(CGEN_MAINT) stamp-cpu
+	@true

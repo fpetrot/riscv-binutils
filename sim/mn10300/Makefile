@@ -1,7 +1,7 @@
-# Makefile fragment for common parts of all simulators.
-# Copyright 1997-2022 Free Software Foundation, Inc.
-# Contributed by Cygnus Support.
-
+#    Makefile template for Configure for the mn10300 sim library.
+#    Copyright (C) 1996-2022 Free Software Foundation, Inc.
+#    Written by Cygnus Support.
+# 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
@@ -15,33 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# This Makefile fragment consists of two separate parts.
-# They are merged into the final Makefile at points denoted by
-# "## COMMON_PRE_CONFIG_FRAG" and "## COMMON_POST_CONFIG_FRAG".
-#
-# The target Makefile should look like:
-#
-#># Copyright blah blah
-#>
-#>## COMMON_PRE_CONFIG_FRAG
-#>
-#># Any overrides necessary for the SIM_FOO config vars.
-#>SIM_FOO = ...
-#>
-#>## COMMON_POST_CONFIG_FRAG
-#>
-#># Rules to build target specific .o's.
-
+## COMMON_PRE_CONFIG_FRAG
 ## COMMON_PRE_CONFIG_FRAG
 
-srcdir = @abs_srcdir@
-VPATH = $(srcdir):$(srccom)
+srcdir = /work/sylvain/binutils-gdb/sim/mn10300
+VPATH = $(srccom)
 srccom = $(srcdir)/../common
 srcroot = $(srcdir)/../..
 srcsim = $(srcdir)/..
 
-@SIM_COMMON_BUILD_FALSE@config.status = config.status
-@SIM_COMMON_BUILD_TRUE@config.status = ../config.status
+config.status = config.status
+#config.status = ../config.status
 
 include $(srcroot)/gdb/silent-rules.mk
 
@@ -59,28 +43,28 @@ include $(GNULIB_PARENT_DIR)/gnulib/Makefile.gnulib.inc
 # Settings from top-level configure.
 include ../arch-subdir.mk
 
-prefix = @prefix@
-exec_prefix = @exec_prefix@
+prefix = /usr/local
+exec_prefix = ${prefix}
 
-bindir = @bindir@
+bindir = ${exec_prefix}/bin
 
-libdir = @libdir@
+libdir = ${exec_prefix}/lib
 tooldir = $(libdir)/$(target_alias)
 
-datadir = @datadir@
-datarootdir = @datarootdir@
-mandir = @mandir@
+datadir = ${datarootdir}
+datarootdir = ${prefix}/share
+mandir = ${datarootdir}/man
 man1dir = $(mandir)/man1
-infodir = @infodir@
-includedir = @includedir@
+infodir = ${datarootdir}/info
+includedir = ${prefix}/include
 
 # This can be referenced by the gettext configuration code.
 top_builddir = ..
 
-SHELL = @SHELL@
+SHELL = /bin/bash
 
-SIM_BITSIZE = @sim_bitsize@
-SIM_FLOAT = @sim_float@
+SIM_BITSIZE =  -DWITH_TARGET_WORD_BITSIZE=32 -DWITH_TARGET_WORD_MSB=31
+SIM_FLOAT = 
 SIM_WARN_CFLAGS = $(WARN_CFLAGS)
 SIM_WERROR_CFLAGS = $(WERROR_CFLAGS)
 
@@ -195,6 +179,23 @@ CGEN_INCLUDE_DEPS = \
 
 ## End COMMON_PRE_CONFIG_FRAG
 
+MN10300_OBJS = \
+	itable.o semantics.o idecode.o icache.o engine.o irun.o support.o \
+	$(SIM_NEW_COMMON_OBJS) \
+	op_utils.o \
+	sim-resume.o
+
+SIM_OBJS = $(MN10300_OBJS) interp.o
+
+SIM_EXTRA_HW_DEVICES = mn103cpu mn103int mn103tim mn103ser mn103iop
+
+# Extra dependencies for "sim-main.h"
+SIM_EXTRA_DEPS = mn10300_sim.h itable.h idecode.h
+
+# List of extra flags to always pass to $(CC).
+SIM_EXTRA_CFLAGS = -DPOLL_QUIT_INTERVAL=0x20
+
+## COMMON_POST_CONFIG_FRAG
 ## COMMON_POST_CONFIG_FRAG
 
 CONFIG_CFLAGS = \
@@ -223,7 +224,7 @@ ZLIB = $(zlibdir) -lz
 LIBIBERTY_LIB = ../../libiberty/libiberty.a
 BFD_LIB = ../../bfd/libbfd.a
 OPCODES_LIB = ../../opcodes/libopcodes.a
-CONFIG_LIBS = $(COMMON_LIBS) @LIBS@ $(ZLIB)
+CONFIG_LIBS = $(COMMON_LIBS)  $(ZLIB)
 LIBDEPS = $(BFD_LIB) $(OPCODES_LIB) $(LIBINTL_DEP) $(LIBIBERTY_LIB)
 EXTRA_LIBS = $(BFD_LIB) $(OPCODES_LIB) $(LIBINTL) $(LIBIBERTY_LIB) \
 	$(CONFIG_LIBS) $(SIM_EXTRA_LIBS) $(LIBDL) $(LIBGNU) $(LIBGNU_EXTRA_LIBS)
@@ -238,7 +239,7 @@ COMMON_OBJS_NAMES = \
 	target-newlib-signal.o \
 	target-newlib-syscall.o \
 	version.o
-COMMON_OBJS = $(COMMON_OBJS_NAMES:%=../common/libcommon_a-%)
+COMMON_OBJS = $(COMMON_OBJS_NAMES:%=../common/common_libcommon_a-%)
 
 LIB_OBJS = modules.o $(COMMON_OBJS) $(SIM_OBJS)
 
@@ -514,12 +515,12 @@ distclean maintainer-clean realclean: clean $(SIM_EXTRA_DISTCLEAN)
 force:
 
 Makefile: Makefile.in $(srccom)/Make-common.in $(config.status)
-@SIM_COMMON_BUILD_FALSE@	$(ECHO_GEN) CONFIG_HEADERS= $(SHELL) ./config.status
-@SIM_COMMON_BUILD_TRUE@	$(ECHO_GEN) pwd=`pwd` && subdir=`basename "$$pwd"` && cd .. && \
-@SIM_COMMON_BUILD_TRUE@		$(SHELL) ./config.status Make-common.sim $$subdir/Makefile.sim $$subdir/Makefile
+	$(ECHO_GEN) CONFIG_HEADERS= $(SHELL) ./config.status
+#	$(ECHO_GEN) pwd=`pwd` && subdir=`basename "$$pwd"` && cd .. && \
+#		$(SHELL) ./config.status Make-common.sim $$subdir/Makefile.sim $$subdir/Makefile
 
-@SIM_COMMON_BUILD_FALSE@config.status: configure
-@SIM_COMMON_BUILD_FALSE@	$(ECHO_GEN) $(SHELL) ./config.status --recheck
+config.status: configure
+	$(ECHO_GEN) $(SHELL) ./config.status --recheck
 
 
 # CGEN support
