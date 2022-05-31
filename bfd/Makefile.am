@@ -852,7 +852,7 @@ elf64-target.h : elfxx-target.h
 	$(AM_V_GEN)$(SED) -e s/NN/64/g < $< > $@
 
 elf128-target.h : elfxx-target.h
-	$(AM_V_GEN)$(SED) -e s/128/64/g < $< > $@
+	$(AM_V_GEN)$(SED) -e s/NN/128/g < $< > $@
 
 elf32-aarch64.c : elfnn-aarch64.c
 	$(AM_V_at)echo "#line 1 \"elfnn-aarch64.c\"" > $@
