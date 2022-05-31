@@ -5716,6 +5716,7 @@ get_elf_class (unsigned int elf_class)
     case ELFCLASSNONE: return _("none");
     case ELFCLASS32:   return "ELF32";
     case ELFCLASS64:   return "ELF64";
+    case ELFCLASS128: return "ELF128";
     default:
       snprintf (buff, sizeof (buff), _("<unknown: %x>"), elf_class);
       return buff;

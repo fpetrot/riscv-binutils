@@ -1,7 +1,8 @@
-# Makefile fragment for common parts of all simulators.
-# Copyright 1997-2022 Free Software Foundation, Inc.
-# Contributed by Cygnus Support.
-
+# Makefile template for configure for the eBPF simulator
+# Copyright (C) 2020-2022 Free Software Foundation, Inc.
+#
+# This file is part of GDB, the GNU debugger.
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
@@ -15,33 +16,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# This Makefile fragment consists of two separate parts.
-# They are merged into the final Makefile at points denoted by
-# "## COMMON_PRE_CONFIG_FRAG" and "## COMMON_POST_CONFIG_FRAG".
-#
-# The target Makefile should look like:
-#
-#># Copyright blah blah
-#>
-#>## COMMON_PRE_CONFIG_FRAG
-#>
-#># Any overrides necessary for the SIM_FOO config vars.
-#>SIM_FOO = ...
-#>
-#>## COMMON_POST_CONFIG_FRAG
-#>
-#># Rules to build target specific .o's.
-
+## COMMON_PRE_CONFIG_FRAG
 ## COMMON_PRE_CONFIG_FRAG
 
-srcdir = @abs_srcdir@
-VPATH = $(srcdir):$(srccom)
+srcdir = /work/sylvain/binutils-gdb/sim/bpf
+VPATH = $(srccom)
 srccom = $(srcdir)/../common
 srcroot = $(srcdir)/../..
 srcsim = $(srcdir)/..
 
-@SIM_COMMON_BUILD_FALSE@config.status = config.status
-@SIM_COMMON_BUILD_TRUE@config.status = ../config.status
+config.status = config.status
+#config.status = ../config.status
 
 include $(srcroot)/gdb/silent-rules.mk
 
@@ -59,28 +44,28 @@ include $(GNULIB_PARENT_DIR)/gnulib/Makefile.gnulib.inc
 # Settings from top-level configure.
 include ../arch-subdir.mk
 
-prefix = @prefix@
-exec_prefix = @exec_prefix@
+prefix = /usr/local
+exec_prefix = ${prefix}
 
-bindir = @bindir@
+bindir = ${exec_prefix}/bin
 
-libdir = @libdir@
+libdir = ${exec_prefix}/lib
 tooldir = $(libdir)/$(target_alias)
 
-datadir = @datadir@
-datarootdir = @datarootdir@
-mandir = @mandir@
+datadir = ${datarootdir}
+datarootdir = ${prefix}/share
+mandir = ${datarootdir}/man
 man1dir = $(mandir)/man1
-infodir = @infodir@
-includedir = @includedir@
+infodir = ${datarootdir}/info
+includedir = ${prefix}/include
 
 # This can be referenced by the gettext configuration code.
 top_builddir = ..
 
-SHELL = @SHELL@
+SHELL = /bin/bash
 
-SIM_BITSIZE = @sim_bitsize@
-SIM_FLOAT = @sim_float@
+SIM_BITSIZE =  -DWITH_TARGET_WORD_BITSIZE=64
+SIM_FLOAT = 
 SIM_WARN_CFLAGS = $(WARN_CFLAGS)
 SIM_WERROR_CFLAGS = $(WERROR_CFLAGS)
 
@@ -195,6 +180,30 @@ CGEN_INCLUDE_DEPS = \
 
 ## End COMMON_PRE_CONFIG_FRAG
 
+CGEN_STD_OBJS = cgen-run.o cgen-scache.o cgen-trace.o cgen-utils.o
+BPF_GEN_OBJS = arch.o cpu.o \
+               decode-le.o decode-be.o \
+               sem-le.o sem-be.o \
+               mloop-le.o mloop-be.o
+BPF_HAND_OBJS = bpf.o sim-if.o traps.o bpf-helpers.o
+
+SIM_OBJS = \
+	$(SIM_NEW_COMMON_OBJS) \
+	$(CGEN_STD_OBJS) \
+	$(BPF_GEN_OBJS) \
+	$(BPF_HAND_OBJS)
+
+SIM_EXTRA_DEPS = \
+	$(CGEN_INCLUDE_DEPS) \
+	arch.h \
+	bpf-sim.h \
+	eng-le.h eng-be.h \
+	$(srcdir)/../../opcodes/bpf-desc.h \
+	$(srcdir)/../../opcodes/bpf-opc.h
+
+SIM_EXTRA_CLEAN = bpf-clean
+
+## COMMON_POST_CONFIG_FRAG
 ## COMMON_POST_CONFIG_FRAG
 
 CONFIG_CFLAGS = \
@@ -223,7 +232,7 @@ ZLIB = $(zlibdir) -lz
 LIBIBERTY_LIB = ../../libiberty/libiberty.a
 BFD_LIB = ../../bfd/libbfd.a
 OPCODES_LIB = ../../opcodes/libopcodes.a
-CONFIG_LIBS = $(COMMON_LIBS) @LIBS@ $(ZLIB)
+CONFIG_LIBS = $(COMMON_LIBS)  $(ZLIB)
 LIBDEPS = $(BFD_LIB) $(OPCODES_LIB) $(LIBINTL_DEP) $(LIBIBERTY_LIB)
 EXTRA_LIBS = $(BFD_LIB) $(OPCODES_LIB) $(LIBINTL) $(LIBIBERTY_LIB) \
 	$(CONFIG_LIBS) $(SIM_EXTRA_LIBS) $(LIBDL) $(LIBGNU) $(LIBGNU_EXTRA_LIBS)
@@ -238,7 +247,7 @@ COMMON_OBJS_NAMES = \
 	target-newlib-signal.o \
 	target-newlib-syscall.o \
 	version.o
-COMMON_OBJS = $(COMMON_OBJS_NAMES:%=../common/libcommon_a-%)
+COMMON_OBJS = $(COMMON_OBJS_NAMES:%=../common/common_libcommon_a-%)
 
 LIB_OBJS = modules.o $(COMMON_OBJS) $(SIM_OBJS)
 
@@ -514,12 +523,12 @@ distclean maintainer-clean realclean: clean $(SIM_EXTRA_DISTCLEAN)
 force:
 
 Makefile: Makefile.in $(srccom)/Make-common.in $(config.status)
-@SIM_COMMON_BUILD_FALSE@	$(ECHO_GEN) CONFIG_HEADERS= $(SHELL) ./config.status
-@SIM_COMMON_BUILD_TRUE@	$(ECHO_GEN) pwd=`pwd` && subdir=`basename "$$pwd"` && cd .. && \
-@SIM_COMMON_BUILD_TRUE@		$(SHELL) ./config.status Make-common.sim $$subdir/Makefile.sim $$subdir/Makefile
+	$(ECHO_GEN) CONFIG_HEADERS= $(SHELL) ./config.status
+#	$(ECHO_GEN) pwd=`pwd` && subdir=`basename "$$pwd"` && cd .. && \
+#		$(SHELL) ./config.status Make-common.sim $$subdir/Makefile.sim $$subdir/Makefile
 
-@SIM_COMMON_BUILD_FALSE@config.status: configure
-@SIM_COMMON_BUILD_FALSE@	$(ECHO_GEN) $(SHELL) ./config.status --recheck
+config.status: configure
+	$(ECHO_GEN) $(SHELL) ./config.status --recheck
 
 
 # CGEN support
@@ -590,3 +599,126 @@ cgen-desc: force
 		$(archfile) ignored $(opcfile)
 
 ## End COMMON_POST_CONFIG_FRAG
+
+# BPF headers
+
+BPF_INCLUDE_DEPS = \
+	$(CGEN_MAIN_CPU_DEPS) \
+	$(SIM_EXTRA_DEPS) \
+	cpu.h cpuall.h \
+        decode-le.h decode-be.h \
+        defs-le.h defs-be.h \
+        eng-le.h eng-be.h
+
+# Dependencies for binaries from CGEN generated source
+
+mloop-le.o: mloop-le.c
+	$(COMPILE) -DWANT_ISA_EBPFLE mloop-le.c
+	$(POSTCOMPILE)
+mloop-be.o: mloop-be.c
+	$(COMPILE) -DWANT_ISA_EBPFBE mloop-be.c
+	$(POSTCOMPILE)
+
+decode-le.o: decode-le.c
+	$(COMPILE) -DWANT_ISA_EBPFLE $(srcdir)/decode-le.c
+	$(POSTCOMPILE)
+decode-be.o: decode-be.c $(BPF_INCLUDE_DEPS)
+	$(COMPILE) -DWANT_ISA_EBPFBE $(srcdir)/decode-be.c
+	$(POSTCOMPILE)
+
+sem-le.o: sem-le.c
+	$(COMPILE) -DWANT_ISA_EBPFLE $(srcdir)/sem-le.c
+	$(POSTCOMPILE)
+sem-be.o: sem-be.c
+	$(COMPILE) -DWANT_ISA_EBPFBE $(srcdir)/sem-be.c
+	$(POSTCOMPILE)
+
+arch = bpf
+
+CGEN_COMMON_DEPS = \
+	$(CGEN_READ_SCM) \
+	$(srcdir)/../../cpu/bpf.cpu \
+	$(srcdir)/../../cpu/bpf.opc \
+	Makefile
+
+stamp-arch: $(CGEN_COMMON_DEPS) $(CGEN_ARCH_SCM)
+	$(MAKE) cgen-arch $(CGEN_FLAGS_TO_PASS) \
+		mach=bpf cpu=bpfbf \
+		archfile=$(srcdir)/../../cpu/bpf.cpu \
+		FLAGS="with-scache"
+	$(SILENCE) touch $@
+$(srcdir)/arch.h $(srcdir)/arch.c $(srcdir)/cpuall.h: $(CGEN_MAINT) stamp-arch
+	@true
+
+stamp-cpu: $(CGEN_COMMON_DEPS) $(CGEN_CPU_SCM)
+	$(MAKE) cgen-cpu  $(CGEN_FLAGS_TO_PASS) \
+		isa=ebpfle,ebpfbe cpu=bpfbf mach=bpf \
+		archfile=$(srcdir)/../../cpu/bpf.cpu \
+		FLAGS="with-multiple-isa with-scache"
+	rm -f $(srcdir)/model.c
+	$(SILENCE) touch $@
+$(srcdir)/cpu.h $(srcdir)/cpu.c $(srcdir)/model.c: $(CGEN_MAINT) stamp-cpu
+	@true
+
+# We need to generate a group of files per ISA.
+# For eBPF little-endian:
+#    defs-le.h
+#    sem-le.c, decode-le.c, decode-le.h
+#    $(objdir)/mloop-le.c $(objdir)/eng-le.h
+# For eBPF big-endian:
+#    defs-be.h
+#    sem-be.c, decode-be.c, decode-be.h
+#    $(objdir)/mloop-be.c $(objdir)/eng-le.h
+#
+# The rules below take care of that.
+
+stamp-defs-le: $(CGEN_COMMON_DEPS) $(CGEN_CPU_SCM)
+	$(MAKE) cgen-defs $(CGEN_FLAGS_TO_PASS) \
+		isa=ebpfle cpu=bpfbf mach=bpf \
+		archfile=$(srcdir)/../../cpu/bpf.cpu \
+		FLAGS="with-scache" \
+                SUFFIX="-le"
+	$(SILENCE) touch $@
+$(srcdir)/defs-le.h: $(CGEN_MAINT) stamp-defs-le
+	@true
+
+
+stamp-defs-be: $(CGEN_COMMON_DEPS) $(CGEN_CPU_SCM)
+	$(MAKE) cgen-defs $(CGEN_FLAGS_TO_PASS) \
+		isa=ebpfbe cpu=bpfbf mach=bpf \
+		archfile=$(srcdir)/../../cpu/bpf.cpu \
+		FLAGS="with-scache" \
+                SUFFIX="-be"
+	$(SILENCE) touch $@
+$(srcdir)/defs-be.h: $(CGEN_MAINT) stamp-defs-be
+	@true
+
+stamp-decode-le: $(CGEN_COMMON_DEPS) $(CGEN_CPU_SCM) $(GEN_DECODE_SCM)
+	$(MAKE) cgen-decode $(CGEN_FLAGS_TO_PASS) \
+		isa=ebpfle cpu=bpfbf mach=bpf \
+		archfile=$(srcdir)/../../cpu/bpf.cpu \
+		FLAGS="with-scache" \
+                SUFFIX="-le" \
+		EXTRAFILES="$(CGEN_CPU_SEM)"
+	$(SILENCE) touch $@
+$(srcdir)/sem-le.c $(srcdir)/decode-le.c $(srcdir)/decode-le.h: \
+              $(CGEN_MAINT) stamp-decode-le
+	@true
+
+
+stamp-decode-be: $(CGEN_COMMON_DEPS) $(CGEN_CPU_SCM) $(GEN_DECODE_SCM)
+	$(MAKE) cgen-decode $(CGEN_FLAGS_TO_PASS) \
+		isa=ebpfbe cpu=bpfbf mach=bpf \
+		archfile=$(srcdir)/../../cpu/bpf.cpu \
+		FLAGS="with-scache" \
+                SUFFIX="-be" \
+		EXTRAFILES="$(CGEN_CPU_SEM)"
+	$(SILENCE) touch $@
+$(srcdir)/sem-be.c $(srcdir)/decode-be.c $(srcdir)/decode-be.h: \
+              $(CGEN_MAINT) stamp-decode-be
+	@true
+
+.PHONY = bpf-clean
+
+bpf-clean:
+	rm -f stamp-arch stamp-cpu stamp-decode stamp-defs

@@ -1249,6 +1249,9 @@ static const bfd_target * const _bfd_target_vector[] =
 	&riscv_elf64_be_vec,
 #endif
 	&rl78_elf32_vec,
+#ifdef BFD128
+	&riscv_elf128_vec,
+#endif
 
 #ifdef BFD64
 	&rs6000_xcoff64_vec,
@@ -1473,9 +1476,10 @@ find_target (const char *name)
   const bfd_target * const *target;
   const struct targmatch *match;
 
-  for (target = &bfd_target_vector[0]; *target != NULL; target++)
+  for (target = &bfd_target_vector[0]; *target != NULL; target++){
     if (strcmp (name, (*target)->name) == 0)
       return *target;
+  }
 
   /* If we couldn't match on the exact name, try matching on the
      configuration triplet.  FIXME: We should run the triplet through

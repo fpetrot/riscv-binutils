@@ -82,9 +82,9 @@ typedef BFD_HOST_U_128_BIT bfd_uint128_t;
 
 #include <inttypes.h>
 
-#if BFD_ARCH_SIZE >= 128
+#if (BFD_ARCH_SIZE >= 128)
 #define BFD128
-#elif BFD_ARCH_SIZE >= 64
+#elif (BFD_ARCH_SIZE >= 64)
 #define BFD64
 #endif
 
