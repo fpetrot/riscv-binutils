@@ -619,7 +619,7 @@ DESCRIPTION
 #define COERCE64(x) \
   (((uint64_t) (x) ^ ((uint64_t) 1 << 63)) - ((uint64_t) 1 << 63))
 #define COERCE128(x) \
-  (((__uint128_t) (x) ^ (((__uint128_t) 1 << 64) << 63)) - ((__uint128_t) 1 << 64) << 63)
+  (((__uint128_t) (x) ^ (((__uint128_t) 1 << 64) << 63)) - (((__uint128_t) 1 << 64) << 63))
 
 bfd_vma
 bfd_getb16 (const void *p)

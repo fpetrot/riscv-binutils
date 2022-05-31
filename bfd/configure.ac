@@ -195,6 +195,8 @@ AC_EXEEXT
 
 host64=false
 target64=false
+host128=false
+target128=false
 bfd_default_target_size=32
 
 # host stuff:
@@ -209,6 +211,22 @@ AM_PO_SUBDIRS
 AC_SUBST(HDEFINES)
 AC_PROG_INSTALL
 
+BBFD_HOST_64BIT_LONG=0
+BFD_HOST_64BIT_LONG_LONG=0
+BFD_HOST_64_BIT_DEFINED=0
+BFD_HOST_64_BIT=
+BFD_HOST_U_64_BIT=
+
+BFD_HOST_128BIT_LONG=0
+BFD_HOST_128BIT_LONG_LONG=0
+BFD_HOST_128BIT_UINT128_T=0
+BFD_HOST_128_BIT_DEFINED=0
+BFD_HOST_128_BIT=
+BFD_HOST_U_128_BIT=
+
+BFD_HOSTPTR_T="unsigned long"
+
+AC_CHECK_SIZEOF(__uint128_t)
 AC_CHECK_SIZEOF(long long)
 AC_CHECK_SIZEOF(void *)
 AC_CHECK_SIZEOF(long)
@@ -218,12 +236,51 @@ if test "x${ac_cv_sizeof_void_p}" = "x8"; then
   host64=true
 fi
 
+if test "x${ac_cv_sizeof_void_p}" = "x16"; then
+  host128=true
+fi
+
 BFD_HOST_64BIT_LONG=0
+
 if test "x${ac_cv_sizeof_long}" = "x8"; then
   BFD_HOST_64BIT_LONG=1
 fi
 
+if test "x${ac_cv_sizeof_long}" = "x16"; then
+  BFD_HOST_128BIT_LONG=1
+  test -n "${HOST_128BIT_TYPE}" || HOST_128BIT_TYPE="long"
+  test -n "${HOST_U_128BIT_TYPE}" || HOST_U_128BIT_TYPE="unsigned long"
+elif test "x${ac_cv_sizeof_long_long}" = "x16"; then
+  BFD_HOST_128BIT_LONG_LONG=1
+  test -n "${HOST_128BIT_TYPE}" || HOST_128BIT_TYPE="long long"
+  test -n "${HOST_U_128BIT_TYPE}" || HOST_U_128BIT_TYPE="unsigned long long"
+  if test "x${ac_cv_sizeof_void_p}" = "x16"; then
+    BFD_HOSTPTR_T="unsigned long long"
+  fi
+elif test "x${ac_cv_sizeof___uint128_t}" = "x16"; then
+  BFD_HOST_128BIT_UINT128_T=1
+  test -n "${HOST_128BIT_TYPE}" || HOST_128BIT_TYPE="__int128_t"
+  test -n "${HOST_U_128BIT_TYPE}" || HOST_U_128BIT_TYPE="__uint128_t"
+  if test "x${ac_cv_sizeof_void_p}" = "x16"; then
+    BFD_HOSTPTR_T="__uint128_t"
+  fi
+fi
+
+if test -n "${HOST_128BIT_TYPE}" -a -n "${HOST_U_128BIT_TYPE}"; then
+  BFD_HOST_128_BIT_DEFINED=1
+  BFD_HOST_128_BIT="${HOST_128BIT_TYPE}"
+  BFD_HOST_U_128_BIT="${HOST_U_128BIT_TYPE}"
+fi
+
 AC_SUBST(BFD_HOST_64BIT_LONG)
+
+AC_SUBST(BFD_HOST_128BIT_LONG)
+AC_SUBST(BFD_HOST_128BIT_LONG_LONG)
+AC_SUBST(BFD_HOST_128BIT_UINT128_T)
+AC_SUBST(BFD_HOST_128_BIT_DEFINED)
+AC_SUBST(BFD_HOST_128_BIT)
+AC_SUBST(BFD_HOST_U_128_BIT)
+AC_SUBST(BFD_HOSTPTR_T)
 
 BFD_CC_FOR_BUILD
 
@@ -689,6 +746,10 @@ do
     if test ${target_size} = 64; then
 	target64=true
     fi
+    if test ${target_size} = 128; then
+	AC_MSG_WARN([128 target OK])
+	target128=true
+    fi
     if test x"${vec}" = x"${defvec}"; then
 	bfd_default_target_size=${target_size}
     fi
@@ -752,28 +813,56 @@ if test "x$want_64_bit_archive" = xtrue; then
     [Define if 64-bit archives should always be used.])
 fi
 
-case ${host64}-${target64}-${want64} in
+case ${host128}-${target128}-${want128} in
   *true*)
-    wordsize=64
-    bfd64_libs='$(BFD64_LIBS)'
-    all_backends='$(BFD64_BACKENDS) $(BFD32_BACKENDS)'
+    wordsize=128
+    bfd64_libs='$(BFD128_LIBS)'
+    all_backends='$(BFD128_BACKENDS) $(BFD64_BACKENDS) $(BFD32_BACKENDS)'
+    if test $BFD_HOST_128_BIT_DEFINED = 0; then
+      AC_MSG_WARN([You have requested a 128 bit BFD configuration, but])
+      AC_MSG_WARN([your compiler may not have a 128 bit integral type])
+    fi
     if test -n "$GCC" ; then
        bad_64bit_gcc=no;
-       AC_MSG_CHECKING([for gcc version with buggy 64-bit support])
-       # Add more tests for gcc versions with non-working 64-bit support here.
+       AC_MSG_CHECKING([for gcc version with buggy 128-bit support])
+       # Add more tests for gcc versions with non-working 128-bit support here.
        AC_EGREP_CPP([: 2 : 91 : 1 :],[:__GNUC__:__GNUC_MINOR__:__i386__:],
-		    bad_64bit_gcc=yes;
+		    bad_128bit_gcc=yes;
 		    AC_MSG_RESULT([yes: egcs-1.1.2 on ix86 spotted]),
 		    AC_MSG_RESULT(no))
-       if test $bad_64bit_gcc = yes ; then
-	 AC_MSG_ERROR([A newer version of gcc is needed for the requested 64-bit BFD configuration])
+       if test $bad_128bit_gcc = yes ; then
+	 AC_MSG_ERROR([A newer version of gcc is needed for the requested 128-bit BFD configuration])
        fi
     fi
     ;;
   false-false-false)
-    wordsize=32
-    all_backends='$(BFD32_BACKENDS)'
-    ;;
+   case ${host64}-${target64}-${want64} in
+     *true*)
+       wordsize=64
+       bfd64_libs='$(BFD64_LIBS)'
+       all_backends='$(BFD64_BACKENDS) $(BFD32_BACKENDS)'
+       if test $BFD_HOST_64_BIT_DEFINED = 0; then
+         AC_MSG_WARN([You have requested a 64 bit BFD configuration, but])
+         AC_MSG_WARN([your compiler may not have a 64 bit integral type])
+       fi
+       if test -n "$GCC" ; then
+         bad_64bit_gcc=no;
+         AC_MSG_CHECKING([for gcc version with buggy 64-bit support])
+         # Add more tests for gcc versions with non-working 64-bit support here.
+         AC_EGREP_CPP([: 2 : 91 : 1 :],[:__GNUC__:__GNUC_MINOR__:__i386__:],
+	  	      bad_64bit_gcc=yes;
+		      AC_MSG_RESULT([yes: egcs-1.1.2 on ix86 spotted]),
+		      AC_MSG_RESULT(no))
+         if test $bad_64bit_gcc = yes ; then
+	   AC_MSG_ERROR([A newer version of gcc is needed for the requested 64-bit BFD configuration])
+         fi
+      fi
+      ;;
+    false-false-false)
+      wordsize=32
+      all_backends='$(BFD32_BACKENDS)'
+      ;;
+    esac
 esac
 
 tdefaults=""
@@ -784,6 +873,7 @@ test -n "${selarchs}" && tdefaults="${tdefaults} -DSELECT_ARCHITECTURES='${selar
 
 AC_SUBST(wordsize)
 AC_SUBST(bfd64_libs)
+AC_SUBST(bfd128_libs)
 AC_SUBST(all_backends)
 AC_SUBST(bfd_backends)
 AC_SUBST(bfd_machines)

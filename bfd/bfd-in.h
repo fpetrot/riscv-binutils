@@ -132,6 +132,31 @@ typedef uint64_t symvalue;
 #define fprintf_vma(f,x) fprintf (f, "%016" BFD_VMA_FMT "x", x)
 #endif
 
+#else 
+#ifdef BFD_HOST_128_BIT
+
+#ifndef BFD_HOST_128_BIT
+ #error No 128 bit integer type available
+#endif /* ! defined (BFD_HOST_128_BIT) */
+
+typedef BFD_HOST_U_128_BIT bfd_vma;
+typedef BFD_HOST_128_BIT bfd_signed_vma;
+typedef BFD_HOST_U_128_BIT bfd_size_type;
+typedef BFD_HOST_U_128_BIT symvalue;
+
+#if BFD_HOST_64BIT_LONG
+#define BFD_VMA_FMT "l"
+#elif defined (__MSVCRT__)
+#define BFD_VMA_FMT "I64"
+#else
+#define BFD_VMA_FMT "ll"
+#endif
+
+#ifndef fprintf_vma
+#define sprintf_vma(s,x) sprintf (s, "%016" BFD_VMA_FMT "x", x)
+#define fprintf_vma(f,x) fprintf (f, "%016" BFD_VMA_FMT "x", x)
+#endif
+
 #else /* not BFD64  */
 
 /* Represent a target address.  Also used as a generic unsigned type
@@ -153,7 +178,8 @@ typedef unsigned long bfd_size_type;
 #define fprintf_vma(s,x) fprintf (s, "%08" BFD_VMA_FMT "x", x)
 #define sprintf_vma(s,x) sprintf (s, "%08" BFD_VMA_FMT "x", x)
 
-#endif /* not BFD64  */
+#endif /* not BFD128 or BFD64 */
+#endif 
 
 #define HALF_BFD_SIZE_TYPE \
   (((bfd_size_type) 1) << (8 * sizeof (bfd_size_type) / 2))
@@ -171,7 +197,7 @@ extern void bfd_fprintf_vma (bfd *, void *, bfd_vma);
 
 typedef unsigned int flagword;	/* 32 bits of flags */
 typedef unsigned char bfd_byte;
-
+
 /* File formats.  */
 
 typedef enum bfd_format
