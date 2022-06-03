@@ -114,17 +114,17 @@ dnl to call AC_CHECK_PROG.
 AC_CHECK_TOOL(AR, ar)
 AC_CHECK_TOOL(RANLIB, ranlib, :)
 
-GCC_PLUGIN_OPTION(PLUGIN_OPTION)
-if test -n "$PLUGIN_OPTION"; then
-  if $AR --help 2>&1 | grep -q "\--plugin"; then
-    AR_PLUGIN_OPTION="$PLUGIN_OPTION"
-    AC_SUBST(AR_PLUGIN_OPTION)
-  fi
-  if $RANLIB --help 2>&1 | grep -q "\--plugin"; then
-    RANLIB_PLUGIN_OPTION="$PLUGIN_OPTION"
-    AC_SUBST(RANLIB_PLUGIN_OPTION)
-  fi
-fi
+#GCC_PLUGIN_OPTION(PLUGIN_OPTION)
+#if test -n "$PLUGIN_OPTION"; then
+#  if $AR --help 2>&1 | grep -q "\--plugin"; then
+#    AR_PLUGIN_OPTION="$PLUGIN_OPTION"
+#    AC_SUBST(AR_PLUGIN_OPTION)
+#  fi
+#  if $RANLIB --help 2>&1 | grep -q "\--plugin"; then
+#    RANLIB_PLUGIN_OPTION="$PLUGIN_OPTION"
+#    AC_SUBST(RANLIB_PLUGIN_OPTION)
+#  fi
+#fi
 
 dnl When switching to automake, replace the following with AM_ENABLE_MULTILIB.
 # Add --enable-multilib to configure.
@@ -176,10 +176,11 @@ AC_GNU_SOURCE
 AC_SYS_LARGEFILE
 AC_PROG_CPP_WERROR
 
-ACX_PROG_CC_WARNING_OPTS([-W -Wall -Wwrite-strings -Wc++-compat \
-			  -Wstrict-prototypes \
-			  -Wshadow=local], [ac_libiberty_warn_cflags])
-ACX_PROG_CC_WARNING_ALMOST_PEDANTIC([], [ac_libiberty_warn_cflags])
+#ACX_PROG_CC_WARNING_OPTS([-W -Wall -Wwrite-strings -Wc++-compat \
+#			  -Wstrict-prototypes \
+#			  -Wshadow=local], [ac_libiberty_warn_cflags])
+#ACX_PROG_CC_WARNING_ALMOST_PEDANTIC([], [ac_libiberty_warn_cflags])
+AC_SUBST(ac_libiberty_warn_cflags)
 
 AC_PROG_CC_C_O
 # autoconf is lame and doesn't give us any substitution variable for this.
@@ -235,7 +236,7 @@ if [[ -n "${frag}" ]]; then
   frag=${libiberty_topdir}/libiberty/config/$frag
 fi
 
-GCC_PICFLAG
+#GCC_PICFLAG
 
 # If they didn't specify --enable-shared, don't generate shared libs.
 case "${enable_shared}" in
@@ -262,7 +263,7 @@ case " ${CFLAGS} " in
 esac
 AC_SUBST(NOASANFLAG)
 
-GCC_CET_HOST_FLAGS(CET_HOST_FLAGS)
+#GCC_CET_HOST_FLAGS(CET_HOST_FLAGS)
 AC_SUBST(CET_HOST_FLAGS)
 
 echo "# Warning: this fragment is automatically generated" > temp-frag
