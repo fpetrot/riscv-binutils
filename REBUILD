@@ -1,0 +1,24 @@
+#!/bin/bash -x
+# Regenerate the configuration file and stuff, and reconfigure the things
+# To be launched once and for all prior to rebuild the stuff.
+# If to be ran again, erase the build subdirectory
+
+for d in $(find . -type d -maxdepth 1) ; do
+	cd $d
+	if test -f configure.ac ; then
+		echo "Running autoreconf in $PWD"
+		autoreconf --force --install
+	fi
+	cd - > /dev/null
+done
+
+mkdir -p build
+cd build
+../configure --prefix=/tmp/rv128 --target=riscv128-unknown-elf
+#Don't run in parallel, this doesn't work !
+make
+#Don't ask me why, but this seems more or less necessary
+cd ld
+../../ld/configure --prefix=/tmp/rv128 --target=riscv128-unknown-elf --disable-dependency-tracking
+cd ..
+make
