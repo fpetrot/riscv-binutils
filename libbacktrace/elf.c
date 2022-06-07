@@ -240,6 +240,7 @@ typedef struct {
 
 #define ELFCLASS32 1
 #define ELFCLASS64 2
+#define ELFCLASS128 3
 
 #define ELFDATA2LSB 1
 #define ELFDATA2MSB 2

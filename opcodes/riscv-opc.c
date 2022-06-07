@@ -1850,7 +1850,17 @@ const struct riscv_opcode riscv_opcodes[] =
 {"sraid",          128, INSN_CLASS_I, "d,s,^",     MATCH_SRAID, MASK_SRAID, match_opcode, 0 },
 {"srad",           128, INSN_CLASS_I, "d,s,t",     MATCH_SRAD, MASK_SRAD, match_opcode, 0 },
 {"srad",           128, INSN_CLASS_I, "d,s,^",     MATCH_SRAID, MASK_SRAID, match_opcode, INSN_ALIAS },
+/*{"addid",          128, INSN_CLASS_C, "d,CU,Co",   MATCH_C_ADDID, MASK_C_ADDID, match_rd_nonzero, INSN_ALIAS },*/
+{"addd",           128, INSN_CLASS_C, "Cs,Cw,Ct",  MATCH_C_ADDD, MASK_C_ADDD, match_opcode, INSN_ALIAS },
+{"addd",           128, INSN_CLASS_C, "Cs,Ct,Cw",  MATCH_C_ADDD, MASK_C_ADDD, match_opcode, INSN_ALIAS },
+/*{"addd",           128, INSN_CLASS_C, "d,CU,Co",   MATCH_C_ADDID, MASK_C_ADDID, match_rd_nonzero, INSN_ALIAS },*/
+{"addd",           128, INSN_CLASS_I, "d,s,t",     MATCH_ADDD, MASK_ADDD, match_opcode, 0 },
+{"addd",           128, INSN_CLASS_I, "d,s,j",     MATCH_ADDID, MASK_ADDID, match_opcode, INSN_ALIAS },
+{"negd",           128, INSN_CLASS_I, "d,t",       MATCH_SUBD, MASK_SUBD|MASK_RS1, match_opcode, INSN_ALIAS }, /* sub 0  */
+{"subd",           128, INSN_CLASS_C, "Cs,Cw,Ct",  MATCH_C_SUBD, MASK_C_SUBD, match_opcode, INSN_ALIAS },
 {"subd",           128, INSN_CLASS_I, "d,s,t",     MATCH_SUBD, MASK_SUBD, match_opcode, 0 },
+{"c.addd",         128, INSN_CLASS_C, "Cs,Ct",     MATCH_C_ADDD, MASK_C_ADDD, match_opcode, 0 },
+{"c.subd",         128, INSN_CLASS_C, "Cs,Ct",     MATCH_C_SUBD, MASK_C_SUBD, match_opcode, 0 },
 
 /* rv128m instructions.  */
 {"muld",           128, INSN_CLASS_M, "d,s,t",     MATCH_MULD, MASK_MULD, match_opcode, 0 },

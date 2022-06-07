@@ -88,7 +88,7 @@ static reloc_howto_type howto_table[] =
 	 MINUS_ONE,			/* dst_mask */
 	 false),			/* pcrel_offset */
 
-  /* Relocation against a local symbol in a shared object.  */
+    /* Relocation against a local symbol in a shared object.  */
   HOWTO (R_RISCV_RELATIVE,		/* type */
 	 0,				/* rightshift */
 	 4,				/* size */
@@ -221,7 +221,21 @@ static reloc_howto_type howto_table[] =
   EMPTY_HOWTO (12),
   EMPTY_HOWTO (13),
 #else
-  HOWTO (R_RISCV_TLS_DTPMOD128, 	/* type */
+    HOWTO (R_RISCV_TLS_TPREL128,		/* type */
+	 0,				/* rightshift */
+	 8,				/* size */
+	 128,				/* bitsize */
+	 false,				/* pc_relative */
+	 0,				/* bitpos */
+	 complain_overflow_dont,	/* complain_on_overflow */
+	 bfd_elf_generic_reloc,		/* special_function */
+	 "R_RISCV_TLS_TPREL128",	/* name */
+	 false,				/* partial_inplace */
+	 0,				/* src_mask */
+	 MINUS_ONE,			/* dst_mask */
+	 false),			/* pcrel_offset */
+    
+    HOWTO (R_RISCV_TLS_DTPMOD128, 	/* type */
 	 0,				/* rightshift */
 	 8,				/* size */
 	 128,				/* bitsize */
@@ -235,7 +249,7 @@ static reloc_howto_type howto_table[] =
 	 MINUS_ONE,			/* dst_mask */
 	 false),			/* pcrel_offset */
 
-  HOWTO (R_RISCV_TLS_TPREL128,		/* type */
+    HOWTO (R_RISCV_TLS_DTPREL128,		/* type */
 	 0,				/* rightshift */
 	 8,				/* size */
 	 128,				/* bitsize */
@@ -243,15 +257,28 @@ static reloc_howto_type howto_table[] =
 	 0,				/* bitpos */
 	 complain_overflow_dont,	/* complain_on_overflow */
 	 bfd_elf_generic_reloc,		/* special_function */
-	 "R_RISCV_TLS_TPREL128",	/* name */
+	 "R_RISCV_TLS_DTPREL128",	/* name */
 	 false,				/* partial_inplace */
 	 0,				/* src_mask */
 	 MINUS_ONE,			/* dst_mask */
 	 false),			/* pcrel_offset */
+ 
 #endif
-// TODO add howto reloc for 14 and 15 defined in include/elf/riscv.h
-  EMPTY_HOWTO (14),
-  EMPTY_HOWTO (15),
+  /* 128 bit relocation.  */
+  HOWTO (R_RISCV_128,			/* type */
+	 0,				/* rightshift */
+	 8,				/* size */
+	 128,				/* bitsize */
+	 false,				/* pc_relative */
+	 0,				/* bitpos */
+	 complain_overflow_dont,	/* complain_on_overflow */
+	 bfd_elf_generic_reloc,		/* special_function */
+	 "R_RISCV_128",			/* name */
+	 false,				/* partial_inplace */
+	 0,				/* src_mask */
+	 MINUS_ONE,                     /* dst_mask */
+	 false),			/* pcrel_offset */
+
 
   /* 12-bit PC-relative branch offset.  */
   HOWTO (R_RISCV_BRANCH,		/* type */
@@ -946,14 +973,17 @@ static const struct elf_reloc_map riscv_reloc_map[] =
   { BFD_RELOC_NONE, R_RISCV_NONE },
   { BFD_RELOC_32, R_RISCV_32 },
   { BFD_RELOC_64, R_RISCV_64 },
+  { BFD_RELOC_128, R_RISCV_128 },
   { BFD_RELOC_RISCV_ADD8, R_RISCV_ADD8 },
   { BFD_RELOC_RISCV_ADD16, R_RISCV_ADD16 },
   { BFD_RELOC_RISCV_ADD32, R_RISCV_ADD32 },
   { BFD_RELOC_RISCV_ADD64, R_RISCV_ADD64 },
+  { BFD_RELOC_RISCV_ADD128, R_RISCV_ADD128 },
   { BFD_RELOC_RISCV_SUB8, R_RISCV_SUB8 },
   { BFD_RELOC_RISCV_SUB16, R_RISCV_SUB16 },
   { BFD_RELOC_RISCV_SUB32, R_RISCV_SUB32 },
   { BFD_RELOC_RISCV_SUB64, R_RISCV_SUB64 },
+  { BFD_RELOC_RISCV_SUB128, R_RISCV_SUB128 },
   { BFD_RELOC_CTOR, R_RISCV_64 },
   { BFD_RELOC_12_PCREL, R_RISCV_BRANCH },
   { BFD_RELOC_RISCV_HI20, R_RISCV_HI20 },
@@ -970,8 +1000,11 @@ static const struct elf_reloc_map riscv_reloc_map[] =
   { BFD_RELOC_RISCV_TLS_DTPREL32, R_RISCV_TLS_DTPREL32 },
   { BFD_RELOC_RISCV_TLS_DTPMOD64, R_RISCV_TLS_DTPMOD64 },
   { BFD_RELOC_RISCV_TLS_DTPREL64, R_RISCV_TLS_DTPREL64 },
+  { BFD_RELOC_RISCV_TLS_DTPMOD128, R_RISCV_TLS_DTPMOD128 },
+  { BFD_RELOC_RISCV_TLS_DTPREL128, R_RISCV_TLS_DTPREL128 },
   { BFD_RELOC_RISCV_TLS_TPREL32, R_RISCV_TLS_TPREL32 },
   { BFD_RELOC_RISCV_TLS_TPREL64, R_RISCV_TLS_TPREL64 },
+  { BFD_RELOC_RISCV_TLS_TPREL128, R_RISCV_TLS_TPREL128 },
   { BFD_RELOC_RISCV_TPREL_HI20, R_RISCV_TPREL_HI20 },
   { BFD_RELOC_RISCV_TPREL_ADD, R_RISCV_TPREL_ADD },
   { BFD_RELOC_RISCV_TPREL_LO12_S, R_RISCV_TPREL_LO12_S },

@@ -3636,11 +3636,13 @@ md_apply_fix (fixS *fixP, valueT *valP, segT seg ATTRIBUTE_UNUSED)
     case BFD_RELOC_RISCV_ADD16:
     case BFD_RELOC_RISCV_ADD32:
     case BFD_RELOC_RISCV_ADD64:
+    case BFD_RELOC_RISCV_ADD128:
     case BFD_RELOC_RISCV_SUB6:
     case BFD_RELOC_RISCV_SUB8:
     case BFD_RELOC_RISCV_SUB16:
     case BFD_RELOC_RISCV_SUB32:
     case BFD_RELOC_RISCV_SUB64:
+    case BFD_RELOC_RISCV_SUB128:
     case BFD_RELOC_RISCV_RELAX:
       break;
 
@@ -3680,6 +3682,7 @@ md_apply_fix (fixS *fixP, valueT *valP, segT seg ATTRIBUTE_UNUSED)
 	  break;
 	}
       /* Fall through.  */
+    case BFD_RELOC_128:
     case BFD_RELOC_64:
     case BFD_RELOC_16:
     case BFD_RELOC_8:
@@ -3694,6 +3697,11 @@ md_apply_fix (fixS *fixP, valueT *valP, segT seg ATTRIBUTE_UNUSED)
 
 	  switch (fixP->fx_r_type)
 	    {
+            case BFD_RELOC_128:
+	      fixP->fx_r_type = BFD_RELOC_RISCV_ADD128;
+	      fixP->fx_next->fx_r_type = BFD_RELOC_RISCV_SUB128;
+	      break;
+
 	    case BFD_RELOC_64:
 	      fixP->fx_r_type = BFD_RELOC_RISCV_ADD64;
 	      fixP->fx_next->fx_r_type = BFD_RELOC_RISCV_SUB64;

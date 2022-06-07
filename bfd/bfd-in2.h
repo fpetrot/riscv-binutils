@@ -2231,6 +2231,7 @@ enum bfd_reloc_code_real {
 
 
 /* Basic absolute relocations of N bits.  */
+  BFD_RELOC_128,
   BFD_RELOC_64,
   BFD_RELOC_32,
   BFD_RELOC_26,
@@ -2242,6 +2243,7 @@ enum bfd_reloc_code_real {
 /* PC-relative relocations.  Sometimes these are relative to the address
 of the relocation itself; sometimes they are relative to the start of
 the section containing the relocation.  It depends on the specific target.  */
+  BFD_RELOC_128_PCREL,
   BFD_RELOC_64_PCREL,
   BFD_RELOC_32_PCREL,
   BFD_RELOC_24_PCREL,
@@ -2279,6 +2281,7 @@ the section containing the relocation.  It depends on the specific target.  */
 /* Size relocations.  */
   BFD_RELOC_SIZE32,
   BFD_RELOC_SIZE64,
+  BFD_RELOC_SIZE128,
 
 /* Relocations used by 68K ELF.  */
   BFD_RELOC_68K_GLOB_DAT,
@@ -4387,10 +4390,12 @@ number for the SBIC, SBIS, SBI and CBI instructions  */
   BFD_RELOC_RISCV_ADD16,
   BFD_RELOC_RISCV_ADD32,
   BFD_RELOC_RISCV_ADD64,
+  BFD_RELOC_RISCV_ADD128,
   BFD_RELOC_RISCV_SUB8,
   BFD_RELOC_RISCV_SUB16,
   BFD_RELOC_RISCV_SUB32,
   BFD_RELOC_RISCV_SUB64,
+  BFD_RELOC_RISCV_SUB128,
   BFD_RELOC_RISCV_GOT_HI20,
   BFD_RELOC_RISCV_TLS_GOT_HI20,
   BFD_RELOC_RISCV_TLS_GD_HI20,
@@ -4399,8 +4404,11 @@ number for the SBIC, SBIS, SBI and CBI instructions  */
   BFD_RELOC_RISCV_TLS_DTPREL32,
   BFD_RELOC_RISCV_TLS_DTPMOD64,
   BFD_RELOC_RISCV_TLS_DTPREL64,
+  BFD_RELOC_RISCV_TLS_DTPMOD128,
+  BFD_RELOC_RISCV_TLS_DTPREL128,
   BFD_RELOC_RISCV_TLS_TPREL32,
   BFD_RELOC_RISCV_TLS_TPREL64,
+  BFD_RELOC_RISCV_TLS_TPREL128,
   BFD_RELOC_RISCV_ALIGN,
   BFD_RELOC_RISCV_RVC_BRANCH,
   BFD_RELOC_RISCV_RVC_JUMP,
