@@ -3461,6 +3461,8 @@ riscv_features_from_bfd (const bfd *abfd)
 	features.xlen = 4;
       else if (eclass == ELFCLASS64)
 	features.xlen = 8;
+      else if (eclass == ELFCLASS128)
+	features.xlen = 16;
       else
 	internal_error (__FILE__, __LINE__,
 			_("unknown ELF header class %d"), eclass);
