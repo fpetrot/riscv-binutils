@@ -2590,7 +2590,7 @@ bfd_sym_from_r_symndx (struct sym_cache *cache,
   if (cache->abfd != abfd || cache->indx[ent] != r_symndx)
     {
       Elf_Internal_Shdr *symtab_hdr;
-      unsigned char esym[sizeof (Elf64_External_Sym)];
+      unsigned char esym[sizeof (Elf128_External_Sym)];
       Elf_External_Sym_Shndx eshndx;
 
       symtab_hdr = &elf_tdata (abfd)->symtab_hdr;
