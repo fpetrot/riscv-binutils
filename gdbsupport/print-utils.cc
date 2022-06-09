@@ -191,14 +191,34 @@ phex_nz (ULONGEST l, int sizeof_l)
     {
     case 16:
       {
-	 // TODO remove useless 0s
 	 uint32_t *e = (uint32_t *) &l;
 	 str = get_print_cell ();
-	 xsnprintf(str, PRINT_CELL_SIZE, "%08lx%08lx%08lx%08lx",
-	             (unsigned long) (e[0] & 0xffffffff),
-	             (unsigned long) (e[1] & 0xffffffff),
+	 if (e[3] != 0) {
+	   xsnprintf(str, PRINT_CELL_SIZE, "%lx%08lx%08lx%08lx", 
+		     (unsigned long) (e[3] & 0xffffffff),
 	             (unsigned long) (e[2] & 0xffffffff),
-	             (unsigned long) (e[3] & 0xffffffff));
+	             (unsigned long) (e[1] & 0xffffffff),
+	             (unsigned long) (e[0] & 0xffffffff));
+	 }
+	 else {
+	   if (e[2] != 0) {
+	      xsnprintf(str, PRINT_CELL_SIZE, "%lx%08lx%08lx", 
+	             (unsigned long) (e[2] & 0xffffffff),
+	             (unsigned long) (e[1] & 0xffffffff),
+	             (unsigned long) (e[0] & 0xffffffff));
+	   }
+	   else {
+	     if (e[1] != 0) {
+ 		xsnprintf(str, PRINT_CELL_SIZE, "%lx%08lx", 
+	             (unsigned long) (e[1] & 0xffffffff),
+	             (unsigned long) (e[0] & 0xffffffff));
+	     }
+	     else {
+ 		xsnprintf(str, PRINT_CELL_SIZE, "%lx", 
+	             (unsigned long) (e[0] & 0xffffffff));
+	     }
+	   }
+	 } 
          break;
       }
     case 8:
