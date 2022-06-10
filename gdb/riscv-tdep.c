@@ -3493,7 +3493,8 @@ riscv_find_default_target_description (const struct gdbarch_info info)
      useful target with no floating point, the x-register size is selected
      based on the architecture from INFO.  */
   if (features.xlen == 0)
-    features.xlen = info.bfd_arch_info->bits_per_word == 32 ? 4 : 8;
+    features.xlen = info.bfd_arch_info->bits_per_word == 32 ? 4 :
+      (info.bfd_arch_info->bits_per_word == 64 ? 8 : 16);
 
   /* Now build a target description based on the feature set.  */
   return riscv_lookup_target_description (features);
@@ -3544,8 +3545,10 @@ riscv_gcc_target_options (struct gdbarch *gdbarch)
   target_options = "-march=rv";
   if (isa_xlen == 8)
     target_options += "64";
-  else
+  else if (isa_xlen == 4)
     target_options += "32";
+  else
+    target_options += "128";
   if (isa_flen == 8)
     target_options += "gc";
   else if (isa_flen == 4)
@@ -3556,8 +3559,10 @@ riscv_gcc_target_options (struct gdbarch *gdbarch)
   target_options += " -mabi=";
   if (abi_xlen == 8)
     target_options += "lp64";
-  else
+  else if (abi_xlen == 4)
     target_options += "ilp32";
+  else
+    target_options += "llp128";
   if (abi_flen == 8)
     target_options += "d";
   else if (abi_flen == 4)
@@ -3649,13 +3654,13 @@ riscv_tdesc_unknown_reg (struct gdbarch *gdbarch, tdesc_feature *feature,
 }
 
 /* Implement the gnu_triplet_regexp method.  A single compiler supports both
-   32-bit and 64-bit code, and may be named riscv32 or riscv64 or (not
+   32-bit, 64-bit code, and 128-bit code, and may be named riscv32, riscv64, or riscv128, or (not
    recommended) riscv.  */
 
 static const char *
 riscv_gnu_triplet_regexp (struct gdbarch *gdbarch)
 {
-  return "riscv(32|64)?";
+  return "riscv(32|64|128)?";
 }
 
 /* Initialize the current architecture based on INFO.  If possible,
@@ -3754,15 +3759,16 @@ riscv_gdbarch_init (struct gdbarch_info info,
   tdep->abi_features = abi_features;
 
   /* Target data types.  */
+  int xlen = riscv_isa_xlen (gdbarch);
   set_gdbarch_short_bit (gdbarch, 16);
   set_gdbarch_int_bit (gdbarch, 32);
-  set_gdbarch_long_bit (gdbarch, riscv_isa_xlen (gdbarch) * 8);
-  set_gdbarch_long_long_bit (gdbarch, 64);
+  set_gdbarch_long_bit (gdbarch, (xlen == 128) ? 64 : xlen * 8);
+  set_gdbarch_long_long_bit (gdbarch, (xlen == 128) ? 128 : 64);
   set_gdbarch_float_bit (gdbarch, 32);
   set_gdbarch_double_bit (gdbarch, 64);
   set_gdbarch_long_double_bit (gdbarch, 128);
   set_gdbarch_long_double_format (gdbarch, floatformats_ieee_quad);
-  set_gdbarch_ptr_bit (gdbarch, riscv_isa_xlen (gdbarch) * 8);
+  set_gdbarch_ptr_bit (gdbarch, xlen * 8);
   set_gdbarch_char_signed (gdbarch, 0);
   set_gdbarch_type_align (gdbarch, riscv_type_align);
 
