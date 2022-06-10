@@ -2424,8 +2424,9 @@ read_addrmap_from_aranges (dwarf2_per_objfile *per_objfile,
 	}
       dwarf2_per_cu_data *const per_cu = per_cu_it->second;
 
+      // FIXME check if changing address_size > 16 to address_size > 16 has no issues
       const uint8_t address_size = *addr++;
-      if (address_size < 1 || address_size > 8)
+      if (address_size < 1 || address_size > 16)
 	{
 	  warning (_("Section .debug_aranges in %s entry at offset %s "
 		     "address_size %u is invalid, ignoring .debug_aranges."),
