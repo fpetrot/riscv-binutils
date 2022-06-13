@@ -790,7 +790,7 @@ pr_array_type (void *p, bfd_signed_vma lower, bfd_signed_vma upper,
 {
   struct pr_handle *info = (struct pr_handle *) p;
   char *range_type;
-  char abl[42], abu[42], ab[70];
+  char abl[42], abu[42], ab[90];
 
   range_type = pop_type (info);
   if (range_type == NULL)
