@@ -1753,7 +1753,7 @@ _bfd_elf_print_private_bfd_data (bfd *abfd, void *farg)
 
 	      if (!strcmp (name, ""))
 		{
-		  sprintf (ab, "%#" PRIx64, (uint64_t) dyn.d_tag);
+		  sprintf (ab, "%#" BFD_VMA_FMT "x",(unsigned long)  dyn.d_tag);
 		  name = ab;
 		}
 	      break;
@@ -3271,7 +3271,8 @@ elf_fake_sections (bfd *abfd, asection *asect, void *fsarg)
   /* Set sh_addralign to the highest power of two given by alignment
      consistent with the section VMA.  Linker scripts can force VMA.  */
   mask = ((bfd_vma) 1 << asect->alignment_power) | this_hdr->sh_addr;
-  this_hdr->sh_addralign = mask & -mask;
+  mask = mask & -mask;
+  this_hdr->sh_addralign = mask;
   /* The sh_entsize and sh_info fields may have been set already by
      copy_private_section_data.  */
 
@@ -3386,6 +3387,7 @@ elf_fake_sections (bfd *abfd, asection *asect, void *fsarg)
     this_hdr->sh_flags |= SHF_EXECINSTR;
   if ((asect->flags & SEC_MERGE) != 0)
     {
+      printf("offset: %lu, addr: %p\n", offsetof(Elf_Internal_Shdr, sh_flags), &this_hdr->sh_flags);
       this_hdr->sh_flags |= SHF_MERGE;
       this_hdr->sh_entsize = asect->entsize;
     }

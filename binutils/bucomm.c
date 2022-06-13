@@ -468,7 +468,7 @@ print_arelt_descr (FILE *file, bfd *abfd, bool verbose, bool offsets)
 	  /* POSIX 1003.2/D11 says to skip first character (entry type).  */
 	  fprintf (file, "%s %ld/%ld %6" PRIu64 " %s ", modebuf + 1,
 		   (long) buf.st_uid, (long) buf.st_gid,
-		   (uint64_t) buf.st_size, timebuf);
+		   (unsigned long) buf.st_size, timebuf);
 	}
     }
 

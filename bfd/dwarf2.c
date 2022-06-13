@@ -4399,7 +4399,7 @@ parse_comp_unit (struct dwarf2_debug *stash,
       return NULL;
     }
 
-  if (addr_size != 2 && addr_size != 4 && addr_size != 8)
+  if (addr_size != 2 && addr_size != 4 && addr_size != 8 && addr_size != 16)
     {
       _bfd_error_handler
 	("DWARF error: found address size '%u', this reader"

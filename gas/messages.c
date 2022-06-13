@@ -380,6 +380,9 @@ as_internal_value_out_of_range (const char *prefix,
       if (max <= 1)
 	abort ();
 
+      sprintf (val_buf, "%" BFD_VMA_FMT "d", (long) val);
+      sprintf (min_buf, "%" BFD_VMA_FMT "d", (long) right);
+
       /* xgettext:c-format  */
       err = _("%s out of domain (%" PRId64
 	      " is not a multiple of %" PRId64 ")");
@@ -396,6 +399,10 @@ as_internal_value_out_of_range (const char *prefix,
 	   && min > HEX_MIN_THRESHOLD
 	   && max > HEX_MIN_THRESHOLD)
     {
+      sprintf (val_buf, "%" BFD_VMA_FMT "d", (long) val);
+      sprintf (min_buf, "%" BFD_VMA_FMT "d", (long) min);
+      sprintf (max_buf, "%" BFD_VMA_FMT "d", (long) max);
+
       /* xgettext:c-format.  */
       err = _("%s out of range (%" PRId64
 	      " is not between %" PRId64 " and %" PRId64 ")");

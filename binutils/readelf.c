@@ -535,34 +535,34 @@ print_vma (uint64_t vma, print_mode mode)
 
     case DEC_5:
       if (vma <= 99999)
-	return printf ("%5" PRId64, vma);
+	return printf ("%5" BFD_VMA_FMT "d", (long) vma);
       /* Fall through.  */
     case PREFIX_HEX:
       nc = printf ("0x");
       /* Fall through.  */
     case HEX:
-      return nc + printf ("%" PRIx64, vma);
+      return nc + printf ("%" BFD_VMA_FMT "x", (unsigned long) vma);
 
     case PREFIX_HEX_5:
       nc = printf ("0x");
       /* Fall through.  */
     case HEX_5:
-      return nc + printf ("%05" PRIx64, vma);
+      return nc + printf ("%05" BFD_VMA_FMT "x", (unsigned long) vma);
 
     case DEC:
-      return printf ("%" PRId64, vma);
+      return printf ("%" BFD_VMA_FMT "d", (long) vma);
 
     case UNSIGNED:
-      return printf ("%" PRIu64, vma);
+      return printf ("%" BFD_VMA_FMT "u", (unsigned long) vma);
 
     case UNSIGNED_5:
-      return printf ("%5" PRIu64, vma);
+      return printf ("%5" BFD_VMA_FMT "u", (unsigned long) vma);
 
     case OCTAL:
-      return printf ("%" PRIo64, vma);
+      return printf ("%" BFD_VMA_FMT "o", (unsigned long) vma);
 
     case OCTAL_5:
-      return printf ("%5" PRIo64, vma);
+      return printf ("%5" BFD_VMA_FMT "o", (unsigned long) vma);
 
     default:
       /* FIXME: Report unrecognised mode ?  */
@@ -1535,9 +1535,9 @@ dump_relocations (Filedata *          filedata,
       else
 	{
 	  printf (do_wide
-		  ? "%16.16" PRIx64 "  %16.16" PRIx64 " "
-		  : "%12.12" PRIx64 "  %12.12" PRIx64 " ",
-		  offset, inf);
+		  ? "%16.16" BFD_VMA_FMT "x  %16.16" BFD_VMA_FMT "x "
+		  : "%12.12" BFD_VMA_FMT "x  %12.12" BFD_VMA_FMT "x ",
+		  (unsigned long) offset, (unsigned long) inf);
 	}
 
       switch (filedata->file_header.e_machine)
@@ -2041,10 +2041,10 @@ dump_relocations (Filedata *          filedata,
 		{
 		  uint64_t off = rels[i].r_addend;
 
-		  if ((int64_t) off < 0)
-		    printf (" - %" PRIx64, -off);
+		  if ((bfd_signed_vma) off < 0)
+		    printf (" - %" BFD_VMA_FMT "x", (unsigned long) - off);
 		  else
-		    printf (" + %" PRIx64, off);
+		    printf (" + %" BFD_VMA_FMT "x", (unsigned long) off);
 		}
 	    }
 	}
@@ -2053,10 +2053,10 @@ dump_relocations (Filedata *          filedata,
 	  uint64_t off = rels[i].r_addend;
 
 	  printf ("%*c", is_32bit_elf ? 12 : 20, ' ');
-	  if ((int64_t) off < 0)
-	    printf ("-%" PRIx64, -off);
+	  if ((bfd_signed_vma) off < 0)
+	    printf ("-%" BFD_VMA_FMT "x", (unsigned long) - off);
 	  else
-	    printf ("%" PRIx64, off);
+	    printf ("%" BFD_VMA_FMT "x", (unsigned long) off);
 	}
 
       if (filedata->file_header.e_machine == EM_SPARCV9
@@ -8227,7 +8227,8 @@ dump_ia64_vms_dynamic_relocs (Filedata * filedata, struct ia64_vms_dynimgrela *i
       const char *rtype;
 
       printf ("%3u ", (unsigned) BYTE_GET (imrs [i].rela_seg));
-      printf ("%08" PRIx64 " ", BYTE_GET (imrs [i].rela_offset));
+      printf ("%08" BFD_VMA_FMT "x ",
+             (unsigned long) (bfd_vma) BYTE_GET (imrs [i].rela_offset));
       type = BYTE_GET (imrs [i].type);
       rtype = elf_ia64_reloc_type (type);
       if (rtype == NULL)
@@ -8236,7 +8237,8 @@ dump_ia64_vms_dynamic_relocs (Filedata * filedata, struct ia64_vms_dynimgrela *i
         printf ("%-31s ", rtype);
       print_vma (BYTE_GET (imrs [i].addend), FULL_HEX);
       printf ("%3u ", (unsigned) BYTE_GET (imrs [i].sym_seg));
-      printf ("%08" PRIx64 "\n", BYTE_GET (imrs [i].sym_offset));
+      printf ("%08" BFD_VMA_FMT "x\n", (unsigned long)
+              (bfd_vma) BYTE_GET (imrs [i].sym_offset));
     }
 
   free (imrs);

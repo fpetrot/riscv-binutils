@@ -2806,10 +2806,13 @@ copy_object (bfd *ibfd, bfd *obfd, const bfd_arch_info_type *input_arch)
 
       if (pe_file_alignment > pe_section_alignment)
 	{
-	  non_fatal (_("warning: file alignment (0x%" PRIx64
-		       ") > section alignment (0x%" PRIx64 ")"),
-		     (uint64_t) pe_file_alignment,
-		     (uint64_t) pe_section_alignment);
+	  char file_alignment[60], section_alignment[60];
+
+	  sprintf_vma (file_alignment, pe_file_alignment);
+	  sprintf_vma (section_alignment, pe_section_alignment);
+	  non_fatal (_("warning: file alignment (0x%s) "
+                       "> section alignment (0x%s)"),
+		     file_alignment, section_alignment);
 	}
     }
 
@@ -5495,9 +5498,14 @@ copy_main (int argc, char *argv[])
 	    gap_fill_vma = parse_vma (optarg, "--gap-fill");
 	    gap_fill = (bfd_byte) gap_fill_vma;
 	    if ((bfd_vma) gap_fill != gap_fill_vma)
-	      non_fatal (_("Warning: truncating gap-fill from 0x%" PRIx64
-			   " to 0x%x"),
-			 (uint64_t) gap_fill_vma, gap_fill);
+	      {
+		char buff[40];
+
+		sprintf_vma (buff, gap_fill_vma);
+
+		non_fatal (_("Warning: truncating gap-fill from 0x%s to 0x%x"),
+			   buff, gap_fill);
+	      }
 	    gap_fill_set = true;
 	  }
 	  break;
@@ -5963,20 +5971,32 @@ copy_main (int argc, char *argv[])
 	  if (! p->used)
 	    {
 	      if (p->context & (SECTION_CONTEXT_SET_VMA | SECTION_CONTEXT_ALTER_VMA))
-		/* xgettext:c-format */
-		non_fatal (_("%s %s%c0x%" PRIx64 " never used"),
-			   "--change-section-vma",
-			   p->pattern,
-			   p->context & SECTION_CONTEXT_SET_VMA ? '=' : '+',
-			   (uint64_t) p->vma_val);
+		{
+		  char buff [40];
+
+		  sprintf_vma (buff, p->vma_val);
+
+		  /* xgettext:c-format */
+		  non_fatal (_("%s %s%c0x%s never used"),
+			     "--change-section-vma",
+			     p->pattern,
+			     p->context & SECTION_CONTEXT_SET_VMA ? '=' : '+',
+			     buff);
+		}
 
 	      if (p->context & (SECTION_CONTEXT_SET_LMA | SECTION_CONTEXT_ALTER_LMA))
-		/* xgettext:c-format */
-		non_fatal (_("%s %s%c0x%" PRIx64 " never used"),
-			   "--change-section-lma",
-			   p->pattern,
-			   p->context & SECTION_CONTEXT_SET_LMA ? '=' : '+',
-			   (uint64_t) p->lma_val);
+		{
+		  char buff [40];
+
+		  sprintf_vma (buff, p->lma_val);
+
+		  /* xgettext:c-format */
+		  non_fatal (_("%s %s%c0x%s never used"),
+			     "--change-section-lma",
+			     p->pattern,
+			     p->context & SECTION_CONTEXT_SET_LMA ? '=' : '+',
+			     buff);
+		}
 	    }
 	}
     }
