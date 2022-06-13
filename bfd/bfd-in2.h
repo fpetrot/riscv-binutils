@@ -160,8 +160,8 @@ typedef BFD_HOST_U_128_BIT symvalue;
 #endif
 
 #ifndef fprintf_vma
-#define sprintf_vma(s,x) sprintf (s, "%032" BFD_VMA_FMT "x", x)
-#define fprintf_vma(f,x) fprintf (f, "%032" BFD_VMA_FMT "x", x)
+#define sprintf_vma(s,x) sprintf (s, "%016" BFD_VMA_FMT "x%016" BFD_VMA_FMT "x", (unsigned long) (x >> 64), (unsigned long) x & 0xFFFFFFFFFFFFFFFF)
+#define fprintf_vma(f,x) fprintf (f, "%016" BFD_VMA_FMT "x%016" BFD_VMA_FMT "x", (unsigned long) (x >> 64), (unsigned long) x & 0xFFFFFFFFFFFFFFFF)
 #endif
 
 #else
