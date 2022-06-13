@@ -258,6 +258,7 @@ elif test "x${ac_cv_sizeof_long_long}" = "x16"; then
     BFD_HOSTPTR_T="unsigned long long"
   fi
 elif test "x${ac_cv_sizeof___uint128_t}" = "x16"; then
+  host128=true
   BFD_HOST_128BIT_UINT128_T=1
   test -n "${HOST_128BIT_TYPE}" || HOST_128BIT_TYPE="__int128_t"
   test -n "${HOST_U_128BIT_TYPE}" || HOST_U_128BIT_TYPE="__uint128_t"
@@ -813,30 +814,6 @@ if test "x$want_64_bit_archive" = xtrue; then
     [Define if 64-bit archives should always be used.])
 fi
 
-case ${host128}-${target128}-${want128} in
-  *true*)
-    wordsize=128
-    bfd64_libs='$(BFD128_LIBS)'
-    all_backends='$(BFD128_BACKENDS) $(BFD64_BACKENDS) $(BFD32_BACKENDS)'
-    if test $BFD_HOST_128_BIT_DEFINED = 0; then
-      AC_MSG_WARN([You have requested a 128 bit BFD configuration, but])
-      AC_MSG_WARN([your compiler may not have a 128 bit integral type])
-    fi
-    if test -n "$GCC" ; then
-       bad_64bit_gcc=no;
-       AC_MSG_CHECKING([for gcc version with buggy 128-bit support])
-       # Add more tests for gcc versions with non-working 128-bit support here.
-       AC_EGREP_CPP([: 2 : 91 : 1 :],[:__GNUC__:__GNUC_MINOR__:__i386__:],
-		    bad_128bit_gcc=yes;
-		    AC_MSG_RESULT([yes: egcs-1.1.2 on ix86 spotted]),
-		    AC_MSG_RESULT(no))
-       if test $bad_128bit_gcc = yes ; then
-	 AC_MSG_ERROR([A newer version of gcc is needed for the requested 128-bit BFD configuration])
-       fi
-    fi
-    ;;
-esac
-
 case ${host64}-${target64}-${want64} in
    *true*)
      wordsize=64
@@ -862,6 +839,30 @@ case ${host64}-${target64}-${want64} in
    false-false-false)
     wordsize=32
     all_backends='$(BFD32_BACKENDS)'
+    ;;
+esac
+
+case ${host128}-${target128}-${want128} in
+  *true*)
+    wordsize=128
+    bfd64_libs='$(BFD128_LIBS)'
+    all_backends='$(BFD128_BACKENDS) $(BFD64_BACKENDS) $(BFD32_BACKENDS)'
+    if test $BFD_HOST_128_BIT_DEFINED = 0; then
+      AC_MSG_WARN([You have requested a 128 bit BFD configuration, but])
+      AC_MSG_WARN([your compiler may not have a 128 bit integral type])
+    fi
+    if test -n "$GCC" ; then
+       bad_64bit_gcc=no;
+       AC_MSG_CHECKING([for gcc version with buggy 128-bit support])
+       # Add more tests for gcc versions with non-working 128-bit support here.
+       AC_EGREP_CPP([: 2 : 91 : 1 :],[:__GNUC__:__GNUC_MINOR__:__i386__:],
+		    bad_128bit_gcc=yes;
+		    AC_MSG_RESULT([yes: egcs-1.1.2 on ix86 spotted]),
+		    AC_MSG_RESULT(no))
+       if test $bad_128bit_gcc = yes ; then
+	 AC_MSG_ERROR([A newer version of gcc is needed for the requested 128-bit BFD configuration])
+       fi
+    fi
     ;;
 esac
 
