@@ -9635,13 +9635,13 @@ static void
 lang_print_memory_size (uint64_t sz)
 {
   if ((sz & 0x3fffffff) == 0)
-    printf ("%10" PRIu64 " GB", sz >> 30);
+    printf ("%10" BFD_VMA_FMT "u GB",(unsigned long) (sz >> 30));
   else if ((sz & 0xfffff) == 0)
-    printf ("%10" PRIu64 " MB", sz >> 20);
+    printf ("%10" BFD_VMA_FMT "u MB",(unsigned long) (sz >> 20));
   else if ((sz & 0x3ff) == 0)
-    printf ("%10" PRIu64 " KB", sz >> 10);
+    printf ("%10" BFD_VMA_FMT "u KB",(unsigned long) (sz >> 10));
   else
-    printf (" %10" PRIu64 " B", sz);
+    printf (" %10" BFD_VMA_FMT "u B",(unsigned long) sz);
 }
 
 /* Implement --print-memory-usage: disply per region memory usage.  */

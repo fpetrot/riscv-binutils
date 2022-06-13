@@ -698,7 +698,7 @@ bfd_vma bfd_getl24 (const void *p);
   BFD_SEND (abfd, bfd_getx_signed_32, (ptr))
 
 #define bfd_put_64(abfd, val, ptr) \
-  BFD_SEND (abfd, bfd_putx64, ((val), (ptr)))
+  BFD_SEND (abfd, bfd_putx64, (((uint64_t) val), (ptr)))
 #define bfd_put_signed_64 \
   bfd_put_64
 #define bfd_get_64(abfd, ptr) \
