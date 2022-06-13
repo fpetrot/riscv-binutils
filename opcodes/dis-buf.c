@@ -61,7 +61,7 @@ perror_memory (int status,
     info->fprintf_func (info->stream, _("Unknown error %d\n"), status);
   else
     {
-      char buf[30];
+      char buf[60];
 
       /* Actually, address between memaddr and memaddr + len was
 	 out of bounds.  */
@@ -81,7 +81,7 @@ perror_memory (int status,
 void
 generic_print_address (bfd_vma addr, struct disassemble_info *info)
 {
-  char buf[30];
+  char buf[60];
 
   sprintf_vma (buf, addr);
   (*info->fprintf_func) (info->stream, "0x%s", buf);

@@ -386,8 +386,8 @@ as_internal_value_out_of_range (const char *prefix,
       if (max <= 1)
 	abort ();
 
-      sprintf (val_buf, "%" BFD_VMA_FMT "d", val);
-      sprintf (min_buf, "%" BFD_VMA_FMT "d", right);
+      sprintf (val_buf, "%" BFD_VMA_FMT "d", (long) val);
+      sprintf (min_buf, "%" BFD_VMA_FMT "d", (long) right);
 
       /* xgettext:c-format  */
       err = _("%s out of domain (%s is not a multiple of %s)");
@@ -404,9 +404,9 @@ as_internal_value_out_of_range (const char *prefix,
 	   && min > HEX_MIN_THRESHOLD
 	   && max > HEX_MIN_THRESHOLD)
     {
-      sprintf (val_buf, "%" BFD_VMA_FMT "d", val);
-      sprintf (min_buf, "%" BFD_VMA_FMT "d", min);
-      sprintf (max_buf, "%" BFD_VMA_FMT "d", max);
+      sprintf (val_buf, "%" BFD_VMA_FMT "d", (long) val);
+      sprintf (min_buf, "%" BFD_VMA_FMT "d", (long) min);
+      sprintf (max_buf, "%" BFD_VMA_FMT "d", (long) max);
 
       /* xgettext:c-format.  */
       err = _("%s out of range (%s is not between %s and %s)");

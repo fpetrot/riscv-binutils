@@ -92,6 +92,7 @@ typedef BFD_HOST_U_128_BIT bfd_uint128_t;
 
 #if BFD_ARCH_SIZE >= 128
 #define BFD128
+#undef BFD64
 #elif BFD_ARCH_SIZE >= 64
 #define BFD64
 #endif
@@ -140,6 +141,32 @@ typedef uint64_t symvalue;
 
 #else /* not BFD64  */
 
+#ifdef BFD_HOST_128_BIT
+
+#ifndef BFD_HOST_128_BIT
+ #error No 128 bit integer type available
+#endif /* ! defined (BFD_HOST_128_BIT) */
+
+typedef BFD_HOST_U_128_BIT bfd_vma;
+typedef BFD_HOST_128_BIT bfd_signed_vma;
+typedef BFD_HOST_U_128_BIT bfd_size_type;
+typedef BFD_HOST_U_128_BIT symvalue;
+
+#if BFD_HOST_64BIT_LONG
+#define BFD_VMA_FMT "l"
+#elif defined (__MSVCRT__)
+#define BFD_VMA_FMT "I64"
+#else
+#define BFD_VMA_FMT "ll"
+#endif
+
+#ifndef fprintf_vma
+#define sprintf_vma(s,x) sprintf (s, "%032" BFD_VMA_FMT "x", x)
+#define fprintf_vma(f,x) fprintf (f, "%032" BFD_VMA_FMT "x", x)
+#endif
+
+#else
+
 /* Represent a target address.  Also used as a generic unsigned type
    which is guaranteed to be big enough to hold any arithmetic types
    we need to deal with.  */
@@ -163,6 +190,18 @@ typedef unsigned long bfd_size_type;
 
 #define HALF_BFD_SIZE_TYPE \
   (((bfd_size_type) 1) << (8 * sizeof (bfd_size_type) / 2))
+
+#ifndef BFD_HOST_64_BIT
+/* Fall back on a 32 bit type.  The idea is to make these types always
+   available for function return types, but in the case that
+   BFD_HOST_64_BIT is undefined such a function should abort or
+   otherwise signal an error.  */
+typedef bfd_signed_vma bfd_int64_t;
+typedef bfd_vma bfd_uint64_t;
+
+#endif
+
+#endif
 
 /* An offset into a file.  BFD always uses the largest possible offset
    based on the build time availability of fseek, fseeko, or fseeko64.  */

@@ -2792,7 +2792,7 @@ copy_object (bfd *ibfd, bfd *obfd, const bfd_arch_info_type *input_arch)
 
       if (pe_file_alignment > pe_section_alignment)
 	{
-	  char file_alignment[20], section_alignment[20];
+	  char file_alignment[60], section_alignment[60];
 
 	  sprintf_vma (file_alignment, pe_file_alignment);
 	  sprintf_vma (section_alignment, pe_section_alignment);
@@ -5496,7 +5496,7 @@ copy_main (int argc, char *argv[])
 	    gap_fill = (bfd_byte) gap_fill_vma;
 	    if ((bfd_vma) gap_fill != gap_fill_vma)
 	      {
-		char buff[20];
+		char buff[40];
 
 		sprintf_vma (buff, gap_fill_vma);
 
@@ -5969,7 +5969,7 @@ copy_main (int argc, char *argv[])
 	    {
 	      if (p->context & (SECTION_CONTEXT_SET_VMA | SECTION_CONTEXT_ALTER_VMA))
 		{
-		  char buff [20];
+		  char buff [40];
 
 		  sprintf_vma (buff, p->vma_val);
 
@@ -5983,7 +5983,7 @@ copy_main (int argc, char *argv[])
 
 	      if (p->context & (SECTION_CONTEXT_SET_LMA | SECTION_CONTEXT_ALTER_LMA))
 		{
-		  char buff [20];
+		  char buff [40];
 
 		  sprintf_vma (buff, p->lma_val);
 

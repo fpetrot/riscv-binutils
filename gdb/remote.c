@@ -13518,7 +13518,7 @@ remote_target::trace_set_readonly_regions ()
       vma = bfd_section_vma (s);
       size = bfd_section_size (s);
       sprintf_vma (tmp1, vma);
-      sprintf_vma (tmp2, vma + size);
+      sprintf_vma (tmp2, (vma + size));
       sec_length = 1 + strlen (tmp1) + 1 + strlen (tmp2);
       if (offset + sec_length + 1 > rs->buf.size ())
 	{

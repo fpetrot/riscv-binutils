@@ -438,12 +438,12 @@ display_file (char *filename)
 static int
 size_number (bfd_size_type num)
 {
-  char buffer[40];
+  char buffer[60];
 
   sprintf (buffer,
 	   (radix == decimal ? "%" BFD_VMA_FMT "u" :
 	   ((radix == octal) ? "0%" BFD_VMA_FMT "o" : "0x%" BFD_VMA_FMT "x")),
-	   num);
+     (unsigned long) num);
 
   return strlen (buffer);
 }
@@ -451,12 +451,12 @@ size_number (bfd_size_type num)
 static void
 rprint_number (int width, bfd_size_type num)
 {
-  char buffer[40];
+  char buffer[60];
 
   sprintf (buffer,
 	   (radix == decimal ? "%" BFD_VMA_FMT "u" :
 	   ((radix == octal) ? "0%" BFD_VMA_FMT "o" : "0x%" BFD_VMA_FMT "x")),
-	   num);
+     (unsigned long) num);
 
   printf ("%*s", width, buffer);
 }

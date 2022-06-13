@@ -470,7 +470,7 @@ print_arelt_descr (FILE *file, bfd *abfd, bool verbose, bool offsets)
 	  /* POSIX 1003.2/D11 says to skip first character (entry type).  */
 	  fprintf (file, "%s %ld/%ld %6" BFD_VMA_FMT "u %s ", modebuf + 1,
 		   (long) buf.st_uid, (long) buf.st_gid,
-		   size, timebuf);
+       (unsigned long) size, timebuf);
 	}
     }
 
