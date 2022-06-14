@@ -1583,6 +1583,8 @@ set_print_width (bfd *file)
       if (strstr (bfd_get_target (file), "64") != NULL
 	  || strcmp (bfd_get_target (file), "mmo") == 0)
 	print_width = 64;
+      else if (strstr (bfd_get_target (file), "128") != NULL)
+	print_width = 128;
       else
 	print_width = 32;
     }
@@ -1856,6 +1858,12 @@ print_value (bfd *abfd ATTRIBUTE_UNUSED, bfd_vma val)
     case 32:
     case 64:
       printf (print_format_string, (uint64_t) val);
+      break;
+
+    case 128:
+      if (((val >> 64) != 0) || (print_radix == 16)) 
+        printf (print_format_string, (unsigned long) (val >> 64));
+      printf (print_format_string, (unsigned long) val);
       break;
 
     default:
