@@ -1053,6 +1053,7 @@ read_alt_indirect_ref (struct comp_unit *unit, uint64_t offset)
   return stash->alt.dwarf_info_buffer + offset;
 }
 
+/* FIXME check if uin64_t can cause issue in 128-bit */
 static uint64_t
 read_address (struct comp_unit *unit, bfd_byte **ptr, bfd_byte *buf_end)
 {
@@ -1073,6 +1074,8 @@ read_address (struct comp_unit *unit, bfd_byte **ptr, bfd_byte *buf_end)
     {
       switch (unit->addr_size)
 	{
+	case 16:
+	  return bfd_get_signed_128 (unit->abfd, buf);
 	case 8:
 	  return bfd_get_signed_64 (unit->abfd, buf);
 	case 4:
@@ -1087,6 +1090,8 @@ read_address (struct comp_unit *unit, bfd_byte **ptr, bfd_byte *buf_end)
     {
       switch (unit->addr_size)
 	{
+	case 16:
+	  return bfd_get_128 (unit->abfd, buf);
 	case 8:
 	  return bfd_get_64 (unit->abfd, buf);
 	case 4:
