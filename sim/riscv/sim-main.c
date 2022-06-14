@@ -416,7 +416,7 @@ execute_i (SIM_CPU *cpu, unsigned_word iw, const struct riscv_opcode *op)
       break;
     case MATCH_JAL:
       TRACE_INSN (cpu, "jal %s, %" PRIiTW ";", rd_name,
-		  EXTRACT_JTYPE_IMM (iw));
+		  (long) EXTRACT_JTYPE_IMM (iw));
       store_rd (cpu, rd, cpu->pc + 4);
       pc = cpu->pc + EXTRACT_JTYPE_IMM (iw);
       TRACE_BRANCH (cpu, "to %#" PRIxTW, pc);
