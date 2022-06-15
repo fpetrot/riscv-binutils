@@ -20,6 +20,10 @@
 
 #include "dwarf2.h" /* for enum dwarf_unit_type */
 
+typedef unsigned HOST_WIDEST_INT  dwarf_vma;
+typedef HOST_WIDEST_INT           dwarf_signed_vma;
+typedef unsigned HOST_WIDEST_INT  dwarf_size_type;
+
 /* Structure found in the .debug_line section.  */
 typedef struct
 {

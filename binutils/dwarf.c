@@ -226,8 +226,30 @@ print_hex (uint64_t value, unsigned num_bytes)
   if (num_bytes == 0)
     num_bytes = 2;
 
-  printf ("%0*" PRIx64 " ", num_bytes * 2,
-	  value & ~(~(uint64_t) 0 << num_bytes * 4 << num_bytes * 4));
+  ret = buf[buf_pos++].place;
+  buf_pos %= ARRAY_SIZE (buf);
+
+  if (num_bytes)
+    {
+      /* Printf does not have a way of specifying a maximum field width for an
+	 integer value, so we print the full value into a buffer and then select
+	 the precision we need.  */
+      snprintf (ret, sizeof (buf[0].place), DWARF_VMA_FMT_LONG, (unsigned long) value); // FIXME 128
+      if (num_bytes > 8)
+	num_bytes = 8;
+      return ret + (16 - 2 * num_bytes);
+    }
+  else
+    {
+      char fmt[32];
+
+      if (fmtch)
+	sprintf (fmt, "%%%s%s", DWARF_VMA_FMT, fmtch);
+      else
+	sprintf (fmt, "%%%s", DWARF_VMA_FMT);
+      snprintf (ret, sizeof (buf[0].place), fmt, value);
+      return ret;
+    }
 }
 
 /* Like print_hex, but no trailing space.  */
@@ -5537,23 +5559,23 @@ display_debug_lines_decoded (struct dwarf_section *  section,
 		      if (xop == -DW_LNE_end_sequence)
 			printf ("%-35s  %11s  %#18" PRIx64,
 				newFileName, "-",
-				state_machine_regs.address);
+				(unsigned long) state_machine_regs.address);
 		      else
 			printf ("%-35s  %11d  %#18" PRIx64,
 				newFileName, state_machine_regs.line,
-				state_machine_regs.address);
+				(unsigned long) state_machine_regs.address);
 		    }
 		  else
 		    {
 		      if (xop == -DW_LNE_end_sequence)
 			printf ("%-35s  %11s  %#18" PRIx64 "[%d]",
 				newFileName, "-",
-				state_machine_regs.address,
+				(unsigned long) state_machine_regs.address,
 				state_machine_regs.op_index);
 		      else
 			printf ("%-35s  %11d  %#18" PRIx64 "[%d]",
 				newFileName, state_machine_regs.line,
-				state_machine_regs.address,
+				(unsigned long) state_machine_regs.address,
 				state_machine_regs.op_index);
 		    }
 		}
@@ -5564,23 +5586,23 @@ display_debug_lines_decoded (struct dwarf_section *  section,
 		      if (xop == -DW_LNE_end_sequence)
 			printf ("%s  %11s  %#18" PRIx64,
 				newFileName, "-",
-				state_machine_regs.address);
+				(unsigned long) state_machine_regs.address);
 		      else
 			printf ("%s  %11d  %#18" PRIx64,
 				newFileName, state_machine_regs.line,
-				state_machine_regs.address);
-		    }
+				(unsigned long) state_machine_regs.address);
+		    }			
 		  else
 		    {
 		      if (xop == -DW_LNE_end_sequence)
 			printf ("%s  %11s  %#18" PRIx64 "[%d]",
 				newFileName, "-",
-				state_machine_regs.address,
+				(unsigned long) state_machine_regs.address,
 				state_machine_regs.op_index);
 		      else
 			printf ("%s  %11d  %#18" PRIx64 "[%d]",
 				newFileName, state_machine_regs.line,
-				state_machine_regs.address,
+				(unsigned long) state_machine_regs.address,
 				state_machine_regs.op_index);
 		    }
 		}

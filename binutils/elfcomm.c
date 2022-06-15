@@ -145,14 +145,36 @@ byte_get_little_endian (const unsigned char *field, unsigned int size)
 	      | ((uint64_t) field[6] << 48));
 
     case 8:
-      return ((uint64_t) field[0]
-	      | ((uint64_t) field[1] << 8)
-	      | ((uint64_t) field[2] << 16)
-	      | ((uint64_t) field[3] << 24)
-	      | ((uint64_t) field[4] << 32)
-	      | ((uint64_t) field[5] << 40)
-	      | ((uint64_t) field[6] << 48)
-	      | ((uint64_t) field[7] << 56));
+      if (sizeof (elf_vma) >= 8)
+	return  ((elf_vma) (field[0]))
+	  |    (((elf_vma) (field[1])) << 8)
+	  |    (((elf_vma) (field[2])) << 16)
+	  |    (((elf_vma) (field[3])) << 24)
+	  |    (((elf_vma) (field[4])) << 32)
+	  |    (((elf_vma) (field[5])) << 40)
+	  |    (((elf_vma) (field[6])) << 48)
+	  |    (((elf_vma) (field[7])) << 56);
+      /* Fall through.  */
+    
+    case 16:
+      if (sizeof (elf_vma) >= 16)
+	return  ((elf_vma) (field[0]))
+	  |    (((elf_vma) (field[1])) << 8)
+	  |    (((elf_vma) (field[2])) << 16)
+	  |    (((elf_vma) (field[3])) << 24)
+	  |    (((elf_vma) (field[4])) << 32)
+	  |    (((elf_vma) (field[5])) << 40)
+	  |    (((elf_vma) (field[6])) << 48)
+	  |    (((elf_vma) (field[7])) << 56)
+	  |    (((elf_vma) (field[8])) << 64)
+	  |    (((elf_vma) (field[9])) << 72)
+	  |    (((elf_vma) (field[10])) << 80)
+	  |    (((elf_vma) (field[11])) << 88)
+	  |    (((elf_vma) (field[12])) << 96)
+	  |    (((elf_vma) (field[13])) << 104)
+	  |    (((elf_vma) (field[14])) << 112)
+	  |    (((elf_vma) (field[15])) << 120);
+      /* Fall through.  */
 
     default:
       error (_("Unhandled data length: %d\n"), size);
