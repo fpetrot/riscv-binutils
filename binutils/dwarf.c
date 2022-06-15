@@ -260,7 +260,7 @@ dwarf_vmatoa_1 (const char *fmtch, dwarf_vma value, unsigned num_bytes)
       /* Printf does not have a way of specifying a maximum field width for an
 	 integer value, so we print the full value into a buffer and then select
 	 the precision we need.  */
-      snprintf (ret, sizeof (buf[0].place), DWARF_VMA_FMT_LONG, value);
+      snprintf (ret, sizeof (buf[0].place), DWARF_VMA_FMT_LONG,(unsigned long) value); // FIXME 128
       if (num_bytes > 8)
 	num_bytes = 8;
       return ret + (16 - 2 * num_bytes);
@@ -5599,23 +5599,23 @@ display_debug_lines_decoded (struct dwarf_section *  section,
 		      if (xop == -DW_LNE_end_sequence)
 			printf ("%-35s  %11s  %#18" DWARF_VMA_FMT "x",
 				newFileName, "-",
-				state_machine_regs.address);
+				(unsigned long) state_machine_regs.address);
 		      else
 			printf ("%-35s  %11d  %#18" DWARF_VMA_FMT "x",
 				newFileName, state_machine_regs.line,
-				state_machine_regs.address);
+				(unsigned long) state_machine_regs.address);
 		    }
 		  else
 		    {
 		      if (xop == -DW_LNE_end_sequence)
 			printf ("%-35s  %11s  %#18" DWARF_VMA_FMT "x[%d]",
 				newFileName, "-",
-				state_machine_regs.address,
+				(unsigned long) state_machine_regs.address,
 				state_machine_regs.op_index);
 		      else
 			printf ("%-35s  %11d  %#18" DWARF_VMA_FMT "x[%d]",
 				newFileName, state_machine_regs.line,
-				state_machine_regs.address,
+				(unsigned long) state_machine_regs.address,
 				state_machine_regs.op_index);
 		    }
 		}
@@ -5626,23 +5626,23 @@ display_debug_lines_decoded (struct dwarf_section *  section,
 		      if (xop == -DW_LNE_end_sequence)
 			printf ("%s  %11s  %#18" DWARF_VMA_FMT "x",
 				newFileName, "-",
-				state_machine_regs.address);
+				(unsigned long) state_machine_regs.address);
 		      else
 			printf ("%s  %11d  %#18" DWARF_VMA_FMT "x",
 				newFileName, state_machine_regs.line,
-				state_machine_regs.address);
-		    }
+				(unsigned long) state_machine_regs.address);
+		    }			
 		  else
 		    {
 		      if (xop == -DW_LNE_end_sequence)
 			printf ("%s  %11s  %#18" DWARF_VMA_FMT "x[%d]",
 				newFileName, "-",
-				state_machine_regs.address,
+				(unsigned long) state_machine_regs.address,
 				state_machine_regs.op_index);
 		      else
 			printf ("%s  %11d  %#18" DWARF_VMA_FMT "x[%d]",
 				newFileName, state_machine_regs.line,
-				state_machine_regs.address,
+				(unsigned long) state_machine_regs.address,
 				state_machine_regs.op_index);
 		    }
 		}
