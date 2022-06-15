@@ -3387,7 +3387,6 @@ elf_fake_sections (bfd *abfd, asection *asect, void *fsarg)
     this_hdr->sh_flags |= SHF_EXECINSTR;
   if ((asect->flags & SEC_MERGE) != 0)
     {
-      printf("offset: %lu, addr: %p\n", offsetof(Elf_Internal_Shdr, sh_flags), &this_hdr->sh_flags);
       this_hdr->sh_flags |= SHF_MERGE;
       this_hdr->sh_entsize = asect->entsize;
     }
