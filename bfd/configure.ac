@@ -843,7 +843,7 @@ case ${host64}-${target64}-${want64} in
 esac
 
 case ${host128}-${target128}-${want128} in
-  *true*)
+  true-true*)
     wordsize=128
     bfd64_libs='$(BFD128_LIBS)'
     all_backends='$(BFD128_BACKENDS) $(BFD64_BACKENDS) $(BFD32_BACKENDS)'
