@@ -1,0 +1,16 @@
+#!/usr/bin/bash
+
+if [ $# -eq 0 ]
+then
+  echo "Usage: ./BUILD /prefix/path"
+  exit 1
+fi
+
+mkdir build32
+cd build32
+../configure --target riscv32-unknown-elf --prefix "$1" CXXFLAGS='-g3' CFLAGS='-g3'
+make -j$nproc
+make install
+cd -
+
+
