@@ -1633,7 +1633,7 @@ dump_relocations (Filedata *          filedata,
       printf (ngettext ("  %lu offset\n", "  %lu offsets\n", rel_size), rel_size);
       for (i = 0; i < rel_size; i++) {
         if (!is_64bit_elf)
-          printf (format, (unsigned long) (relrs[i] >> 64));
+          printf (format, (unsigned long) ((__uint128_t) relrs[i] >> 64));
         printf (format, (unsigned long) relrs[i]);
       }
       free (relrs);
@@ -1724,8 +1724,8 @@ dump_relocations (Filedata *          filedata,
 	  printf (do_wide
 		  ? "%16.16" BFD_VMA_FMT "x%16.16" BFD_VMA_FMT "x  %16.16" BFD_VMA_FMT "x%16.16" BFD_VMA_FMT "x "
 		  : "%12.12" BFD_VMA_FMT "x%12.12" BFD_VMA_FMT "x  %12.12" BFD_VMA_FMT "x%12.12" BFD_VMA_FMT "x ",
-      (unsigned long) (offset >> 64), (unsigned long) offset,
-      (unsigned long) (inf >> 64), (unsigned long) inf);
+      (unsigned long) ((__uint128_t) offset >> 64), (unsigned long) offset,
+      (unsigned long) ((__uint128_t) inf >> 64), (unsigned long) inf);
 	}
 
       switch (filedata->file_header.e_machine)

@@ -1861,8 +1861,8 @@ print_value (bfd *abfd ATTRIBUTE_UNUSED, bfd_vma val)
       break;
 
     case 128:
-      if (((val >> 64) != 0) || (print_radix == 16)) 
-        printf (print_format_string, (unsigned long) (val >> 64));
+      if ((((__uint128_t) val >> 64) != 0) || (print_radix == 16)) 
+        printf (print_format_string, (unsigned long) ((__uint128_t) val >> 64));
       printf (print_format_string, (unsigned long) val);
       break;
 

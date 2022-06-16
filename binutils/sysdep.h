@@ -121,8 +121,7 @@ extern char **environ;
 #include <limits.h>
 
 #if 1 // FIXME for 128-bit elf
-  #define HOST_WIDEST_INT  __int128_t
-  #define HOST_WIDEST_UINT __uint128_t
+  #define HOST_WIDEST_INT  __int128
 #else
   #if SIZEOF_LONG_LONG > SIZEOF_LONG
   /* We can't use any bfd types here since readelf may define BFD64 and

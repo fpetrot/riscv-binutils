@@ -29,8 +29,8 @@
 extern void error (const char *, ...) ATTRIBUTE_PRINTF_1;
 extern void warn (const char *, ...) ATTRIBUTE_PRINTF_1;
 
-typedef HOST_WIDEST_UINT elf_vma; // FIXME for 128-bit
-/*typedef unsigned HOST_WIDEST_INT elf_vma;*/
+/*typedef HOST_WIDEST_UINT elf_vma; // FIXME for 128-bit*/
+typedef unsigned HOST_WIDEST_INT elf_vma;
 
 extern void (*byte_put) (unsigned char *, elf_vma, unsigned int);
 extern void byte_put_little_endian (unsigned char *, elf_vma, unsigned int);
