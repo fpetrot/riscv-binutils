@@ -154,6 +154,10 @@ execute_i (SIM_CPU *cpu, unsigned_word iw, const struct riscv_opcode *op)
   const char *rs1_name = riscv_gpr_names_abi[rs1];
   const char *rs2_name = riscv_gpr_names_abi[rs2];
   unsigned int csr = (iw >> OP_SH_CSR) & OP_MASK_CSR;
+  /*unsigned_word i_imm = RISCV_XLEN (cpu) == 128 ? 
+	  EXTRACT_ITYPE_IMM_128 (iw) : EXTRACT_ITYPE_IMM (iw);
+  unsigned_word u_imm = RISCV_XLEN (cpu) == 128 ?
+	  EXTRACT_UTYPE_IMM_128 ((uint64_t) iw) : EXTRACT_UTYPE_IMM ((uint64_t) iw);*/
   unsigned_word i_imm = EXTRACT_ITYPE_IMM (iw);
   unsigned_word u_imm = EXTRACT_UTYPE_IMM ((uint64_t) iw);
   unsigned_word s_imm = EXTRACT_STYPE_IMM (iw);
@@ -415,8 +419,14 @@ execute_i (SIM_CPU *cpu, unsigned_word iw, const struct riscv_opcode *op)
 	}
       break;
     case MATCH_JAL:
-      TRACE_INSN (cpu, "jal %s, %" PRIiTW ";", rd_name,
-		  (long) EXTRACT_JTYPE_IMM (iw));
+      if ((RISCV_XLEN (cpu) == 128) && (((__uint128_t) EXTRACT_JTYPE_IMM (iw) >> 64) != 0)) { 
+        TRACE_INSN (cpu, "jal %s, %li", rd_name,
+	       (long) ((__uint128_t) EXTRACT_JTYPE_IMM (iw) >> 64));
+        TRACE_INSN (cpu, "%li;", (long) EXTRACT_JTYPE_IMM (iw));
+      }
+      else
+        TRACE_INSN (cpu, "jal %s, %li;", rd_name,
+	       (long) EXTRACT_JTYPE_IMM (iw));
       store_rd (cpu, rd, cpu->pc + 4);
       pc = cpu->pc + EXTRACT_JTYPE_IMM (iw);
       TRACE_BRANCH (cpu, "to %#" PRIxTW, pc);

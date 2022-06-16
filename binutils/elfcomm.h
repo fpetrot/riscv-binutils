@@ -32,7 +32,7 @@ extern void warn (const char *, ...) ATTRIBUTE_PRINTF_1;
 extern void (*byte_put) (unsigned char *, uint64_t, unsigned int);
 extern void byte_put_little_endian (unsigned char *, uint64_t, unsigned int);
 extern void byte_put_big_endian (unsigned char *, uint64_t, unsigned int);
-typedef unsigned HOST_WIDEST_UINT elf_vma;
+typedef HOST_WIDEST_UINT elf_vma;
 
 extern uint64_t (*byte_get) (const unsigned char *, unsigned int);
 extern uint64_t byte_get_signed (const unsigned char *, unsigned int);

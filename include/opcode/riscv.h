@@ -58,8 +58,10 @@ static const char * const riscv_pred_succ[16] =
 #define RVC_BRANCH_BITS 8
 #define RVC_BRANCH_REACH ((1ULL << RVC_BRANCH_BITS) * RISCV_BRANCH_ALIGN)
 
-#define RV_X(x, s, n)  (((x) >> (s)) & ((1 << (n)) - 1))
-#define RV_IMM_SIGN(x) ((__int128_t) (-((((int32_t) x) >> 31) & 1)))
+#define RV_X(x, s, n)  (((x) >> (s)) & ((1 << (n)) - 1)) \
+/*#define RV_IMM_SIGN (-(((x) >> 31) & 1)) */
+#define RV_IMM_SIGN_128(x) ((__int128_t) (-((((int32_t) x) >> 31) & 1)))
+#define RV_IMM_SIGN(x) ((bfd_vma) (-((((int32_t) x) >> 31) & 1)))
 
 #define EXTRACT_ITYPE_IMM(x) \
   (RV_X(x, 20, 12) | (RV_IMM_SIGN(x) << 12))
@@ -71,6 +73,18 @@ static const char * const riscv_pred_succ[16] =
   ((RV_X(x, 12, 20) << 12) | (RV_IMM_SIGN(x) << 32))
 #define EXTRACT_JTYPE_IMM(x) \
   ((RV_X(x, 21, 10) << 1) | (RV_X(x, 20, 1) << 11) | (RV_X(x, 12, 8) << 12) | (RV_IMM_SIGN(x) << 20))
+
+#define EXTRACT_ITYPE_IMM_128(x) \
+  (RV_X(x, 20, 12) | (RV_IMM_SIGN_128(x) << 12))
+#define EXTRACT_STYPE_IMM_128(x) \
+  (RV_X(x, 7, 5) | (RV_X(x, 25, 7) << 5) | (RV_IMM_SIGN_128(x) << 12))
+#define EXTRACT_BTYPE_IMM_128(x) \
+  ((RV_X(x, 8, 4) << 1) | (RV_X(x, 25, 6) << 5) | (RV_X(x, 7, 1) << 11) | (RV_IMM_SIGN_128(x) << 12))
+#define EXTRACT_UTYPE_IMM_128(x) \
+  ((RV_X(x, 12, 20) << 12) | (RV_IMM_SIGN_128(x) << 32))
+#define EXTRACT_JTYPE_IMM_128(x) \
+  ((RV_X(x, 21, 10) << 1) | (RV_X(x, 20, 1) << 11) | (RV_X(x, 12, 8) << 12) | (RV_IMM_SIGN_128(x) << 20))
+
 #define EXTRACT_CITYPE_IMM(x) \
   (RV_X(x, 2, 5) | (-RV_X(x, 12, 1) << 5))
 #define EXTRACT_CITYPE_LUI_IMM(x) \
@@ -174,6 +188,13 @@ static const char * const riscv_pred_succ[16] =
 #define VALID_BTYPE_IMM(x) (EXTRACT_BTYPE_IMM(ENCODE_BTYPE_IMM(x)) == (x))
 #define VALID_UTYPE_IMM(x) (EXTRACT_UTYPE_IMM(ENCODE_UTYPE_IMM(x)) == (x))
 #define VALID_JTYPE_IMM(x) (EXTRACT_JTYPE_IMM(ENCODE_JTYPE_IMM(x)) == (x))
+
+#define VALID_ITYPE_IMM_128(x) (EXTRACT_ITYPE_IMM_128(ENCODE_ITYPE_IMM(x)) == (x))
+#define VALID_STYPE_IMM_128(x) (EXTRACT_STYPE_IMM_128(ENCODE_STYPE_IMM(x)) == (x))
+#define VALID_BTYPE_IMM_128(x) (EXTRACT_BTYPE_IMM_128(ENCODE_BTYPE_IMM(x)) == (x))
+#define VALID_UTYPE_IMM_128(x) (EXTRACT_UTYPE_IMM_128(ENCODE_UTYPE_IMM(x)) == (x))
+#define VALID_JTYPE_IMM_128(x) (EXTRACT_JTYPE_IMM_128(ENCODE_JTYPE_IMM(x)) == (x))
+
 #define VALID_CITYPE_IMM(x) (EXTRACT_CITYPE_IMM(ENCODE_CITYPE_IMM(x)) == (x))
 #define VALID_CITYPE_LUI_IMM(x) (ENCODE_CITYPE_LUI_IMM(x) != 0 \
 				 && EXTRACT_CITYPE_LUI_IMM(ENCODE_CITYPE_LUI_IMM(x)) == (x))
