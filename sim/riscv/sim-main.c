@@ -989,7 +989,7 @@ void step_once (SIM_CPU *cpu)
       if (op->pinfo & INSN_ALIAS)
 	continue;
       /* Is this instruction restricted to a certain value of XLEN?  */
-      if (op->xlen_requirement != 0 && op->xlen_requirement != xlen)
+      if (op->xlen_requirement != 0 && ((op->xlen_requirement & xlen) != xlen))
 	continue;
 
       /* It's a match.  */
