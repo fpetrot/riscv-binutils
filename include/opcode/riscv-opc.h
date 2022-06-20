@@ -82,7 +82,7 @@
 #define MATCH_ADDI 0x13
 #define MASK_ADDI  0x707f
 #define MATCH_SLLI 0x1013
-#define MASK_SLLI  0xfc00707f
+#define MASK_SLLI  0xf800707f
 #define MATCH_SLTI 0x2013
 #define MASK_SLTI  0x707f
 #define MATCH_SLTIU 0x3013
@@ -90,9 +90,9 @@
 #define MATCH_XORI 0x4013
 #define MASK_XORI  0x707f
 #define MATCH_SRLI 0x5013
-#define MASK_SRLI  0xfc00707f
+#define MASK_SRLI  0xf800707f
 #define MATCH_SRAI 0x40005013
-#define MASK_SRAI  0xfc00707f
+#define MASK_SRAI  0xf800707f
 #define MATCH_ORI 0x6013
 #define MASK_ORI  0x707f
 #define MATCH_ANDI 0x7013
