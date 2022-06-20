@@ -88,12 +88,12 @@ typedef struct {
   unsigned char	e_type[2];		/* Identifies object file type */
   unsigned char	e_machine[2];		/* Specifies required architecture */
   unsigned char	e_version[4];		/* Identifies object file version */
-  unsigned char	e_entry[16];		/* Entry point virtual address */
-  unsigned char	e_phoff[16];		/* Program header table file offset */
-  unsigned char	e_shoff[16];		/* Section header table file offset */
   unsigned char	e_flags[4];		/* Processor-specific flags */
   unsigned char	e_ehsize[2];		/* ELF header size in bytes */
   unsigned char	e_phentsize[2];		/* Program header table entry size */
+  unsigned char	e_entry[16];		/* Entry point virtual address */
+  unsigned char	e_phoff[16];		/* Program header table file offset */
+  unsigned char	e_shoff[16];		/* Section header table file offset */
   unsigned char	e_phnum[2];		/* Program header table entry count */
   unsigned char	e_shentsize[2];		/* Section header table entry size */
   unsigned char	e_shnum[2];		/* Section header table entry count */
@@ -126,14 +126,15 @@ typedef struct {
 } Elf64_External_Phdr;
 
 typedef struct {
-  unsigned char	p_type[4];		/* Identifies program segment type */
-  unsigned char	p_flags[4];		/* Segment flags */
   unsigned char	p_offset[16];		/* Segment file offset */
   unsigned char	p_vaddr[16];		/* Segment virtual address */
   unsigned char	p_paddr[16];		/* Segment physical address */
   unsigned char	p_filesz[16];		/* Segment size in file */
   unsigned char	p_memsz[16];		/* Segment size in memory */
   unsigned char	p_align[16];		/* Segment alignment, file & memory */
+  unsigned char	p_type[4];		/* Identifies program segment type */
+  unsigned char	p_flags[4];		/* Segment flags */
+  unsigned char	p_reserved[8];		/* padding */
 } Elf128_External_Phdr;
 
 /* Section header */
@@ -167,12 +168,12 @@ typedef struct {
 typedef struct {
   unsigned char	sh_name[4];		/* Section name, index in string tbl */
   unsigned char	sh_type[4];		/* Type of section */
+  unsigned char	sh_link[4];		/* Index of another section */
+  unsigned char	sh_info[4];		/* Additional section information */
   unsigned char	sh_flags[16];		/* Miscellaneous section attributes */
   unsigned char	sh_addr[16];		/* Section virtual addr at execution */
   unsigned char	sh_offset[16];		/* Section file offset */
   unsigned char	sh_size[16];		/* Size of section in bytes */
-  unsigned char	sh_link[4];		/* Index of another section */
-  unsigned char	sh_info[4];		/* Additional section information */
   unsigned char	sh_addralign[16];	/* Section alignment */
   unsigned char	sh_entsize[16];		/* Entry size if section holds table */
 } Elf128_External_Shdr;
@@ -193,10 +194,10 @@ typedef struct {
 } Elf64_External_Chdr;
 
 typedef struct {
-  unsigned char	ch_type[4];		/* Type of compression */
-  unsigned char	ch_reserved[4];		/* Padding */
   unsigned char	ch_size[16];		/* Size of uncompressed data in bytes */
   unsigned char	ch_addralign[16];	/* Alignment of uncompressed data  */
+  unsigned char	ch_type[4];		/* Type of compression */
+  unsigned char	ch_reserved[12];	/* Padding */
 } Elf128_External_Chdr;
 
 /* Symbol table entry */
@@ -220,12 +221,13 @@ typedef struct {
 } Elf64_External_Sym;
 
 typedef struct {
+  unsigned char	st_value[16];		/* Value of the symbol */
+  unsigned char	st_size[16];		/* Associated symbol size */
   unsigned char	st_name[4];		/* Symbol name, index in string tbl */
   unsigned char	st_info[1];		/* Type and binding attributes */
   unsigned char	st_other[1];		/* No defined meaning, 0 */
   unsigned char	st_shndx[2];		/* Associated section index */
-  unsigned char	st_value[16];		/* Value of the symbol */
-  unsigned char	st_size[16];		/* Associated symbol size */
+  unsigned char st_reserved[8];         /* padding */
 } Elf128_External_Sym;
 
 typedef struct {
