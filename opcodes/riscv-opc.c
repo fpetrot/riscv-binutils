@@ -437,7 +437,7 @@ const struct riscv_opcode riscv_opcodes[] =
 {"xor",         0, INSN_CLASS_I, "d,s,j",     MATCH_XORI, MASK_XORI, match_opcode, INSN_ALIAS },
 {"lwu",        64, INSN_CLASS_I, "d,o(s)",    MATCH_LWU, MASK_LWU, match_opcode, INSN_DREF|INSN_4_BYTE },
 {"lwu",        64, INSN_CLASS_I, "d,A",       0, (int) M_LWU, match_never, INSN_MACRO },
-{"ld",         64, INSN_CLASS_C, "d,Cn(Cc)",  MATCH_C_LDSP, MASK_C_LDSP, match_rd_nonzero, INSN_ALIAS|INSN_DREF|INSN_8_BYTE },
+{"ld",         64+128, INSN_CLASS_C, "d,Cn(Cc)",  MATCH_C_LDSP, MASK_C_LDSP, match_rd_nonzero, INSN_ALIAS|INSN_DREF|INSN_8_BYTE },
 {"ld",         64, INSN_CLASS_C, "Ct,Cl(Cs)", MATCH_C_LD, MASK_C_LD, match_opcode, INSN_ALIAS|INSN_DREF|INSN_8_BYTE },
 {"ld",         64, INSN_CLASS_I, "d,o(s)",    MATCH_LD, MASK_LD, match_opcode, INSN_DREF|INSN_8_BYTE },
 {"ld",         64, INSN_CLASS_I, "d,A",       0, (int) M_LD, match_never, INSN_MACRO },

@@ -2342,7 +2342,7 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
   asargStart = asarg;
   for ( ; insn && insn->name && strcmp (insn->name, str) == 0; insn++)
     {
-      if ((insn->xlen_requirement != 0) && (xlen != insn->xlen_requirement))
+      if ((insn->xlen_requirement != 0) && (xlen != (insn->xlen_requirement & xlen)))
 	continue;
 
       if (!riscv_multi_subset_supports (&riscv_rps_as, insn->insn_class))
