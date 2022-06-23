@@ -126,15 +126,15 @@ typedef struct {
 } Elf64_External_Phdr;
 
 typedef struct {
+  unsigned char	p_type[4];		/* Identifies program segment type */
+  unsigned char	p_flags[4];		/* Segment flags */
+  unsigned char	p_reserved[8];		/* padding */
   unsigned char	p_offset[16];		/* Segment file offset */
   unsigned char	p_vaddr[16];		/* Segment virtual address */
   unsigned char	p_paddr[16];		/* Segment physical address */
   unsigned char	p_filesz[16];		/* Segment size in file */
   unsigned char	p_memsz[16];		/* Segment size in memory */
   unsigned char	p_align[16];		/* Segment alignment, file & memory */
-  unsigned char	p_type[4];		/* Identifies program segment type */
-  unsigned char	p_flags[4];		/* Segment flags */
-  unsigned char	p_reserved[8];		/* padding */
 } Elf128_External_Phdr;
 
 /* Section header */
@@ -221,13 +221,13 @@ typedef struct {
 } Elf64_External_Sym;
 
 typedef struct {
-  unsigned char	st_value[16];		/* Value of the symbol */
-  unsigned char	st_size[16];		/* Associated symbol size */
   unsigned char	st_name[4];		/* Symbol name, index in string tbl */
   unsigned char	st_info[1];		/* Type and binding attributes */
   unsigned char	st_other[1];		/* No defined meaning, 0 */
   unsigned char	st_shndx[2];		/* Associated section index */
   unsigned char st_reserved[8];         /* padding */
+  unsigned char	st_value[16];		/* Value of the symbol */
+  unsigned char	st_size[16];		/* Associated symbol size */
 } Elf128_External_Sym;
 
 typedef struct {
