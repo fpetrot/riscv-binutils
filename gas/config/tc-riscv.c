@@ -116,7 +116,7 @@ struct riscv_ip_error
 };
 
 #ifndef DEFAULT_ARCH
-#define DEFAULT_ARCH "riscv64"
+#define DEFAULT_ARCH "riscv128"
 #endif
 
 #ifndef DEFAULT_RISCV_ATTR
@@ -3517,8 +3517,16 @@ md_parse_option (int c, const char *arg)
 	riscv_set_abi (64, FLOAT_ABI_DOUBLE, false);
       else if (strcmp (arg, "lp64q") == 0)
 	riscv_set_abi (64, FLOAT_ABI_QUAD, false);
+      else if (strcmp (arg, "llp128") == 0)
+	riscv_set_abi (128, FLOAT_ABI_SOFT, false);
+      else if (strcmp (arg, "llp128f") == 0)
+	riscv_set_abi (128, FLOAT_ABI_SINGLE, false);
+      else if (strcmp (arg, "llp128d") == 0)
+	riscv_set_abi (128, FLOAT_ABI_DOUBLE, false);
+      else if (strcmp (arg, "llp128q") == 0)
+	riscv_set_abi (128, FLOAT_ABI_QUAD, false);
       else
-	return 0;
+        return 0;
       explicit_mabi = true;
       break;
 
