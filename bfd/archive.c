@@ -485,7 +485,7 @@ _bfd_generic_read_ar_hdr_mag (bfd *abfd, const char *mag)
 {
   struct ar_hdr hdr;
   char *hdrp = (char *) &hdr;
-  bfd_size_type parsed_size;
+  bfd_size_type parsed_size = 0;
   struct areltdata *ared;
   char *filename = NULL;
   ufile_ptr filesize;
