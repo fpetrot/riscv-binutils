@@ -566,11 +566,11 @@ const struct riscv_opcode riscv_opcodes[] =
 {"divu",       0, INSN_CLASS_M,     "d,s,t",     MATCH_DIVU, MASK_DIVU, match_opcode, 0 },
 {"rem",        0, INSN_CLASS_M,     "d,s,t",     MATCH_REM, MASK_REM, match_opcode, 0 },
 {"remu",       0, INSN_CLASS_M,     "d,s,t",     MATCH_REMU, MASK_REMU, match_opcode, 0 },
-{"mulw",      64, INSN_CLASS_ZMMUL, "d,s,t",     MATCH_MULW, MASK_MULW, match_opcode, 0 },
-{"divw",      64, INSN_CLASS_M,     "d,s,t",     MATCH_DIVW, MASK_DIVW, match_opcode, 0 },
-{"divuw",     64, INSN_CLASS_M,     "d,s,t",     MATCH_DIVUW, MASK_DIVUW, match_opcode, 0 },
-{"remw",      64, INSN_CLASS_M,     "d,s,t",     MATCH_REMW, MASK_REMW, match_opcode, 0 },
-{"remuw",     64, INSN_CLASS_M,     "d,s,t",     MATCH_REMUW, MASK_REMUW, match_opcode, 0 },
+{"mulw",  64+128, INSN_CLASS_ZMMUL, "d,s,t",     MATCH_MULW, MASK_MULW, match_opcode, 0 },
+{"divw",  64+128, INSN_CLASS_M,     "d,s,t",     MATCH_DIVW, MASK_DIVW, match_opcode, 0 },
+{"divuw", 64+128, INSN_CLASS_M,     "d,s,t",     MATCH_DIVUW, MASK_DIVUW, match_opcode, 0 },
+{"remw",  64+128, INSN_CLASS_M,     "d,s,t",     MATCH_REMW, MASK_REMW, match_opcode, 0 },
+{"remuw", 64+128, INSN_CLASS_M,     "d,s,t",     MATCH_REMUW, MASK_REMUW, match_opcode, 0 },
 
 /* Half-precision floating-point instruction subset.  */
 {"flh",        0, INSN_CLASS_ZFHMIN,   "D,o(s)",    MATCH_FLH, MASK_FLH, match_opcode, INSN_DREF|INSN_2_BYTE },
@@ -1861,13 +1861,15 @@ const struct riscv_opcode riscv_opcodes[] =
 {"subd",           128, INSN_CLASS_I, "d,s,t",     MATCH_SUBD, MASK_SUBD, match_opcode, 0 },
 {"c.addd",         128, INSN_CLASS_C, "Cs,Ct",     MATCH_C_ADDD, MASK_C_ADDD, match_opcode, 0 },
 {"c.subd",         128, INSN_CLASS_C, "Cs,Ct",     MATCH_C_SUBD, MASK_C_SUBD, match_opcode, 0 },
+/*{"sext.w",         128, INSN_CLASS_C, "d,CU",      MATCH_C_ADDIW, MASK_C_ADDIW|MASK_RVC_IMM, match_rd_nonzero, INSN_ALIAS },*/
+{"sext.d",         128, INSN_CLASS_I, "d,s",       MATCH_ADDID, MASK_ADDID|MASK_IMM, match_opcode, INSN_ALIAS },
 
 /* rv128m instructions.  */
-{"muld",           128, INSN_CLASS_M, "d,s,t",     MATCH_MULD, MASK_MULD, match_opcode, 0 },
-{"divd",           128, INSN_CLASS_M, "d,s,t",     MATCH_DIVD, MASK_DIVD, match_opcode, 0 },
-{"divud",          128, INSN_CLASS_M, "d,s,t",     MATCH_DIVUD, MASK_DIVUD, match_opcode, 0 },
-{"remd",           128, INSN_CLASS_M, "d,s,t",     MATCH_REMD, MASK_REMD, match_opcode, 0 },
-{"remud",          128, INSN_CLASS_M, "d,s,t",     MATCH_REMUD, MASK_REMUD, match_opcode, 0 },
+{"muld",           128, INSN_CLASS_ZMMUL, "d,s,t",     MATCH_MULD, MASK_MULD, match_opcode, 0 },
+{"divd",           128, INSN_CLASS_M,     "d,s,t",     MATCH_DIVD, MASK_DIVD, match_opcode, 0 },
+{"divud",          128, INSN_CLASS_M,     "d,s,t",     MATCH_DIVUD, MASK_DIVUD, match_opcode, 0 },
+{"remd",           128, INSN_CLASS_M,     "d,s,t",     MATCH_REMD, MASK_REMD, match_opcode, 0 },
+{"remud",          128, INSN_CLASS_M,     "d,s,t",     MATCH_REMUD, MASK_REMUD, match_opcode, 0 },
 
 /* rv128a instructions.  */
 {"lr.q",           128, INSN_CLASS_A, "d,0(s)",   MATCH_LR_Q, MASK_LR_Q|MASK_AQRL, match_opcode, INSN_DREF|INSN_16_BYTE },
