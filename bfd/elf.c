@@ -570,7 +570,7 @@ static const char *
 group_signature (bfd *abfd, Elf_Internal_Shdr *ghdr)
 {
   Elf_Internal_Shdr *hdr;
-  unsigned char esym[sizeof (Elf64_External_Sym)];
+  unsigned char esym[sizeof (Elf128_External_Sym)];
   Elf_External_Sym_Shndx eshndx;
   Elf_Internal_Sym isym;
 
