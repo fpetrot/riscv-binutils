@@ -223,7 +223,7 @@ static reloc_howto_type howto_table[] =
 #else
     HOWTO (R_RISCV_TLS_TPREL128,		/* type */
 	 0,				/* rightshift */
-	 8,				/* size */
+	 6,				/* size */
 	 128,				/* bitsize */
 	 false,				/* pc_relative */
 	 0,				/* bitpos */
@@ -237,7 +237,7 @@ static reloc_howto_type howto_table[] =
     
     HOWTO (R_RISCV_TLS_DTPMOD128, 	/* type */
 	 0,				/* rightshift */
-	 8,				/* size */
+	 6,				/* size */
 	 128,				/* bitsize */
 	 false,				/* pc_relative */
 	 0,				/* bitpos */
@@ -251,7 +251,7 @@ static reloc_howto_type howto_table[] =
 
     HOWTO (R_RISCV_TLS_DTPREL128,		/* type */
 	 0,				/* rightshift */
-	 8,				/* size */
+	 6,				/* size */
 	 128,				/* bitsize */
 	 false,				/* pc_relative */
 	 0,				/* bitpos */
@@ -267,7 +267,7 @@ static reloc_howto_type howto_table[] =
   /* 128 bit relocation.  */
   HOWTO (R_RISCV_128,			/* type */
 	 0,				/* rightshift */
-	 8,				/* size */
+	 6,				/* size */
 	 128,				/* bitsize */
 	 false,				/* pc_relative */
 	 0,				/* bitpos */
@@ -906,7 +906,7 @@ static reloc_howto_type howto_table[] =
   /* 128-bit in-place addition, for local label subtraction.  */
   HOWTO (R_RISCV_ADD128,			/* type */
 	 0,				/* rightshift */
-	 8,				/* size */
+	 6,				/* size */
 	 128,				/* bitsize */
 	 false,				/* pc_relative */
 	 0,				/* bitpos */
@@ -921,7 +921,7 @@ static reloc_howto_type howto_table[] =
   /* 64-bit in-place addition, for local label subtraction.  */
   HOWTO (R_RISCV_SUB128,		/* type */
 	 0,				/* rightshift */
-	 8,				/* size */
+	 6,				/* size */
 	 128,				/* bitsize */
 	 false,				/* pc_relative */
 	 0,				/* bitpos */
