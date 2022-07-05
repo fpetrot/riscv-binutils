@@ -118,9 +118,9 @@ static const char * const riscv_pred_succ[16] =
 #define EXTRACT_CLTYPE_LQ_IMM(x) \
   ((RV_X(x, 11, 2) << 4) | (RV_X(x, 5, 2) << 6) | (RV_X(x, 10, 1) << 8))
 #define EXTRACT_CBTYPE_IMM(x) \
-  ((RV_X(x, 3, 2) << 1) | (RV_X(x, 10, 2) << 3) | (RV_X(x, 2, 1) << 5) | (RV_X(x, 5, 2) << 6) | (-RV_X(x, 12, 1) << 8))
+  ((RV_X(x, 3, 2) << 1) | (RV_X(x, 10, 2) << 3) | (RV_X(x, 2, 1) << 5) | (RV_X(x, 5, 2) << 6) | (-((bfd_vma) RV_X(x, 12, 1)) << 8))
 #define EXTRACT_CJTYPE_IMM(x) \
-  ((RV_X(x, 3, 3) << 1) | (RV_X(x, 11, 1) << 4) | (RV_X(x, 2, 1) << 5) | (RV_X(x, 7, 1) << 6) | (RV_X(x, 6, 1) << 7) | (RV_X(x, 9, 2) << 8) | (RV_X(x, 8, 1) << 10) | (-RV_X(x, 12, 1) << 11))
+  ((RV_X(x, 3, 3) << 1) | (RV_X(x, 11, 1) << 4) | (RV_X(x, 2, 1) << 5) | (RV_X(x, 7, 1) << 6) | (RV_X(x, 6, 1) << 7) | (RV_X(x, 9, 2) << 8) | (RV_X(x, 8, 1) << 10) | (-((bfd_vma) RV_X(x, 12, 1)) << 11))
 #define EXTRACT_RVV_VI_IMM(x) \
   (RV_X(x, 15, 5) | (-RV_X(x, 19, 1) << 5))
 #define EXTRACT_RVV_VI_UIMM(x) \
