@@ -395,6 +395,34 @@ DESCRIPTION
 */
 
 /*
+FUNCTION
+	bfd_get_reloc_size
+
+SYNOPSIS
+	unsigned int bfd_get_reloc_size (reloc_howto_type *);
+
+DESCRIPTION
+	For a reloc_howto_type that operates on a fixed number of bytes,
+	this returns the number of bytes operated on.
+ */
+
+unsigned int
+bfd_get_reloc_size (reloc_howto_type *howto)
+{
+  switch (howto->size)
+    {
+    case 0: return 1;
+    case 1: return 2;
+    case 2: return 4;
+    case 3: return 0;
+    case 4: return 8;
+    case 5: return 3;
+    case 6: return 16;
+    default: abort ();
+    }
+}
+
+/*
 TYPEDEF
 	arelent_chain
 
@@ -555,6 +583,15 @@ read_reloc (bfd *abfd, bfd_byte *data, reloc_howto_type *howto)
     case 8:
       return bfd_get_64 (abfd, data);
 #endif
+<<<<<<< HEAD
+=======
+   
+    case 5:
+      return bfd_get_24 (abfd, data);
+
+    case 6:
+      return bfd_get_128 (abfd, data);
+>>>>>>> b305f79539 (rv128: fix dwarf for 128-bit data)
 
     default:
       abort ();
@@ -594,6 +631,10 @@ write_reloc (bfd *abfd, bfd_vma val, bfd_byte *data, reloc_howto_type *howto)
       bfd_put_64 (abfd, val, data);
       break;
 #endif
+
+    case 6:
+      bfd_put_128 (abfd, val, data);
+      break;
 
     default:
       abort ();

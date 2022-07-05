@@ -467,10 +467,12 @@ enum dwarf_range_list_entry
 #define DW_EH_PE_udata2		0x02
 #define DW_EH_PE_udata4		0x03
 #define DW_EH_PE_udata8		0x04
+#define DW_EH_PE_udata16	0x0D
 #define DW_EH_PE_sleb128	0x09
 #define DW_EH_PE_sdata2		0x0A
 #define DW_EH_PE_sdata4		0x0B
 #define DW_EH_PE_sdata8		0x0C
+#define DW_EH_PE_sdata16	0x0E
 #define DW_EH_PE_signed		0x08
 
 #define DW_EH_PE_pcrel		0x10

@@ -43,7 +43,7 @@ static struct gdbarch_data *dwarf_arch_cookie;
 
 struct dwarf_gdbarch_types
 {
-  struct type *dw_types[3];
+  struct type *dw_types[4];
 };
 
 /* Allocate and fill in dwarf_gdbarch_types for an arch.  */
@@ -711,6 +711,8 @@ dwarf_expr_context::address_type () const
     ndx = 1;
   else if (this->m_addr_size == 8)
     ndx = 2;
+  else if (this->m_addr_size == 16)
+    ndx = 3;
   else
     error (_("Unsupported address size in DWARF expressions: %d bits"),
 	   8 * this->m_addr_size);

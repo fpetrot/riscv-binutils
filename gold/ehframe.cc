@@ -238,6 +238,8 @@ Eh_frame_hdr::get_fde_pc(
 	pc_size = elfcpp::DW_EH_PE_udata4;
       else if (size == 64)
 	pc_size = elfcpp::DW_EH_PE_udata8;
+      else if (size == 128)
+	pc_size = elfcpp::DW_EH_PE_udata16;
       else
 	gold_unreachable();
     }
@@ -259,6 +261,11 @@ Eh_frame_hdr::get_fde_pc(
     case elfcpp::DW_EH_PE_udata8:
       gold_assert(size == 64);
       pc = elfcpp::Swap_unaligned<64, big_endian>::readval(p);
+      break;
+
+    case elfcpp::DW_EH_PE_udata16:
+      gold_assert(size == 128);
+      pc = elfcpp::Swap_unaligned<128, big_endian>::readval(p);
       break;
 
     default:
@@ -817,6 +824,7 @@ Eh_frame::read_cie(Sized_relobj_file<size, big_endian>* object,
 	    case elfcpp::DW_EH_PE_udata2:
 	    case elfcpp::DW_EH_PE_udata4:
 	    case elfcpp::DW_EH_PE_udata8:
+	    case elfcpp::DW_EH_PE_udata16:
 	      break;
 	    default:
 	      // We don't expect to see any other cases here, and
@@ -850,6 +858,9 @@ Eh_frame::read_cie(Sized_relobj_file<size, big_endian>* object,
 		break;
 	      case elfcpp::DW_EH_PE_udata8:
 		per_width = 8;
+		break;
+              case elfcpp::DW_EH_PE_udata16:
+		per_width = 16;
 		break;
 	      case elfcpp::DW_EH_PE_absptr:
 		per_width = size / 8;
@@ -1004,6 +1015,10 @@ Eh_frame::read_fde(Sized_relobj_file<size, big_endian>* object,
     case elfcpp::DW_EH_PE_udata8:
       gold_assert(size == 64);
       pc_size = 8;
+      break;
+    case elfcpp::DW_EH_PE_udata16:
+      gold_assert(size == 128);
+      pc_size = 16;
       break;
     case elfcpp::DW_EH_PE_absptr:
       pc_size = size == 32 ? 4 : 8;

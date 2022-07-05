@@ -152,6 +152,7 @@ int get_DW_EH_PE_width (int encoding, int ptr_size)
     case DW_EH_PE_udata2: return 2;
     case DW_EH_PE_udata4: return 4;
     case DW_EH_PE_udata8: return 8;
+    case DW_EH_PE_udata16: return 16;
     case DW_EH_PE_absptr: return ptr_size;
     default:
       break;
@@ -460,6 +461,9 @@ make_pc_relative (unsigned char encoding, unsigned int ptr_size)
 	break;
       case 8:
 	encoding |= DW_EH_PE_sdata8;
+	break;
+      case 16:
+	encoding |= DW_EH_PE_sdata16;
 	break;
       }
   return encoding | DW_EH_PE_pcrel;
