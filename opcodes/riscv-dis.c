@@ -235,7 +235,7 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
 	    case 'j':
 	      if (((l & MASK_C_ADDI) == MATCH_C_ADDI) && rd != 0)
 		maybe_print_address (pd, rd, EXTRACT_CITYPE_IMM (l), 0);
-	      if (info->mach == bfd_mach_riscv64
+	      if ((info->mach == bfd_mach_riscv64 || info->mach == bfd_mach_riscv128) 
 		  && ((l & MASK_C_ADDIW) == MATCH_C_ADDIW) && rd != 0)
 		maybe_print_address (pd, rd, EXTRACT_CITYPE_IMM (l), 1);
 	      print (info->stream, dis_style_immediate, "%d",
@@ -302,9 +302,19 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
 		     (int)EXTRACT_CITYPE_IMM (l) & 0x3f);
 	      break;
 	    case '<':
-	      print (info->stream, dis_style_immediate, "0x%x",
-		     (int)EXTRACT_CITYPE_IMM (l) & 0x1f);
-	      break;
+	      {
+	        int imm = 128 + (int) EXTRACT_CITYPE_IMM (l);
+	        print (info->stream, dis_style_immediate, "0x%x", 
+	               imm == 128 ? 64 : (imm > 128 ? imm - 128 : imm));
+	        break;
+              }
+            case '^':
+	      {
+	        int imm = (int) EXTRACT_CITYPE_IMM (l) & 0x3f;
+	        print (info->stream, dis_style_immediate, "0x%x", 
+	               imm == 0 ? 64 : imm);
+	        break;
+	      }
 	    case 'T': /* Floating-point RS2.  */
 	      print (info->stream, dis_style_register, "%s",
 		     riscv_fpr_names[EXTRACT_OPERAND (CRS2, l)]);

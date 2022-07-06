@@ -1149,6 +1149,8 @@ validate_riscv_insn (const struct riscv_opcode *opc, int length)
 	    case 'x': break; /* CRS2S, constrained to equal RD.  */
 	    case 'z': break; /* CRS2S, constrained to be x0.  */
 	    case '>': /* CITYPE immediate, compressed shift.  */
+	    case '<': /* CITYPE immediate, compressed shift.  */
+	    case '^': /* CITYPE immediate, compressed shift.  */
 	    case 'u': /* CITYPE immediate, compressed lui.  */
 	    case 'v': /* CITYPE immediate, li to compressed lui.  */
 	    case 'o': /* CITYPE immediate, allow zero.  */
@@ -2475,16 +2477,32 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
 		      || regno != 0)
 		    break;
 		  continue;
-		case '>': /* Shift amount, 0 - (XLEN-1).  */
-		  if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p)
-		      || imm_expr->X_op != O_constant
-		      || (unsigned long) imm_expr->X_add_number >= xlen)
+		case '>': /* Shift amount, 1 - (XLEN-1).  */
+                  if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p)
+		    || imm_expr->X_op != O_constant
+		    || (unsigned long) imm_expr->X_add_number >= xlen)
 		    break;
 		  ip->insn_opcode |= ENCODE_CITYPE_IMM (imm_expr->X_add_number);
-		rvc_imm_done:
-		  asarg = expr_end;
-		  imm_expr->X_op = O_absent;
-		  continue;
+	          goto rvc_imm_done;
+		case '^': /* Shift amount, 0 - (XLEN-1) and 0 = 64.  */
+                  if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p)
+		    || (unsigned long) imm_expr->X_add_number >= (xlen == 128 ? 64 : xlen))
+		    break;
+		  ip->insn_opcode |= ENCODE_CITYPE_IMM (imm_expr->X_add_number);
+	          goto rvc_imm_done;
+		case '<': /* Shift amount, 1 - 31 | 64 | 96 - (XLEN-1).  */
+		  if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p))
+		    break;
+                  unsigned long a = (unsigned long) imm_expr->X_add_number;
+                  if (a >= xlen 
+		   || (a >= 32 && a < 64)
+		   || (a > 64 && a < 96))
+		    break;
+		 ip->insn_opcode |= ENCODE_CITYPE_IMM (imm_expr->X_add_number);
+	        rvc_imm_done:
+		 asarg = expr_end;
+		 imm_expr->X_op = O_absent;
+		 continue;
 		case '5':
 		  if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p)
 		      || imm_expr->X_op != O_constant

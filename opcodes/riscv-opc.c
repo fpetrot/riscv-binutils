@@ -236,6 +236,22 @@ match_c_slli64 (const struct riscv_opcode *op, insn_t insn)
   return match_opcode (op, insn) && EXTRACT_CITYPE_IMM (insn) == 0;
 }
 
+/* This requires a zero shift.  A zero rd is a hint, so is allowed.  */
+
+static int
+match_c_slli64_rdz (const struct riscv_opcode *op, insn_t insn)
+{
+  return match_c_slli (op, insn) && !match_rd_nonzero (op, insn);;
+}
+
+/* This requires a zero shift.  A zero rd is a hint, so is allowed.  */
+
+static int
+match_c_slli64_rdnz (const struct riscv_opcode *op, insn_t insn)
+{
+  return match_c_slli (op, insn) && match_rd_nonzero (op, insn);
+}
+
 /* This is used for both srli and srai.  This requires a non-zero shift.
    A zero rd is not possible.  */
 
@@ -358,17 +374,20 @@ const struct riscv_opcode riscv_opcodes[] =
 {"la.tls.gd",   0, INSN_CLASS_I, "d,A",       0, (int) M_LA_TLS_GD, match_never, INSN_MACRO },
 {"la.tls.ie",   0, INSN_CLASS_I, "d,A",       0, (int) M_LA_TLS_IE, match_never, INSN_MACRO },
 {"neg",         0, INSN_CLASS_I, "d,t",       MATCH_SUB, MASK_SUB|MASK_RS1, match_opcode, INSN_ALIAS }, /* sub 0  */
-{"slli",        0, INSN_CLASS_C, "d,CU,C>",   MATCH_C_SLLI, MASK_C_SLLI, match_slli_as_c_slli, INSN_ALIAS },
+{"slli",    32+64, INSN_CLASS_C, "d,CU,C>",   MATCH_C_SLLI, MASK_C_SLLI, match_slli_as_c_slli, INSN_ALIAS },
+{"slli",      128, INSN_CLASS_C, "d,CU,C^",   MATCH_C_SLLI, MASK_C_SLLI, match_rd_nonzero, INSN_ALIAS },
 {"slli",        0, INSN_CLASS_I, "d,s,>",     MATCH_SLLI, MASK_SLLI, match_opcode, 0 },
 {"sll",         0, INSN_CLASS_C, "d,CU,C>",   MATCH_C_SLLI, MASK_C_SLLI, match_slli_as_c_slli, INSN_ALIAS },
 {"sll",         0, INSN_CLASS_I, "d,s,t",     MATCH_SLL, MASK_SLL, match_opcode, 0 },
 {"sll",         0, INSN_CLASS_I, "d,s,>",     MATCH_SLLI, MASK_SLLI, match_opcode, INSN_ALIAS },
-{"srli",        0, INSN_CLASS_C, "Cs,Cw,C>",  MATCH_C_SRLI, MASK_C_SRLI, match_srxi_as_c_srxi, INSN_ALIAS },
+{"srli",    32+64, INSN_CLASS_C, "Cs,Cw,C>",  MATCH_C_SRLI, MASK_C_SRLI, match_srxi_as_c_srxi, INSN_ALIAS },
+{"srli",      128, INSN_CLASS_C, "Cs,Cw,C<",  MATCH_C_SRLI, MASK_C_SRLI, match_opcode, INSN_ALIAS },
 {"srli",        0, INSN_CLASS_I, "d,s,>",     MATCH_SRLI, MASK_SRLI, match_opcode, 0 },
 {"srl",         0, INSN_CLASS_C, "Cs,Cw,C>",  MATCH_C_SRLI, MASK_C_SRLI, match_srxi_as_c_srxi, INSN_ALIAS },
 {"srl",         0, INSN_CLASS_I, "d,s,t",     MATCH_SRL, MASK_SRL, match_opcode, 0 },
 {"srl",         0, INSN_CLASS_I, "d,s,>",     MATCH_SRLI, MASK_SRLI, match_opcode, INSN_ALIAS },
-{"srai",        0, INSN_CLASS_C, "Cs,Cw,C>",  MATCH_C_SRAI, MASK_C_SRAI, match_srxi_as_c_srxi, INSN_ALIAS },
+{"srai",    32+64, INSN_CLASS_C, "Cs,Cw,C>",  MATCH_C_SRAI, MASK_C_SRAI, match_srxi_as_c_srxi, INSN_ALIAS },
+{"srai",      128, INSN_CLASS_C, "Cs,Cw,C<",  MATCH_C_SRAI, MASK_C_SRAI, match_opcode, INSN_ALIAS },
 {"srai",        0, INSN_CLASS_I, "d,s,>",     MATCH_SRAI, MASK_SRAI, match_opcode, 0 },
 {"sra",         0, INSN_CLASS_C, "Cs,Cw,C>",  MATCH_C_SRAI, MASK_C_SRAI, match_srxi_as_c_srxi, INSN_ALIAS },
 {"sra",         0, INSN_CLASS_I, "d,s,t",     MATCH_SRA, MASK_SRA, match_opcode, 0 },
@@ -860,12 +879,16 @@ const struct riscv_opcode riscv_opcodes[] =
 {"c.and",      0, INSN_CLASS_C,   "Cs,Ct",     MATCH_C_AND, MASK_C_AND, match_opcode, 0 },
 {"c.or",       0, INSN_CLASS_C,   "Cs,Ct",     MATCH_C_OR, MASK_C_OR, match_opcode, 0 },
 {"c.xor",      0, INSN_CLASS_C,   "Cs,Ct",     MATCH_C_XOR, MASK_C_XOR, match_opcode, 0 },
-{"c.slli",     0, INSN_CLASS_C,   "d,C>",      MATCH_C_SLLI, MASK_C_SLLI, match_c_slli, 0 },
-{"c.srli",     0, INSN_CLASS_C,   "Cs,C>",     MATCH_C_SRLI, MASK_C_SRLI, match_c_slli, 0 },
-{"c.srai",     0, INSN_CLASS_C,   "Cs,C>",     MATCH_C_SRAI, MASK_C_SRAI, match_c_slli, 0 },
-{"c.slli64",   0, INSN_CLASS_C,   "d",         MATCH_C_SLLI64, MASK_C_SLLI64, match_c_slli64, 0 },
-{"c.srli64",   0, INSN_CLASS_C,   "Cs",        MATCH_C_SRLI64, MASK_C_SRLI64, match_c_slli64, 0 },
-{"c.srai64",   0, INSN_CLASS_C,   "Cs",        MATCH_C_SRAI64, MASK_C_SRAI64, match_c_slli64, 0 },
+{"c.slli",    32+64, INSN_CLASS_C,   "d,C>",      MATCH_C_SLLI, MASK_C_SLLI, match_c_slli, 0 },
+{"c.slli",    128, INSN_CLASS_C,   "d,C^",      MATCH_C_SLLI, MASK_C_SLLI, match_opcode, 0 },
+{"c.srli",    32+64, INSN_CLASS_C,   "Cs,C>",     MATCH_C_SRLI, MASK_C_SRLI, match_c_slli, 0 },
+{"c.srli",    128, INSN_CLASS_C,   "Cs,C<",     MATCH_C_SRLI, MASK_C_SRLI, match_opcode, 0 },
+{"c.srai",    32+64, INSN_CLASS_C,   "Cs,C>",     MATCH_C_SRAI, MASK_C_SRAI, match_c_slli, 0 },
+{"c.srai",    128, INSN_CLASS_C,   "Cs,C<",     MATCH_C_SRAI, MASK_C_SRAI, match_opcode, 0 },
+{"c.slli64",   0, INSN_CLASS_C,   "d",         MATCH_C_SLLI64, MASK_C_SLLI64, match_c_slli64_rdz, 0 },
+{"c.slli64",  32+64, INSN_CLASS_C,   "d",      MATCH_C_SLLI64, MASK_C_SLLI64, match_c_slli64_rdnz, 0 },
+{"c.srli64",  32+64, INSN_CLASS_C,   "Cs",     MATCH_C_SRLI64, MASK_C_SRLI64, match_c_slli64, 0 },
+{"c.srai64",  32+64, INSN_CLASS_C,   "Cs",     MATCH_C_SRAI64, MASK_C_SRAI64, match_c_slli64, 0 },
 {"c.andi",     0, INSN_CLASS_C,   "Cs,Co",     MATCH_C_ANDI, MASK_C_ANDI, match_opcode, 0 },
 {"c.addiw",   64+128, INSN_CLASS_C,   "d,Co",      MATCH_C_ADDIW, MASK_C_ADDIW, match_rd_nonzero, 0 },
 {"c.addw",    64+128, INSN_CLASS_C,   "Cs,Ct",     MATCH_C_ADDW, MASK_C_ADDW, match_opcode, 0 },
