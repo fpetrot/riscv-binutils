@@ -96,7 +96,7 @@ static const char * const riscv_pred_succ[16] =
 #define EXTRACT_CITYPE_LDSP_IMM(x) \
   ((RV_X(x, 5, 2) << 3) | (RV_X(x, 12, 1) << 5) | (RV_X(x, 2, 3) << 6))
 #define EXTRACT_CITYPE_LQSP_IMM(x) \
-  ((RV_X(x, 5, 1) << 4) | (RV_X(x, 12, 1) << 5) | (RV_X(x, 2, 4) << 6))
+  ((RV_X(x, 6, 1) << 4) | (RV_X(x, 12, 1) << 5) | (RV_X(x, 2, 4) << 6))
 #define EXTRACT_CSSTYPE_IMM(x) \
   (RV_X(x, 7, 6) << 0)
 #define EXTRACT_CSSTYPE_SWSP_IMM(x) \
