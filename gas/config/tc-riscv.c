@@ -1695,7 +1695,7 @@ load_const (int reg, expressionS *ep)
       while (((upper.X_add_number >> shift) & 1) == 0)
 	shift++;
 
-      upper.X_add_number = (int64_t) upper.X_add_number >> shift;
+      upper.X_add_number = (__uint128_t) upper.X_add_number >> shift;
       load_const (reg, &upper);
 
       md_assemblef ("slli x%d, x%d, 0x%x", reg, reg, shift);
