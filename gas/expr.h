@@ -188,6 +188,7 @@ extern symbolS *expr_build_uconstant (offsetT);
 extern symbolS *expr_build_dot (void);
 extern uint32_t generic_bignum_to_int32 (void);
 extern uint64_t generic_bignum_to_int64 (void);
+extern __int128 generic_bignum_to_int128 (void);
 extern int resolve_expression (expressionS *);
 
 extern bool literal_prefix_dollar_hex;
