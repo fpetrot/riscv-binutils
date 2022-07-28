@@ -2136,7 +2136,7 @@
 #define MASK_SRLID  0xfc00707f
 #define MATCH_SRAID 0x4000505b
 #define MASK_SRAID  0xfc00707f
-#define MATCH_ADDD 0x3b
+#define MATCH_ADDD 0x7b
 #define MASK_ADDD  0xfe00707f
 #define MATCH_SUBD 0x4000007b
 #define MASK_SUBD  0xfe00707f
