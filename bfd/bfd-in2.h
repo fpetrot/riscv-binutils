@@ -2141,7 +2141,7 @@ struct reloc_howto_struct
   unsigned int type;
 
   /* The size of the item to be relocated in bytes.  */
-  unsigned int size:4;
+  unsigned int size:8;
 
   /* The number of bits in the field to be relocated.  This is used
      when doing overflow checking.  */
@@ -7516,12 +7516,12 @@ typedef struct bfd_target
   /* Entries for byte swapping for data. These are different from the
      other entry points, since they don't take a BFD as the first argument.
      Certain other handlers could do the same.  */
+  __uint128_t    (*bfd_getx128) (const void *);
+  __int128_t     (*bfd_getx_signed_128) (const void *);
+  void           (*bfd_putx128) (__uint128_t, void *);
   uint64_t       (*bfd_getx64) (const void *);
   int64_t        (*bfd_getx_signed_64) (const void *);
   void           (*bfd_putx64) (uint64_t, void *);
-  __uint128_t   (*bfd_getx128) (const void *);
-  __int128_t    (*bfd_getx_signed_128) (const void *);
-  void           (*bfd_putx128) (__uint128_t, void *);
   bfd_vma        (*bfd_getx32) (const void *);
   bfd_signed_vma (*bfd_getx_signed_32) (const void *);
   void           (*bfd_putx32) (bfd_vma, void *);
@@ -7530,12 +7530,12 @@ typedef struct bfd_target
   void           (*bfd_putx16) (bfd_vma, void *);
 
   /* Byte swapping for the headers.  */
-  uint64_t       (*bfd_h_getx64) (const void *);
-  int64_t        (*bfd_h_getx_signed_64) (const void *);
-  void           (*bfd_h_putx64) (uint64_t, void *);
   __uint128_t    (*bfd_h_getx128) (const void *);
   __int128_t     (*bfd_h_getx_signed_128) (const void *);
   void           (*bfd_h_putx128) (__uint128_t, void *); 
+  uint64_t       (*bfd_h_getx64) (const void *);
+  int64_t        (*bfd_h_getx_signed_64) (const void *);
+  void           (*bfd_h_putx64) (uint64_t, void *);
   bfd_vma        (*bfd_h_getx32) (const void *);
   bfd_signed_vma (*bfd_h_getx_signed_32) (const void *);
   void           (*bfd_h_putx32) (bfd_vma, void *);
