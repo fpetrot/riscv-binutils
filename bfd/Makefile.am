@@ -565,6 +565,7 @@ BFD64_BACKENDS = \
 	elf64-nfp.lo \
 	elf64-ppc.lo \
 	elf64-riscv.lo \
+	elfxx-riscv.lo \
 	elf64-s390.lo \
 	elf64-sparc.lo \
 	elf64-tilegx.lo \
@@ -639,6 +640,13 @@ BFD64_BACKENDS_CFILES = \
 	pei-x86_64.c \
 	vms-alpha.c
 
+BFD128_BACKENDS = \
+	elf128-riscv.lo \
+	elf128.lo
+
+BFD128_BACKENDS_CFILES = \
+	elf128.c
+
 OPTIONAL_BACKENDS = \
 	cisco-core.lo \
 	hpux-core.lo \
@@ -691,7 +699,7 @@ BUILD_CFILES = \
 	elf32-kvx.c elf64-kvx.c \
 	elf32-ia64.c elf64-ia64.c \
 	elf32-loongarch.c elf64-loongarch.c \
-	elf32-riscv.c elf64-riscv.c \
+	elf32-riscv.c elf64-riscv.c elf128-riscv.c \
 	peigen.c pepigen.c pex64igen.c pe-aarch64igen.c pe-loongarch64igen.c \
 	pe-riscv64igen.c
 
@@ -727,7 +735,7 @@ SOURCE_HFILES = \
 
 ## ... and .h files which are in the build tree, minus config.h and bfd.h
 BUILD_HFILES = \
-	bfdver.h elf32-target.h elf64-target.h targmatch.h
+	bfdver.h elf32-target.h elf64-target.h elf128-target.h targmatch.h
 
 # Ensure they are built early:
 BUILT_SOURCES = $(BUILD_HFILES) @MAINT@ $(BUILD_CFILES)
@@ -738,9 +746,11 @@ BFD_H_DEPS = $(INCDIR)/ansidecl.h $(INCDIR)/symcat.h $(INCDIR)/diagnostics.h
 LOCAL_H_DEPS = libbfd.h sysdep.h config.h
 $(BFD32_LIBS) \
  $(BFD64_LIBS) \
+ $(BFD128_LIBS) \
  $(ALL_MACHINES) \
  $(BFD32_BACKENDS) \
  $(BFD64_BACKENDS) \
+ $(BFD128_BACKENDS) \
  $(OPTIONAL_BACKENDS): $(BFD_H) $(BFD_H_DEPS) $(LOCAL_H_DEPS)
 
 SRC_POTFILES = $(SOURCE_CFILES) $(SOURCE_HFILES)
@@ -843,6 +853,9 @@ elf32-target.h : elfxx-target.h
 elf64-target.h : elfxx-target.h
 	$(AM_V_GEN)$(SED) -e s/NN/64/g < $< > $@
 
+elf128-target.h : elfxx-target.h
+	$(AM_V_GEN)$(SED) -e s/NN/128/g < $< > $@
+
 elf32-aarch64.c : elfnn-aarch64.c
 	$(AM_V_at)echo "#line 1 \"$<\"" > $@
 	$(AM_V_GEN)$(SED) -e s/NN/32/g < $< >> $@
@@ -882,6 +895,10 @@ elf32-riscv.c : elfnn-riscv.c
 elf64-riscv.c : elfnn-riscv.c
 	$(AM_V_at)echo "#line 1 \"$<\"" > $@
 	$(AM_V_GEN)$(SED) -e s/NN/64/g < $< >> $@
+
+elf128-riscv.c : elfnn-riscv.c
+	$(AM_V_at)echo "#line 1 \"$<\"" > $@
+	$(AM_V_GEN)$(SED) -e s/NN/128/g < $< >> $@
 
 peigen.c : peXXigen.c
 	$(AM_V_at)echo "#line 1 \"$<\"" > $@

@@ -126,6 +126,14 @@
 #define elf_write_relocs		NAME(bfd_elf,write_relocs)
 #define elf_slurp_reloc_table		NAME(bfd_elf,slurp_reloc_table)
 
+#if ARCH_SIZE == 128
+#define ELF_R_INFO(X,Y)	ELF128_R_INFO(X,Y)
+#define ELF_R_SYM(X)	ELF128_R_SYM(X)
+#define ELF_R_TYPE(X)	ELF128_R_TYPE(X)
+#define ELFCLASS	ELFCLASS128
+#define FILE_ALIGN	16
+#define LOG_FILE_ALIGN	4
+#endif
 #if ARCH_SIZE == 64
 #define ELF_R_INFO(X,Y)	ELF64_R_INFO(X,Y)
 #define ELF_R_SYM(X)	ELF64_R_SYM(X)
@@ -154,6 +162,12 @@ static void elf_debug_file (Elf_Internal_Ehdr *);
 
 /* Should perhaps use put_offset, put_word, etc.  For now, the two versions
    can be handled by explicitly specifying 32 bits or "the long type".  */
+#if ARCH_SIZE == 128
+#define H_PUT_WORD		H_PUT_128
+#define H_PUT_SIGNED_WORD	H_PUT_S128
+#define H_GET_WORD		H_GET_128
+#define H_GET_SIGNED_WORD	H_GET_S128
+#endif
 #if ARCH_SIZE == 64
 #define H_PUT_WORD		H_PUT_64
 #define H_PUT_SIGNED_WORD	H_PUT_S64

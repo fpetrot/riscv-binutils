@@ -784,5 +784,7 @@ extern unsigned long libiberty_len;
 }
 #endif
 
+// 128-bit printf modifiers
+#include "printf128.h"
 
 #endif /* ! defined (LIBIBERTY_H) */

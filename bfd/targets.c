@@ -231,6 +231,9 @@ CODE_FRAGMENT
 .  {* Entries for byte swapping for data. These are different from the
 .     other entry points, since they don't take a BFD as the first argument.
 .     Certain other handlers could do the same.  *}
+.  __uint128_t	  (*bfd_getx128) (const void *);
+.  __int128_t	  (*bfd_getx_signed_128) (const void *);
+.  void		  (*bfd_putx128) (__uint128_t, void *);
 .  uint64_t	  (*bfd_getx64) (const void *);
 .  int64_t	  (*bfd_getx_signed_64) (const void *);
 .  void		  (*bfd_putx64) (uint64_t, void *);
@@ -242,6 +245,9 @@ CODE_FRAGMENT
 .  void		  (*bfd_putx16) (bfd_vma, void *);
 .
 .  {* Byte swapping for the headers.  *}
+.  __uint128_t	  (*bfd_h_getx128) (const void *);
+.  __int128_t	  (*bfd_h_getx_signed_128) (const void *);
+.  void		  (*bfd_h_putx128) (__uint128_t, void *);
 .  uint64_t	  (*bfd_h_getx64) (const void *);
 .  int64_t	  (*bfd_h_getx_signed_64) (const void *);
 .  void		  (*bfd_h_putx64) (uint64_t, void *);
@@ -858,6 +864,7 @@ extern const bfd_target powerpc_xcoff_vec;
 extern const bfd_target pru_elf32_vec;
 extern const bfd_target riscv_elf32_vec;
 extern const bfd_target riscv_elf64_vec;
+extern const bfd_target riscv_elf128_vec;
 extern const bfd_target riscv_elf32_be_vec;
 extern const bfd_target riscv_elf64_be_vec;
 extern const bfd_target riscv64_pei_vec;
@@ -1251,11 +1258,15 @@ static const bfd_target * const _bfd_target_vector[] =
 #ifdef BFD64
 	&riscv_elf32_vec,
 	&riscv_elf64_vec,
+	&riscv_elf128_vec,
 	&riscv_elf32_be_vec,
 	&riscv_elf64_be_vec,
 	&riscv64_pei_vec,
 #endif
 	&rl78_elf32_vec,
+#ifdef BFD128
+	&riscv_elf128_vec,
+#endif
 
 #ifdef BFD64
 	&rs6000_xcoff64_vec,

@@ -192,6 +192,8 @@ AC_C_BIGENDIAN
 
 host64=false
 target64=false
+host128=false
+target128=false
 bfd_default_target_size=32
 
 # host stuff:
@@ -205,6 +207,7 @@ ZW_GNU_GETTEXT_SISTER_DIR
 AC_SUBST(HDEFINES)
 AC_PROG_INSTALL
 
+AC_CHECK_SIZEOF(__uint128_t)
 AC_CHECK_SIZEOF(long long)
 AC_CHECK_SIZEOF(void *)
 AC_CHECK_SIZEOF(long)
@@ -212,6 +215,8 @@ AC_CHECK_SIZEOF(int)
 
 if test "x${ac_cv_sizeof_void_p}" = "x8"; then
   host64=true
+elif test "x${ac_cv_sizeof_void_p}" = "x16"; then
+  host128=true
 fi
 
 BFD_CC_FOR_BUILD
@@ -388,6 +393,7 @@ elf32_powerpc="elf32-ppc.lo elf32.lo elf-attrs.lo"
 elf64_powerpc="elf64-ppc.lo elf64-gen.lo elf64.lo elf-attrs.lo"
 elf32_riscv="elf32-riscv.lo elfxx-riscv.lo elf-ifunc.lo elf32.lo elf-attrs.lo"
 elf64_riscv="elf64-riscv.lo elf64.lo elfxx-riscv.lo elf-ifunc.lo elf32.lo elf-attrs.lo"
+elf128_riscv="elf128-riscv.lo elf128.lo elf64-riscv.lo elf64.lo elfxx-riscv.lo elf-ifunc.lo elf32.lo"
 elf_tic6x="elf32-tic6x.lo elf32.lo elf-attrs.lo"
 elfxx_x86="elfxx-x86.lo elf-ifunc.lo"
 elfxx_sparc="elfxx-sparc.lo elf-attrs.lo $elf"
@@ -579,9 +585,11 @@ do
     pru_elf32_vec)		 tb="$tb elf32-pru.lo elf32.lo $elf" ;;
     riscv_elf32_vec)		 tb="$tb $elf32_riscv $elf" ;;
     riscv_elf64_vec)		 tb="$tb $elf64_riscv $elf"; target_size=64 ;;
+    riscv_elf128_vec)		 tb="$tb $elf128_riscv $elf"; target_size=128 ;;
     riscv_elf32_be_vec)		 tb="$tb $elf32_riscv $elf" ;;
     riscv_elf64_be_vec)		 tb="$tb $elf64_riscv $elf"; target_size=64 ;;
     riscv64_pei_vec)		 tb="$tb pei-riscv64.lo pe-riscv64igen.lo $coff"; target_size=64 ;;
+    riscv_elf128_be_vec)	 tb="$tb $elf128_riscv $elf"; target_size=128 ;;
     rl78_elf32_vec)		 tb="$tb elf32-rl78.lo elf32.lo $elf" ;;
     rs6000_xcoff64_vec)		 tb="$tb coff64-rs6000.lo aix5ppc-core.lo $xcoff"; target_size=64 ;;
     rs6000_xcoff64_aix_vec)	 tb="$tb coff64-rs6000.lo aix5ppc-core.lo $xcoff"; target_size=64 ;;
@@ -681,6 +689,10 @@ do
 
     if test ${target_size} = 64; then
 	target64=true
+    fi
+    if test ${target_size} = 128; then
+	AC_MSG_WARN([128-bit target is *experimental*])
+	target128=true
     fi
     if test x"${vec}" = x"${defvec}"; then
 	bfd_default_target_size=${target_size}
@@ -787,6 +799,30 @@ case ${host64}-${target64}-${want64} in
     ;;
 esac
 
+case ${host128}-${target128}-${want128} in
+  *true*)
+    wordsize=128
+    bfd128_libs='$(BFD128_LIBS)'
+    all_backends='$(BFD128_BACKENDS) $(BFD64_BACKENDS) $(BFD32_BACKENDS)'
+    if test $BFD_HOST_128_BIT_DEFINED = 0; then
+      AC_MSG_WARN([You have requested a 128 bit BFD configuration, but])
+      AC_MSG_WARN([your compiler may not have a 128 bit integral type])
+    fi
+    if test -n "$GCC" ; then
+       bad_128bit_gcc=no;
+       AC_MSG_CHECKING([for gcc version with buggy 128-bit support])
+       # Add more tests for gcc versions with non-working 128-bit support here.
+       AC_EGREP_CPP([: 2 : 91 : 1 :],[:__GNUC__:__GNUC_MINOR__:__i386__:],
+		    bad_128bit_gcc=yes;
+		    AC_MSG_RESULT([yes: egcs-1.1.2 on ix86 spotted]),
+		    AC_MSG_RESULT(no))
+       if test $bad_128bit_gcc = yes ; then
+	 AC_MSG_ERROR([A newer version of gcc is needed for the requested 128-bit BFD configuration])
+       fi
+    fi
+    ;;
+esac
+
 tdefaults=""
 test -n "${defvec}" && tdefaults="${tdefaults} -DDEFAULT_VECTOR=${defvec}"
 test -n "${selvecs}" && tdefaults="${tdefaults} -DSELECT_VECS='${selvecs}'"
@@ -794,6 +830,7 @@ test -n "${assocvecs}" && tdefaults="${tdefaults} -DASSOCIATED_VECS='${assocvecs
 test -n "${selarchs}" && tdefaults="${tdefaults} -DSELECT_ARCHITECTURES='${selarchs}'"
 
 AC_SUBST(wordsize)
+AC_SUBST(bfd128_libs)
 AC_SUBST(bfd64_libs)
 AC_SUBST(all_backends)
 AC_SUBST(bfd_backends)

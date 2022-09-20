@@ -984,9 +984,11 @@ const bfd_target plugin_vec =
   TARGET_KEEP_UNUSED_SECTION_SYMBOLS, /* keep unused section symbols.  */
   TARGET_MERGE_SECTIONS,
 
+  bfd_getl128, bfd_getl_signed_128, bfd_putl128,
   bfd_getl64, bfd_getl_signed_64, bfd_putl64,
   bfd_getl32, bfd_getl_signed_32, bfd_putl32,
   bfd_getl16, bfd_getl_signed_16, bfd_putl16,	/* data */
+  bfd_getl128, bfd_getl_signed_128, bfd_putl128,
   bfd_getl64, bfd_getl_signed_64, bfd_putl64,
   bfd_getl32, bfd_getl_signed_32, bfd_putl32,
   bfd_getl16, bfd_getl_signed_16, bfd_putl16,	/* hdrs */
