@@ -288,11 +288,11 @@ CODE_FRAGMENT
 .  unsigned int type;
 .
 .  {* The size of the item to be relocated in bytes.  *}
-.  unsigned int size:4;
+.  unsigned int size:5;
 .
 .  {* The number of bits in the field to be relocated.  This is used
 .     when doing overflow checking.  *}
-.  unsigned int bitsize:7;
+.  unsigned int bitsize:8;
 .
 .  {* The value the final relocation is shifted right by.  This drops
 .     unwanted data from the relocation.  *}
@@ -557,10 +557,13 @@ read_reloc (bfd *abfd, bfd_byte *data, reloc_howto_type *howto)
     case 4:
       return bfd_get_32 (abfd, data);
 
-#ifdef BFD64
+#if defined(BFD64) || defined(BFD128)
     case 8:
       return bfd_get_64 (abfd, data);
 #endif
+
+    case 16:
+      return bfd_get_128 (abfd, data);
 
     default:
       abort ();
@@ -595,11 +598,15 @@ write_reloc (bfd *abfd, bfd_vma val, bfd_byte *data, reloc_howto_type *howto)
       bfd_put_32 (abfd, val, data);
       break;
 
-#ifdef BFD64
+#if defined(BFD64) || defined(BFD128)
     case 8:
       bfd_put_64 (abfd, val, data);
       break;
 #endif
+
+    case 16:
+      bfd_put_128 (abfd, val, data);
+      break;
 
     default:
       abort ();
@@ -1391,6 +1398,8 @@ SENUM
   bfd_reloc_code_real
 
 ENUM
+  BFD_RELOC_128
+ENUMX
   BFD_RELOC_64
 ENUMX
   BFD_RELOC_32
@@ -4690,6 +4699,8 @@ ENUMX
 ENUMX
   BFD_RELOC_RISCV_ADD64
 ENUMX
+  BFD_RELOC_RISCV_ADD128
+ENUMX
   BFD_RELOC_RISCV_SUB8
 ENUMX
   BFD_RELOC_RISCV_SUB16
@@ -4697,6 +4708,8 @@ ENUMX
   BFD_RELOC_RISCV_SUB32
 ENUMX
   BFD_RELOC_RISCV_SUB64
+ENUMX
+  BFD_RELOC_RISCV_SUB128
 ENUMX
   BFD_RELOC_RISCV_GOT_HI20
 ENUMX
@@ -4714,9 +4727,15 @@ ENUMX
 ENUMX
   BFD_RELOC_RISCV_TLS_DTPREL64
 ENUMX
+  BFD_RELOC_RISCV_TLS_DTPMOD128
+ENUMX
+  BFD_RELOC_RISCV_TLS_DTPREL128
+ENUMX
   BFD_RELOC_RISCV_TLS_TPREL32
 ENUMX
   BFD_RELOC_RISCV_TLS_TPREL64
+ENUMX
+  BFD_RELOC_RISCV_TLS_TPREL128
 ENUMX
   BFD_RELOC_RISCV_TLSDESC_HI20
 ENUMX

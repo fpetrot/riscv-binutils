@@ -2894,7 +2894,7 @@ oav2_parse_section (bfd *abfd,
 	{
 	  _bfd_error_handler
 	    (_("%pB: error: could not parse subsection at offset %" PRIx64),
-	     abfd, hdr->sh_size - remaining);
+	     abfd, (uint64_t) hdr->sh_size - remaining);
 	  bfd_set_error (bfd_error_wrong_format);
 	  break;
 	}

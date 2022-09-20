@@ -19489,7 +19489,10 @@ _ACEOF
 
 
 if test x${all_targets} = xtrue; then
-  if test x${have_64_bit_bfd} = xyes; then
+  if test x${have_128_bit_bfd} = xyes; then
+    EMULATION_OFILES='$(ALL_EMULATIONS) $(ALL_64_EMULATIONS) $(ALL_128_EMULATIONS)'
+    EMUL_EXTRA_OFILES='$(ALL_EMUL_EXTRA_OFILES) $(ALL_64_EMUL_EXTRA_OFILES) $(ALL_128_EMUL_EXTRA_OFILES)'
+  elif test x${have_64_bit_bfd} = xyes; then
     EMULATION_OFILES='$(ALL_EMULATIONS) $(ALL_64_EMULATIONS)'
     EMUL_EXTRA_OFILES='$(ALL_EMUL_EXTRA_OFILES) $(ALL_64_EMUL_EXTRA_OFILES)'
   else

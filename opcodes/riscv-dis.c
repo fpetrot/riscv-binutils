@@ -557,7 +557,7 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
 	  if (((l & MASK_ADDI) == MATCH_ADDI && rs1 != 0)
 	      || (l & MASK_JALR) == MATCH_JALR)
 	    maybe_print_address (pd, rs1, EXTRACT_ITYPE_IMM (l), 0);
-	  if (pd->xlen == 64
+	  if ((pd->xlen == 64 || pd->xlen == 128)
 	      && ((l & MASK_ADDIW) == MATCH_ADDIW) && rs1 != 0)
 	    maybe_print_address (pd, rs1, EXTRACT_ITYPE_IMM (l), 1);
 	  print (info->stream, dis_style_immediate, "%d",
@@ -1084,7 +1084,7 @@ riscv_disassemble_insn (bfd_vma memaddr,
 	    continue;
 	  /* Is this instruction restricted to a certain value of XLEN?  */
 	  if ((op->xlen_requirement != 0)
-	      && (op->xlen_requirement != pd->xlen))
+	      && ((op->xlen_requirement & pd->xlen) != pd->xlen))
 	    continue;
 	  /* Is this instruction supported by the current architecture?  */
 	  if (!pd->all_ext

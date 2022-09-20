@@ -134,7 +134,7 @@
 
 #define MINUS_ONE ((bfd_vma)0 - 1)
 
-#define RISCV_ELF_LOG_WORD_BYTES (ARCH_SIZE == 32 ? 2 : 3)
+#define RISCV_ELF_LOG_WORD_BYTES (ARCH_SIZE == 32 ? 2 : ARCH_SIZE == 64 ? 3 : 4)
 
 #define RISCV_ELF_WORD_BYTES (1 << RISCV_ELF_LOG_WORD_BYTES)
 
@@ -143,6 +143,7 @@
 
 #define ELF64_DYNAMIC_INTERPRETER "/lib/ld.so.1"
 #define ELF32_DYNAMIC_INTERPRETER "/lib32/ld.so.1"
+#define ELF128_DYNAMIC_INTERPRETER "/lib128/ld.so.1"
 
 #define ELF_ARCH			bfd_arch_riscv
 #define ELF_TARGET_ID			RISCV_ELF_DATA
@@ -248,11 +249,13 @@ struct riscv_elf_link_hash_table
   ((bits) == 16 ? bfd_getl16 (ptr)		\
    : (bits) == 32 ? bfd_getl32 (ptr)		\
    : (bits) == 64 ? bfd_getl64 (ptr)		\
+   : (bits) == 128 ? bfd_getl128 (ptr)          \
    : (abort (), (bfd_vma) - 1))
 #define riscv_put_insn(bits, val, ptr)		\
   ((bits) == 16 ? bfd_putl16 (val, ptr)		\
    : (bits) == 32 ? bfd_putl32 (val, ptr)	\
    : (bits) == 64 ? bfd_putl64 (val, ptr)	\
+   : (bits) == 128 ? bfd_putl128 (val, ptr)	\
    : (abort (), (void) 0))
 
 /* Get the RISC-V ELF linker hash table from a link_info structure.  */
@@ -331,8 +334,10 @@ riscv_is_insn_reloc (const reloc_howto_type *howto)
 
 #if ARCH_SIZE == 32
 # define MATCH_LREG MATCH_LW
-#else
+#elif ARCH_SIZE == 64
 # define MATCH_LREG MATCH_LD
+#else
+# define MATCH_LREG MATCH_LQ
 #endif
 
 
@@ -1001,6 +1006,7 @@ riscv_elf_check_relocs (bfd *abfd, struct bfd_link_info *info,
 	    {
 	    case R_RISCV_32:
 	    case R_RISCV_64:
+	    case R_RISCV_128:
 	    case R_RISCV_CALL:
 	    case R_RISCV_CALL_PLT:
 	    case R_RISCV_HI20:
@@ -1167,6 +1173,7 @@ riscv_elf_check_relocs (bfd *abfd, struct bfd_link_info *info,
 	case R_RISCV_JUMP_SLOT:
 	case R_RISCV_RELATIVE:
 	case R_RISCV_64:
+	case R_RISCV_128:
 	  /* Fall through.  */
 
 	static_reloc:
@@ -2017,6 +2024,7 @@ perform_relocation (const reloc_howto_type *howto,
 	return bfd_reloc_overflow;
       value = ENCODE_UTYPE_IMM (RISCV_CONST_HIGH_PART (value))
 	      | (ENCODE_ITYPE_IMM (value) << 32);
+      /* FP: TODO Check if something has to be done here */
       break;
 
     case R_RISCV_JAL:
@@ -2111,15 +2119,18 @@ perform_relocation (const reloc_howto_type *howto,
 
     case R_RISCV_32:
     case R_RISCV_64:
+    case R_RISCV_128:
     case R_RISCV_ADD8:
     case R_RISCV_ADD16:
     case R_RISCV_ADD32:
     case R_RISCV_ADD64:
+    case R_RISCV_ADD128:
     case R_RISCV_SUB6:
     case R_RISCV_SUB8:
     case R_RISCV_SUB16:
     case R_RISCV_SUB32:
     case R_RISCV_SUB64:
+    case R_RISCV_SUB128:
     case R_RISCV_SET6:
     case R_RISCV_SET8:
     case R_RISCV_SET16:
@@ -2127,6 +2138,7 @@ perform_relocation (const reloc_howto_type *howto,
     case R_RISCV_32_PCREL:
     case R_RISCV_TLS_DTPREL32:
     case R_RISCV_TLS_DTPREL64:
+    case R_RISCV_TLS_DTPREL128:
       break;
 
     case R_RISCV_DELETE:
@@ -2263,6 +2275,7 @@ riscv_zero_pcrel_hi_reloc (Elf_Internal_Rela *rel,
      in the truncation message.  */
   if (ARCH_SIZE > 32 && !VALID_UTYPE_IMM (RISCV_CONST_HIGH_PART (*addr)))
     return false;
+  /* FP: TODO Check is something has to be taken care of here */
 
   /* PR27180, encode target absolute address into r_addend rather than
      r_sym.  Clear the ADDR to avoid duplicate relocate in the
@@ -2544,6 +2557,7 @@ riscv_elf_relocate_section (struct bfd_link_info *info,
 		      via GOT or static function pointers.  */
 		   && r_type != R_RISCV_32
 		   && r_type != R_RISCV_64
+		   && r_type != R_RISCV_128
 		   && r_type != R_RISCV_HI20
 		   && r_type != R_RISCV_GOT_HI20
 		   && r_type != R_RISCV_LO12_I
@@ -2560,6 +2574,7 @@ riscv_elf_relocate_section (struct bfd_link_info *info,
 	    {
 	    case R_RISCV_32:
 	    case R_RISCV_64:
+	    case R_RISCV_128: /* FP: TODO Check what may have to be done here */
 	      if (rel->r_addend != 0)
 		{
 		  if (h->root.root.string)
@@ -2957,6 +2972,7 @@ riscv_elf_relocate_section (struct bfd_link_info *info,
 	case R_RISCV_ADD16:
 	case R_RISCV_ADD32:
 	case R_RISCV_ADD64:
+	case R_RISCV_ADD128: /* FP: TODO Should we check for overflow ? */
 	  {
 	    bfd_vma old_value = bfd_get (howto->bitsize, input_bfd,
 					 contents + rel->r_offset);
@@ -2978,6 +2994,7 @@ riscv_elf_relocate_section (struct bfd_link_info *info,
 	case R_RISCV_SUB16:
 	case R_RISCV_SUB32:
 	case R_RISCV_SUB64:
+	case R_RISCV_SUB128: /* FP: TODO Should we check for overflow ? */
 	  {
 	    bfd_vma old_value = bfd_get (howto->bitsize, input_bfd,
 					 contents + rel->r_offset);
@@ -3125,6 +3142,7 @@ riscv_elf_relocate_section (struct bfd_link_info *info,
 
 	case R_RISCV_TLS_DTPREL32:
 	case R_RISCV_TLS_DTPREL64:
+	case R_RISCV_TLS_DTPREL128:
 	  relocation = dtpoff (info, relocation);
 	  break;
 
@@ -3151,6 +3169,7 @@ riscv_elf_relocate_section (struct bfd_link_info *info,
 	  /* Fall through.  */
 
 	case R_RISCV_64:
+	case R_RISCV_128:
 	  if ((input_section->flags & SEC_ALLOC) == 0)
 	    break;
 
@@ -5220,6 +5239,7 @@ _bfd_riscv_relax_section (bfd *abfd, asection *sec,
 # define PRPSINFO_PR_FNAME_LENGTH	16
 # define PRPSINFO_PR_PSARGS_LENGTH	80
 #endif
+/* FP: TODO Check if 64 bits values need to be changed for 128-bit elf */
 
 /* Write PRSTATUS and PRPSINFO note into core file.  This will be called
    before the generic code in elf.c.  By checking the compiler defines we
@@ -5365,12 +5385,15 @@ riscv_elf_grok_psinfo (bfd *abfd, Elf_Internal_Note *note)
 static bool
 riscv_elf_object_p (bfd *abfd)
 {
-  /* There are only two mach types in RISCV currently.  */
+  /* There are three mach types in RISCV currently.  */
   if (strcmp (abfd->xvec->name, "elf32-littleriscv") == 0
       || strcmp (abfd->xvec->name, "elf32-bigriscv") == 0)
     bfd_default_set_arch_mach (abfd, bfd_arch_riscv, bfd_mach_riscv32);
-  else
+  else if (strcmp (abfd->xvec->name, "elf64-littleriscv") == 0
+      || strcmp (abfd->xvec->name, "elf64-bigriscv") == 0)
     bfd_default_set_arch_mach (abfd, bfd_arch_riscv, bfd_mach_riscv64);
+  else
+    bfd_default_set_arch_mach (abfd, bfd_arch_riscv, bfd_mach_riscv128);
 
   return true;
 }

@@ -50,6 +50,8 @@ extern void riscv_elf32_set_options (struct bfd_link_info *,
 				     struct riscv_elf_params *);
 extern void riscv_elf64_set_options (struct bfd_link_info *,
 				     struct riscv_elf_params *);
+extern void riscv_elf128_set_options (struct bfd_link_info *,
+				      struct riscv_elf_params *);
 
 extern reloc_howto_type *
 riscv_reloc_name_lookup (bfd *, const char *) ATTRIBUTE_HIDDEN;
@@ -159,3 +161,5 @@ _bfd_riscv_elf_merge_gnu_properties (struct bfd_link_info *, bfd *,
 				     elf_property *, elf_property *, uint32_t) ATTRIBUTE_HIDDEN;
 
 #define elf_backend_parse_gnu_properties _bfd_riscv_elf_parse_gnu_properties
+extern void
+bfd_elf128_riscv_set_data_segment_info (struct bfd_link_info *, int *);

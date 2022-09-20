@@ -231,7 +231,7 @@ static const reloc_howto_type howto_table[] =
 	 0,				/* src_mask */
 	 MINUS_ONE,			/* dst_mask */
 	 false),			/* pcrel_offset */
-
+  
   EMPTY_HOWTO (13),
   EMPTY_HOWTO (14),
   EMPTY_HOWTO (15),
@@ -876,7 +876,93 @@ static const reloc_howto_type howto_table[] =
 	 false,				/* partial_inplace */
 	 0,				/* src_mask */
 	 ENCODE_ITYPE_IMM (-1U),	/* dst_mask */
-	 false) 			/* pcrel_offset */
+	 false), 			/* pcrel_offset */
+   /* 128-bit in-place addition, for local label subtraction.  */
+  HOWTO (R_RISCV_ADD128,		/* type */
+	 0,				/* rightshift */
+	 16,				/* size */
+	 128,				/* bitsize */
+	 false,				/* pc_relative */
+	 0,				/* bitpos */
+	 complain_overflow_dont,	/* complain_on_overflow */
+	 riscv_elf_add_sub_reloc,	/* special_function */
+	 "R_RISCV_ADD128",		/* name */
+	 false,				/* partial_inplace */
+	 0,				/* src_mask */
+	 MINUS_ONE,			/* dst_mask */
+	 false),			/* pcrel_offset */
+
+  /* 128-bit in-place addition, for local label subtraction.  */
+  HOWTO (R_RISCV_SUB128,		/* type */
+	 0,				/* rightshift */
+	 16,				/* size */
+	 128,				/* bitsize */
+	 false,				/* pc_relative */
+	 0,				/* bitpos */
+	 complain_overflow_dont,	/* complain_on_overflow */
+	 riscv_elf_add_sub_reloc,	/* special_function */
+	 "R_RISCV_SUB128",		/* name */
+	 false,				/* partial_inplace */
+	 0,				/* src_mask */
+	 MINUS_ONE,			/* dst_mask */
+	 false),			/* pcrel_offset */
+
+  HOWTO (R_RISCV_TLS_TPREL128,	/* type */
+	 0,				/* rightshift */
+	 16,				/* size */
+	 128,				/* bitsize */
+	 false,				/* pc_relative */
+	 0,				/* bitpos */
+	 complain_overflow_dont,	/* complain_on_overflow */
+	 bfd_elf_generic_reloc,		/* special_function */
+	 "R_RISCV_TLS_TPREL128",	/* name */
+	 false,				/* partial_inplace */
+	 0,				/* src_mask */
+	 MINUS_ONE,			/* dst_mask */
+	 false),			/* pcrel_offset */
+
+    HOWTO (R_RISCV_TLS_DTPMOD128, 	/* type */
+	 0,				/* rightshift */
+	 16,				/* size */
+	 128,				/* bitsize */
+	 false,				/* pc_relative */
+	 0,				/* bitpos */
+	 complain_overflow_dont,	/* complain_on_overflow */
+	 bfd_elf_generic_reloc,		/* special_function */
+	 "R_RISCV_TLS_DTPMOD128",	/* name */
+	 false,				/* partial_inplace */
+	 0,				/* src_mask */
+	 MINUS_ONE,			/* dst_mask */
+	 false),			/* pcrel_offset */
+
+    HOWTO (R_RISCV_TLS_DTPREL128,	/* type */
+	 0,				/* rightshift */
+	 16,				/* size */
+	 128,				/* bitsize */
+	 false,				/* pc_relative */
+	 0,				/* bitpos */
+	 complain_overflow_dont,	/* complain_on_overflow */
+	 bfd_elf_generic_reloc,		/* special_function */
+	 "R_RISCV_TLS_DTPREL128",	/* name */
+	 false,				/* partial_inplace */
+	 0,				/* src_mask */
+	 MINUS_ONE,			/* dst_mask */
+	 false),			/* pcrel_offset */
+
+  /* 128 bit relocation.  */
+  HOWTO (R_RISCV_128,			/* type */
+	 0,				/* rightshift */
+	 16,				/* size */
+	 128,				/* bitsize */
+	 false,				/* pc_relative */
+	 0,				/* bitpos */
+	 complain_overflow_dont,	/* complain_on_overflow */
+	 bfd_elf_generic_reloc,		/* special_function */
+	 "R_RISCV_128",			/* name */
+	 false,				/* partial_inplace */
+	 0,				/* src_mask */
+	 MINUS_ONE,                     /* dst_mask */
+	 false),			/* pcrel_offset */
 };
 
 static const reloc_howto_type howto_table_internal[] =
@@ -975,14 +1061,17 @@ static const struct elf_reloc_map riscv_reloc_map[] =
   { BFD_RELOC_NONE, R_RISCV_NONE },
   { BFD_RELOC_32, R_RISCV_32 },
   { BFD_RELOC_64, R_RISCV_64 },
+  { BFD_RELOC_128, R_RISCV_128 },
   { BFD_RELOC_RISCV_ADD8, R_RISCV_ADD8 },
   { BFD_RELOC_RISCV_ADD16, R_RISCV_ADD16 },
   { BFD_RELOC_RISCV_ADD32, R_RISCV_ADD32 },
   { BFD_RELOC_RISCV_ADD64, R_RISCV_ADD64 },
+  { BFD_RELOC_RISCV_ADD128, R_RISCV_ADD128 },
   { BFD_RELOC_RISCV_SUB8, R_RISCV_SUB8 },
   { BFD_RELOC_RISCV_SUB16, R_RISCV_SUB16 },
   { BFD_RELOC_RISCV_SUB32, R_RISCV_SUB32 },
   { BFD_RELOC_RISCV_SUB64, R_RISCV_SUB64 },
+  { BFD_RELOC_RISCV_SUB128, R_RISCV_SUB128 },
   { BFD_RELOC_CTOR, R_RISCV_64 },
   { BFD_RELOC_12_PCREL, R_RISCV_BRANCH },
   { BFD_RELOC_RISCV_HI20, R_RISCV_HI20 },
@@ -999,8 +1088,11 @@ static const struct elf_reloc_map riscv_reloc_map[] =
   { BFD_RELOC_RISCV_TLS_DTPREL32, R_RISCV_TLS_DTPREL32 },
   { BFD_RELOC_RISCV_TLS_DTPMOD64, R_RISCV_TLS_DTPMOD64 },
   { BFD_RELOC_RISCV_TLS_DTPREL64, R_RISCV_TLS_DTPREL64 },
+  { BFD_RELOC_RISCV_TLS_DTPMOD128, R_RISCV_TLS_DTPMOD128 },
+  { BFD_RELOC_RISCV_TLS_DTPREL128, R_RISCV_TLS_DTPREL128 },
   { BFD_RELOC_RISCV_TLS_TPREL32, R_RISCV_TLS_TPREL32 },
   { BFD_RELOC_RISCV_TLS_TPREL64, R_RISCV_TLS_TPREL64 },
+  { BFD_RELOC_RISCV_TLS_TPREL128, R_RISCV_TLS_TPREL128 },
   { BFD_RELOC_RISCV_TPREL_HI20, R_RISCV_TPREL_HI20 },
   { BFD_RELOC_RISCV_TPREL_ADD, R_RISCV_TPREL_ADD },
   { BFD_RELOC_RISCV_TPREL_LO12_S, R_RISCV_TPREL_LO12_S },
@@ -2439,6 +2531,11 @@ riscv_parse_subset (riscv_parse_subset_t *rps,
     {
       *rps->xlen = 64;
       p += 4;
+    }
+  else if (startswith (p, "rv128"))
+    {
+      *rps->xlen = 128;
+      p += 5;
     }
   else
     {
