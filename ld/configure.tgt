@@ -831,6 +831,10 @@ riscv64*-*-*)		targ_emul=elf64lriscv
 			targ_extra_emuls="elf32lriscv elf64briscv elf32briscv"
 			targ_extra_libpath=$targ_extra_emuls
 			;;
+riscv128*-*-*)		targ_emul=elf128lriscv
+			targ_extra_emuls="elf32lriscv elf64lriscv elf64briscv elf32briscv"
+			targ_extra_libpath=$targ_extra_emuls
+			;;
 rs6000-*-aix[5-9]*)	targ_emul=aix5rs6
 			targ_extra_ofiles=
 			;;

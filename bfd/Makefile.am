@@ -567,6 +567,7 @@ BFD64_BACKENDS = \
 	elf64-ppc.lo \
 	elf32-riscv.lo \
 	elf64-riscv.lo \
+	elf128-riscv.lo \
 	elfxx-riscv.lo \
 	elf64-s390.lo \
 	elf64-sparc.lo \
@@ -575,6 +576,7 @@ BFD64_BACKENDS = \
 	elfxx-x86.lo \
 	elf64-bpf.lo \
 	elf64.lo \
+	elf128.lo \
 	mach-o-aarch64.lo \
 	mach-o-x86-64.lo \
 	mmo.lo \
@@ -683,7 +685,7 @@ BUILD_CFILES = \
 	elf32-aarch64.c elf64-aarch64.c \
 	elf32-ia64.c elf64-ia64.c \
 	elf32-loongarch.c elf64-loongarch.c \
-	elf32-riscv.c elf64-riscv.c \
+	elf32-riscv.c elf64-riscv.c elf128-riscv.c \
 	peigen.c pepigen.c pex64igen.c pe-aarch64igen.c pe-loongarch64igen.c
 
 CFILES = $(SOURCE_CFILES) $(BUILD_CFILES)
@@ -718,7 +720,7 @@ SOURCE_HFILES = \
 
 ## ... and .h files which are in the build tree, minus config.h and bfd.h
 BUILD_HFILES = \
-	bfdver.h elf32-target.h elf64-target.h targmatch.h
+	bfdver.h elf32-target.h elf64-target.h elf128-target.h targmatch.h
 
 # Ensure they are built early:
 BUILT_SOURCES = $(BUILD_HFILES) @MAINT@ $(BUILD_CFILES)
@@ -834,6 +836,9 @@ elf32-target.h : elfxx-target.h
 elf64-target.h : elfxx-target.h
 	$(AM_V_GEN)$(SED) -e s/NN/64/g < $< > $@
 
+elf128-target.h : elfxx-target.h
+	$(AM_V_GEN)$(SED) -e s/NN/128/g < $< > $@
+
 elf32-aarch64.c : elfnn-aarch64.c
 	$(AM_V_at)echo "#line 1 \"elfnn-aarch64.c\"" > $@
 	$(AM_V_GEN)$(SED) -e s/NN/32/g < $< >> $@
@@ -865,6 +870,10 @@ elf32-riscv.c : elfnn-riscv.c
 elf64-riscv.c : elfnn-riscv.c
 	$(AM_V_at)echo "#line 1 \"elfnn-riscv.c\"" > $@
 	$(AM_V_GEN)$(SED) -e s/NN/64/g < $< >> $@
+
+elf128-riscv.c : elfnn-riscv.c
+	$(AM_V_at)echo "#line 1 \"elfnn-riscv.c\"" > $@
+	$(AM_V_GEN)$(SED) -e s/NN/128/g < $< >> $@
 
 peigen.c : peXXigen.c
 	$(AM_V_at)echo "#line 1 \"peXXigen.c\"" > $@

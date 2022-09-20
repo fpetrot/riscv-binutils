@@ -1213,7 +1213,7 @@ case "${targ}" in
     targ_defvec=pru_elf32_vec
     ;;
 
-#ifdef BFD64
+#if defined(BFD64) || defined(BFD128)
   riscvbe-*-* | riscv32be*-*-*)
     targ_defvec=riscv_elf32_be_vec
     targ_selvecs="riscv_elf32_vec riscv_elf64_vec riscv_elf32_be_vec riscv_elf64_be_vec"
@@ -1232,6 +1232,18 @@ case "${targ}" in
   riscv64*-*-*)
     targ_defvec=riscv_elf64_vec
     targ_selvecs="riscv_elf32_vec riscv_elf64_vec riscv_elf32_be_vec riscv_elf64_be_vec"
+    want64=true
+    ;;
+#endif
+#ifdef BFD128
+  riscv128be*-*-*)
+    targ_defvec=riscv_elf128_vec
+    targ_selvecs="riscv_elf32_vec riscv_elf64_vec riscv_elf32_be_vec riscv_elf64_be_vec riscv_elf128_vec"
+    want64=true
+    ;;
+  riscv128*-*-*)
+    targ_defvec=riscv_elf128_vec
+    targ_selvecs="riscv_elf32_vec riscv_elf64_vec riscv_elf32_be_vec riscv_elf64_be_vec riscv_elf128_vec"
     want64=true
     ;;
 #endif

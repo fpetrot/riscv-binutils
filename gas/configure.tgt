@@ -91,6 +91,7 @@ case ${cpu} in
   pj*)			cpu_type=pj endian=big ;;
   powerpc*le*)		cpu_type=ppc endian=little ;;
   powerpc*)		cpu_type=ppc endian=big ;;
+  riscv128*)		cpu_type=riscv endian=little arch=riscv128 ;;
   riscv64be*)		cpu_type=riscv endian=big arch=riscv64 ;;
   riscv64*)		cpu_type=riscv endian=little arch=riscv64 ;;
   riscv32be*|riscvbe*)	cpu_type=riscv endian=big arch=riscv32 ;;

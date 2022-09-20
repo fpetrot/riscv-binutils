@@ -211,6 +211,7 @@ AM_PO_SUBDIRS
 AC_SUBST(HDEFINES)
 AC_PROG_INSTALL
 
+AC_CHECK_SIZEOF(__uint128_t)
 AC_CHECK_SIZEOF(long long)
 AC_CHECK_SIZEOF(void *)
 AC_CHECK_SIZEOF(long)
@@ -584,6 +585,7 @@ do
     pru_elf32_vec)		 tb="$tb elf32-pru.lo elf32.lo $elf" ;;
     riscv_elf32_vec)		 tb="$tb elf32-riscv.lo elfxx-riscv.lo elf-ifunc.lo elf32.lo $elf" ;;
     riscv_elf64_vec)		 tb="$tb elf64-riscv.lo elf64.lo elfxx-riscv.lo elf-ifunc.lo elf32.lo $elf"; target_size=64 ;;
+    riscv_elf128_vec)		 tb="$tb elf128-riscv.lo elf128.lo elf64-riscv.lo elf64.lo elfxx-riscv.lo elf-ifunc.lo elf32.lo $elf"; target_size=128 ;;
     riscv_elf32_be_vec)		 tb="$tb elf32-riscv.lo elfxx-riscv.lo elf-ifunc.lo elf32.lo $elf" ;;
     riscv_elf64_be_vec)		 tb="$tb elf64-riscv.lo elf64.lo elfxx-riscv.lo elf-ifunc.lo elf32.lo $elf"; target_size=64 ;;
     rl78_elf32_vec)		 tb="$tb elf32-rl78.lo elf32.lo $elf" ;;
@@ -774,6 +776,30 @@ case ${host64}-${target64}-${want64} in
     ;;
 esac
 
+case ${host128}-${target128}-${want128} in
+  *true*)
+    wordsize=128
+    bfd128_libs='$(BFD128_LIBS)'
+    all_backends='$(BFD128_BACKENDS) $(BFD64_BACKENDS) $(BFD32_BACKENDS)'
+    if test $BFD_HOST_128_BIT_DEFINED = 0; then
+      AC_MSG_WARN([You have requested a 128 bit BFD configuration, but])
+      AC_MSG_WARN([your compiler may not have a 128 bit integral type])
+    fi
+    if test -n "$GCC" ; then
+       bad_128bit_gcc=no;
+       AC_MSG_CHECKING([for gcc version with buggy 128-bit support])
+       # Add more tests for gcc versions with non-working 128-bit support here.
+       AC_EGREP_CPP([: 2 : 91 : 1 :],[:__GNUC__:__GNUC_MINOR__:__i386__:],
+		    bad_128bit_gcc=yes;
+		    AC_MSG_RESULT([yes: egcs-1.1.2 on ix86 spotted]),
+		    AC_MSG_RESULT(no))
+       if test $bad_128bit_gcc = yes ; then
+	 AC_MSG_ERROR([A newer version of gcc is needed for the requested 128-bit BFD configuration])
+       fi
+    fi
+    ;;
+esac
+
 tdefaults=""
 test -n "${defvec}" && tdefaults="${tdefaults} -DDEFAULT_VECTOR=${defvec}"
 test -n "${selvecs}" && tdefaults="${tdefaults} -DSELECT_VECS='${selvecs}'"
@@ -781,6 +807,7 @@ test -n "${assocvecs}" && tdefaults="${tdefaults} -DASSOCIATED_VECS='${assocvecs
 test -n "${selarchs}" && tdefaults="${tdefaults} -DSELECT_ARCHITECTURES='${selarchs}'"
 
 AC_SUBST(wordsize)
+AC_SUBST(bfd128_libs)
 AC_SUBST(bfd64_libs)
 AC_SUBST(all_backends)
 AC_SUBST(bfd_backends)
