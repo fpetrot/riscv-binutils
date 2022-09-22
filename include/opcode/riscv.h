@@ -54,7 +54,12 @@ static inline unsigned int riscv_insn_length (insn_t insn)
 
 #define RV_X(x, s, n)  (((x) >> (s)) & ((1 << (n)) - 1))
 #define RV_IMM_SIGN(x) (-(((x) >> 31) & 1))
+#if 0
+/* FIXME: Check that */
+#define RV_IMM_SIGN(x) ((bfd_vma) (-((((int32_t) x) >> 31) & 1)))
+#endif
 #define RV_X_SIGNED(x, s, n) (RV_X(x, s, n) | ((-(RV_X(x, (s + n - 1), 1))) << (n)))
+#define RV_IMM_SIGN_128(x) ((__int128_t) (-((((int32_t) x) >> 31) & 1)))
 
 #define EXTRACT_ITYPE_IMM(x) \
   (RV_X(x, 20, 12) | (RV_IMM_SIGN(x) << 12))
@@ -66,6 +71,18 @@ static inline unsigned int riscv_insn_length (insn_t insn)
   ((RV_X(x, 12, 20) << 12) | (RV_IMM_SIGN(x) << 32))
 #define EXTRACT_JTYPE_IMM(x) \
   ((RV_X(x, 21, 10) << 1) | (RV_X(x, 20, 1) << 11) | (RV_X(x, 12, 8) << 12) | (RV_IMM_SIGN(x) << 20))
+
+#define EXTRACT_ITYPE_IMM_128(x) \
+  (RV_X(x, 20, 12) | (RV_IMM_SIGN_128(x) << 12))
+#define EXTRACT_STYPE_IMM_128(x) \
+  (RV_X(x, 7, 5) | (RV_X(x, 25, 7) << 5) | (RV_IMM_SIGN_128(x) << 12))
+#define EXTRACT_BTYPE_IMM_128(x) \
+  ((RV_X(x, 8, 4) << 1) | (RV_X(x, 25, 6) << 5) | (RV_X(x, 7, 1) << 11) | (RV_IMM_SIGN_128(x) << 12))
+#define EXTRACT_UTYPE_IMM_128(x) \
+  ((RV_X(x, 12, 20) << 12) | (RV_IMM_SIGN_128(x) << 32))
+#define EXTRACT_JTYPE_IMM_128(x) \
+  ((RV_X(x, 21, 10) << 1) | (RV_X(x, 20, 1) << 11) | (RV_X(x, 12, 8) << 12) | (RV_IMM_SIGN_128(x) << 20))
+
 #define EXTRACT_CITYPE_IMM(x) \
   (RV_X(x, 2, 5) | (-RV_X(x, 12, 1) << 5))
 #define EXTRACT_CITYPE_LUI_IMM(x) \
@@ -76,12 +93,16 @@ static inline unsigned int riscv_insn_length (insn_t insn)
   ((RV_X(x, 4, 3) << 2) | (RV_X(x, 12, 1) << 5) | (RV_X(x, 2, 2) << 6))
 #define EXTRACT_CITYPE_LDSP_IMM(x) \
   ((RV_X(x, 5, 2) << 3) | (RV_X(x, 12, 1) << 5) | (RV_X(x, 2, 3) << 6))
+#define EXTRACT_CITYPE_LQSP_IMM(x) \
+  ((RV_X(x, 6, 1) << 4) | (RV_X(x, 12, 1) << 5) | (RV_X(x, 2, 4) << 6))
 #define EXTRACT_CSSTYPE_IMM(x) \
   (RV_X(x, 7, 6) << 0)
 #define EXTRACT_CSSTYPE_SWSP_IMM(x) \
   ((RV_X(x, 9, 4) << 2) | (RV_X(x, 7, 2) << 6))
 #define EXTRACT_CSSTYPE_SDSP_IMM(x) \
   ((RV_X(x, 10, 3) << 3) | (RV_X(x, 7, 3) << 6))
+#define EXTRACT_CSSTYPE_SQSP_IMM(x) \
+  ((RV_X(x, 11, 2) << 4) | (RV_X(x, 7, 4) << 6))
 #define EXTRACT_CIWTYPE_IMM(x) \
   (RV_X(x, 5, 8))
 #define EXTRACT_CIWTYPE_ADDI4SPN_IMM(x) \
@@ -92,10 +113,12 @@ static inline unsigned int riscv_insn_length (insn_t insn)
   ((RV_X(x, 6, 1) << 2) | (RV_X(x, 10, 3) << 3) | (RV_X(x, 5, 1) << 6))
 #define EXTRACT_CLTYPE_LD_IMM(x) \
   ((RV_X(x, 10, 3) << 3) | (RV_X(x, 5, 2) << 6))
+#define EXTRACT_CLTYPE_LQ_IMM(x) \
+  ((RV_X(x, 11, 2) << 4) | (RV_X(x, 5, 2) << 6) | (RV_X(x, 10, 1) << 8))
 #define EXTRACT_CBTYPE_IMM(x) \
-  ((RV_X(x, 3, 2) << 1) | (RV_X(x, 10, 2) << 3) | (RV_X(x, 2, 1) << 5) | (RV_X(x, 5, 2) << 6) | (-RV_X(x, 12, 1) << 8))
+  ((RV_X(x, 3, 2) << 1) | (RV_X(x, 10, 2) << 3) | (RV_X(x, 2, 1) << 5) | (RV_X(x, 5, 2) << 6) | (-((bfd_vma) RV_X(x, 12, 1)) << 8))
 #define EXTRACT_CJTYPE_IMM(x) \
-  ((RV_X(x, 3, 3) << 1) | (RV_X(x, 11, 1) << 4) | (RV_X(x, 2, 1) << 5) | (RV_X(x, 7, 1) << 6) | (RV_X(x, 6, 1) << 7) | (RV_X(x, 9, 2) << 8) | (RV_X(x, 8, 1) << 10) | (-RV_X(x, 12, 1) << 11))
+  ((RV_X(x, 3, 3) << 1) | (RV_X(x, 11, 1) << 4) | (RV_X(x, 2, 1) << 5) | (RV_X(x, 7, 1) << 6) | (RV_X(x, 6, 1) << 7) | (RV_X(x, 9, 2) << 8) | (RV_X(x, 8, 1) << 10) | (-((bfd_vma) RV_X(x, 12, 1)) << 11))
 #define EXTRACT_RVV_VI_IMM(x) \
   (RV_X(x, 15, 5) | (-RV_X(x, 19, 1) << 5))
 #define EXTRACT_RVV_VI_UIMM(x) \
@@ -127,12 +150,16 @@ static inline unsigned int riscv_insn_length (insn_t insn)
   ((RV_X(x, 2, 3) << 4) | (RV_X(x, 5, 1) << 12) | (RV_X(x, 6, 2) << 2))
 #define ENCODE_CITYPE_LDSP_IMM(x) \
   ((RV_X(x, 3, 2) << 5) | (RV_X(x, 5, 1) << 12) | (RV_X(x, 6, 3) << 2))
+#define ENCODE_CITYPE_LQSP_IMM(x) \
+  ((RV_X(x, 4, 1) << 6) | (RV_X(x, 5, 1) << 12) | (RV_X(x, 6, 4) << 2))
 #define ENCODE_CSSTYPE_IMM(x) \
   (RV_X(x, 0, 6) << 7)
 #define ENCODE_CSSTYPE_SWSP_IMM(x) \
   ((RV_X(x, 2, 4) << 9) | (RV_X(x, 6, 2) << 7))
 #define ENCODE_CSSTYPE_SDSP_IMM(x) \
   ((RV_X(x, 3, 3) << 10) | (RV_X(x, 6, 3) << 7))
+#define ENCODE_CSSTYPE_SQSP_IMM(x) \
+  ((RV_X(x, 4, 2) << 11) | (RV_X(x, 6, 4) << 7))
 #define ENCODE_CIWTYPE_IMM(x) \
   (RV_X(x, 0, 8) << 5)
 #define ENCODE_CIWTYPE_ADDI4SPN_IMM(x) \
@@ -143,6 +170,8 @@ static inline unsigned int riscv_insn_length (insn_t insn)
   ((RV_X(x, 2, 1) << 6) | (RV_X(x, 3, 3) << 10) | (RV_X(x, 6, 1) << 5))
 #define ENCODE_CLTYPE_LD_IMM(x) \
   ((RV_X(x, 3, 3) << 10) | (RV_X(x, 6, 2) << 5))
+#define ENCODE_CLTYPE_LQ_IMM(x) \
+  ((RV_X(x, 6, 2) << 5) | (RV_X(x, 8, 1) << 10) | (RV_X(x, 4, 2) << 11))
 #define ENCODE_CBTYPE_IMM(x) \
   ((RV_X(x, 1, 2) << 3) | (RV_X(x, 3, 2) << 10) | (RV_X(x, 5, 1) << 2) | (RV_X(x, 6, 2) << 5) | (RV_X(x, 8, 1) << 12))
 #define ENCODE_CJTYPE_IMM(x) \
@@ -157,6 +186,13 @@ static inline unsigned int riscv_insn_length (insn_t insn)
 #define VALID_BTYPE_IMM(x) (EXTRACT_BTYPE_IMM(ENCODE_BTYPE_IMM(x)) == (x))
 #define VALID_UTYPE_IMM(x) (EXTRACT_UTYPE_IMM(ENCODE_UTYPE_IMM(x)) == (x))
 #define VALID_JTYPE_IMM(x) (EXTRACT_JTYPE_IMM(ENCODE_JTYPE_IMM(x)) == (x))
+
+#define VALID_ITYPE_IMM_128(x) (EXTRACT_ITYPE_IMM_128(ENCODE_ITYPE_IMM(x)) == (x))
+#define VALID_STYPE_IMM_128(x) (EXTRACT_STYPE_IMM_128(ENCODE_STYPE_IMM(x)) == (x))
+#define VALID_BTYPE_IMM_128(x) (EXTRACT_BTYPE_IMM_128(ENCODE_BTYPE_IMM(x)) == (x))
+#define VALID_UTYPE_IMM_128(x) (EXTRACT_UTYPE_IMM_128(ENCODE_UTYPE_IMM(x)) == (x))
+#define VALID_JTYPE_IMM_128(x) (EXTRACT_JTYPE_IMM_128(ENCODE_JTYPE_IMM(x)) == (x))
+
 #define VALID_CITYPE_IMM(x) (EXTRACT_CITYPE_IMM(ENCODE_CITYPE_IMM(x)) == (x))
 #define VALID_CITYPE_LUI_IMM(x) (ENCODE_CITYPE_LUI_IMM(x) != 0 \
 				 && EXTRACT_CITYPE_LUI_IMM(ENCODE_CITYPE_LUI_IMM(x)) == (x))
@@ -164,14 +200,17 @@ static inline unsigned int riscv_insn_length (insn_t insn)
 				      && EXTRACT_CITYPE_ADDI16SP_IMM(ENCODE_CITYPE_ADDI16SP_IMM(x)) == (x))
 #define VALID_CITYPE_LWSP_IMM(x) (EXTRACT_CITYPE_LWSP_IMM(ENCODE_CITYPE_LWSP_IMM(x)) == (x))
 #define VALID_CITYPE_LDSP_IMM(x) (EXTRACT_CITYPE_LDSP_IMM(ENCODE_CITYPE_LDSP_IMM(x)) == (x))
+#define VALID_CITYPE_LQSP_IMM(x) (EXTRACT_CITYPE_LQSP_IMM(ENCODE_CITYPE_LQSP_IMM(x)) == (x))
 #define VALID_CSSTYPE_IMM(x) (EXTRACT_CSSTYPE_IMM(ENCODE_CSSTYPE_IMM(x)) == (x))
 #define VALID_CSSTYPE_SWSP_IMM(x) (EXTRACT_CSSTYPE_SWSP_IMM(ENCODE_CSSTYPE_SWSP_IMM(x)) == (x))
 #define VALID_CSSTYPE_SDSP_IMM(x) (EXTRACT_CSSTYPE_SDSP_IMM(ENCODE_CSSTYPE_SDSP_IMM(x)) == (x))
+#define VALID_CSSTYPE_SQSP_IMM(x) (EXTRACT_CSSTYPE_SQSP_IMM(ENCODE_CSSTYPE_SQSP_IMM(x)) == (x))
 #define VALID_CIWTYPE_IMM(x) (EXTRACT_CIWTYPE_IMM(ENCODE_CIWTYPE_IMM(x)) == (x))
 #define VALID_CIWTYPE_ADDI4SPN_IMM(x) (EXTRACT_CIWTYPE_ADDI4SPN_IMM(ENCODE_CIWTYPE_ADDI4SPN_IMM(x)) == (x))
 #define VALID_CLTYPE_IMM(x) (EXTRACT_CLTYPE_IMM(ENCODE_CLTYPE_IMM(x)) == (x))
 #define VALID_CLTYPE_LW_IMM(x) (EXTRACT_CLTYPE_LW_IMM(ENCODE_CLTYPE_LW_IMM(x)) == (x))
 #define VALID_CLTYPE_LD_IMM(x) (EXTRACT_CLTYPE_LD_IMM(ENCODE_CLTYPE_LD_IMM(x)) == (x))
+#define VALID_CLTYPE_LQ_IMM(x) (EXTRACT_CLTYPE_LQ_IMM(ENCODE_CLTYPE_LQ_IMM(x)) == (x))
 #define VALID_CBTYPE_IMM(x) (EXTRACT_CBTYPE_IMM(ENCODE_CBTYPE_IMM(x)) == (x))
 #define VALID_CJTYPE_IMM(x) (EXTRACT_CJTYPE_IMM(ENCODE_CJTYPE_IMM(x)) == (x))
 #define VALID_RVV_VB_IMM(x) (EXTRACT_RVV_VB_IMM(ENCODE_RVV_VB_IMM(x)) == (x))
@@ -226,8 +265,10 @@ static inline unsigned int riscv_insn_length (insn_t insn)
 #define OP_SH_RS3		27
 #define OP_MASK_RD		0x1f
 #define OP_SH_RD		7
-#define OP_MASK_SHAMT		0x3f
+#define OP_MASK_SHAMT		0x7f
 #define OP_SH_SHAMT		20
+#define OP_MASK_SHAMTD		0x3f
+#define OP_SH_SHAMTD		20
 #define OP_MASK_SHAMTW		0x1f
 #define OP_SH_SHAMTW		20
 #define OP_MASK_RM		0x7
@@ -511,10 +552,13 @@ enum
   M_LW,
   M_LWU,
   M_LD,
+  M_LDU,
+  M_LQ,
   M_SB,
   M_SH,
   M_SW,
   M_SD,
+  M_SQ,
   M_FLW,
   M_FLD,
   M_FLQ,

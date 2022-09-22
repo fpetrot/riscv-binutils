@@ -197,6 +197,8 @@ AC_C_BIGENDIAN
 
 host64=false
 target64=false
+host128=false
+target128=false
 bfd_default_target_size=32
 
 # host stuff:
@@ -219,6 +221,8 @@ AC_CHECK_SIZEOF(int)
 
 if test "x${ac_cv_sizeof_void_p}" = "x8"; then
   host64=true
+elif test "x${ac_cv_sizeof_void_p}" = "x16"; then
+  host128=true
 fi
 
 BFD_CC_FOR_BUILD
@@ -588,6 +592,7 @@ do
     riscv_elf128_vec)		 tb="$tb elf128-riscv.lo elf128.lo elf64-riscv.lo elf64.lo elfxx-riscv.lo elf-ifunc.lo elf32.lo $elf"; target_size=128 ;;
     riscv_elf32_be_vec)		 tb="$tb elf32-riscv.lo elfxx-riscv.lo elf-ifunc.lo elf32.lo $elf" ;;
     riscv_elf64_be_vec)		 tb="$tb elf64-riscv.lo elf64.lo elfxx-riscv.lo elf-ifunc.lo elf32.lo $elf"; target_size=64 ;;
+    riscv_elf128_be_vec)	 tb="$tb elf128-riscv.lo elf128.lo elf64-riscv.lo elf64.lo elfxx-riscv.lo elf-ifunc.lo elf32.lo $elf"; target_size=128 ;;
     rl78_elf32_vec)		 tb="$tb elf32-rl78.lo elf32.lo $elf" ;;
     rs6000_xcoff64_vec)		 tb="$tb coff64-rs6000.lo aix5ppc-core.lo $xcoff"; target_size=64 ;;
     rs6000_xcoff64_aix_vec)	 tb="$tb coff64-rs6000.lo aix5ppc-core.lo $xcoff"; target_size=64 ;;
@@ -688,6 +693,10 @@ do
 
     if test ${target_size} = 64; then
 	target64=true
+    fi
+    if test ${target_size} = 128; then
+	AC_MSG_WARN([128-bit target is *experimental*])
+	target128=true
     fi
     if test x"${vec}" = x"${defvec}"; then
 	bfd_default_target_size=${target_size}

@@ -1022,12 +1022,14 @@ const bfd_target TARGET_BIG_SYM =
   TARGET_KEEP_UNUSED_SECTION_SYMBOLS,
 
   /* Routines to byte-swap various sized integers from the data sections */
-  bfd_getb64, bfd_getb_signed_64, bfd_putb64,
+  bfd_getb128, bfd_getb_signed_128, bfd_putb128,
+    bfd_getb64, bfd_getb_signed_64, bfd_putb64,
     bfd_getb32, bfd_getb_signed_32, bfd_putb32,
     bfd_getb16, bfd_getb_signed_16, bfd_putb16,
 
   /* Routines to byte-swap various sized integers from the file headers */
-  bfd_getb64, bfd_getb_signed_64, bfd_putb64,
+  bfd_getb128, bfd_getb_signed_128, bfd_putb128,
+    bfd_getb64, bfd_getb_signed_64, bfd_putb64,
     bfd_getb32, bfd_getb_signed_32, bfd_putb32,
     bfd_getb16, bfd_getb_signed_16, bfd_putb16,
 
@@ -1127,12 +1129,14 @@ const bfd_target TARGET_LITTLE_SYM =
   TARGET_KEEP_UNUSED_SECTION_SYMBOLS,
 
   /* Routines to byte-swap various sized integers from the data sections */
-  bfd_getl64, bfd_getl_signed_64, bfd_putl64,
+  bfd_getl128, bfd_getl_signed_128, bfd_putl128,
+    bfd_getl64, bfd_getl_signed_64, bfd_putl64,
     bfd_getl32, bfd_getl_signed_32, bfd_putl32,
     bfd_getl16, bfd_getl_signed_16, bfd_putl16,
 
   /* Routines to byte-swap various sized integers from the file headers */
-  bfd_getl64, bfd_getl_signed_64, bfd_putl64,
+  bfd_getl128, bfd_getl_signed_128, bfd_putl128,
+    bfd_getl64, bfd_getl_signed_64, bfd_putl64,
     bfd_getl32, bfd_getl_signed_32, bfd_putl32,
     bfd_getl16, bfd_getl_signed_16, bfd_putl16,
 

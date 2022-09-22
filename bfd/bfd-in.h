@@ -71,7 +71,10 @@ extern "C" {
 
 #include <inttypes.h>
 
-#if BFD_ARCH_SIZE >= 64
+#if BFD_ARCH_SIZE >= 128
+#define BFD128
+#undef BFD64
+#elif BFD_ARCH_SIZE >= 64
 #define BFD64
 #endif
 
@@ -110,7 +113,14 @@ typedef int64_t bfd_signed_vma;
 typedef uint64_t bfd_size_type;
 typedef uint64_t symvalue;
 
-#else /* not BFD64  */
+#elif defined BFD128
+
+typedef __uint128_t bfd_vma;
+typedef __int128_t bfd_signed_vma;
+typedef __uint128_t bfd_size_type;
+typedef __uint128_t symvalue;
+
+#else /* BFD32 */
 
 typedef uint32_t bfd_vma;
 typedef int32_t bfd_signed_vma;

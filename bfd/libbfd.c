@@ -608,11 +608,21 @@ DESCRIPTION
 .#define bfd_get_signed_64(abfd, ptr) \
 .  BFD_SEND (abfd, bfd_getx_signed_64, (ptr))
 .
+.#define bfd_put_128(abfd, val, ptr) \
+.  BFD_SEND (abfd, bfd_putx128, ((val), (ptr)))
+.#define bfd_put_signed_128 \
+.  bfd_put_128
+.#define bfd_get_128(abfd, ptr) \
+.  BFD_SEND (abfd, bfd_getx128, (ptr))
+.#define bfd_get_signed_128(abfd, ptr) \
+.  BFD_SEND (abfd, bfd_getx_signed_128, (ptr))
+.
 .#define bfd_get(bits, abfd, ptr)			\
 .  ((bits) == 8 ? bfd_get_8 (abfd, ptr)			\
 .   : (bits) == 16 ? bfd_get_16 (abfd, ptr)		\
 .   : (bits) == 32 ? bfd_get_32 (abfd, ptr)		\
 .   : (bits) == 64 ? bfd_get_64 (abfd, ptr)		\
+.   : (bits) == 128 ? bfd_get_128 (abfd, ptr)		\
 .   : (abort (), (bfd_vma) - 1))
 .
 .#define bfd_put(bits, abfd, val, ptr)			\
@@ -620,6 +630,7 @@ DESCRIPTION
 .   : (bits) == 16 ? bfd_put_16 (abfd, val, ptr)	\
 .   : (bits) == 32 ? bfd_put_32 (abfd, val, ptr)	\
 .   : (bits) == 64 ? bfd_put_64 (abfd, val, ptr)	\
+.   : (bits) == 128 ? bfd_put_128 (abfd, val, ptr)	\
 .   : (abort (), (void) 0))
 .
 */
@@ -674,24 +685,37 @@ DESCRIPTION
 .#define bfd_h_get_signed_64(abfd, ptr) \
 .  BFD_SEND (abfd, bfd_h_getx_signed_64, (ptr))
 .
+.#define bfd_h_put_128(abfd, val, ptr) \
+.  BFD_SEND (abfd, bfd_h_putx128, (val, ptr))
+.#define bfd_h_put_signed_128 \
+.  bfd_h_put_128
+.#define bfd_h_get_128(abfd, ptr) \
+.  BFD_SEND (abfd, bfd_h_getx128, (ptr))
+.#define bfd_h_get_signed_128(abfd, ptr) \
+.  BFD_SEND (abfd, bfd_h_getx_signed_128, (ptr))
+.
 .{* Aliases for the above, which should eventually go away.  *}
 .
-.#define H_PUT_64  bfd_h_put_64
-.#define H_PUT_32  bfd_h_put_32
-.#define H_PUT_16  bfd_h_put_16
-.#define H_PUT_8   bfd_h_put_8
-.#define H_PUT_S64 bfd_h_put_signed_64
-.#define H_PUT_S32 bfd_h_put_signed_32
-.#define H_PUT_S16 bfd_h_put_signed_16
-.#define H_PUT_S8  bfd_h_put_signed_8
-.#define H_GET_64  bfd_h_get_64
-.#define H_GET_32  bfd_h_get_32
-.#define H_GET_16  bfd_h_get_16
-.#define H_GET_8   bfd_h_get_8
-.#define H_GET_S64 bfd_h_get_signed_64
-.#define H_GET_S32 bfd_h_get_signed_32
-.#define H_GET_S16 bfd_h_get_signed_16
-.#define H_GET_S8  bfd_h_get_signed_8
+.#define H_PUT_128  bfd_h_put_128
+.#define H_PUT_64   bfd_h_put_64
+.#define H_PUT_32   bfd_h_put_32
+.#define H_PUT_16   bfd_h_put_16
+.#define H_PUT_8    bfd_h_put_8
+.#define H_PUT_S128 bfd_h_put_signed_128
+.#define H_PUT_S64  bfd_h_put_signed_64
+.#define H_PUT_S32  bfd_h_put_signed_32
+.#define H_PUT_S16  bfd_h_put_signed_16
+.#define H_PUT_S8   bfd_h_put_signed_8
+.#define H_GET_128  bfd_h_get_128
+.#define H_GET_64   bfd_h_get_64
+.#define H_GET_32   bfd_h_get_32
+.#define H_GET_16   bfd_h_get_16
+.#define H_GET_8    bfd_h_get_8
+.#define H_GET_S128 bfd_h_get_signed_128
+.#define H_GET_S64  bfd_h_get_signed_64
+.#define H_GET_S32  bfd_h_get_signed_32
+.#define H_GET_S16  bfd_h_get_signed_16
+.#define H_GET_S8   bfd_h_get_signed_8
 .
 .*/
 
@@ -700,6 +724,8 @@ DESCRIPTION
 #define COERCE32(x) (((bfd_vma) (x) ^ 0x80000000) - 0x80000000)
 #define COERCE64(x) \
   (((uint64_t) (x) ^ ((uint64_t) 1 << 63)) - ((uint64_t) 1 << 63))
+#define COERCE128(x) \
+  (((__uint128_t) (x) ^ ((__uint128_t) 1 << 127)) - ((__uint128_t) 1 << 127))
 
 /*
 FUNCTION
@@ -868,7 +894,7 @@ bfd_getl_signed_32 (const void *p)
   return COERCE32 (v);
 }
 
-uint64_t
+bfd_vma
 bfd_getb64 (const void *p)
 {
   const bfd_byte *addr = (const bfd_byte *) p;
@@ -886,7 +912,7 @@ bfd_getb64 (const void *p)
   return v;
 }
 
-uint64_t
+bfd_vma
 bfd_getl64 (const void *p)
 {
   const bfd_byte *addr = (const bfd_byte *) p;
@@ -904,7 +930,7 @@ bfd_getl64 (const void *p)
   return v;
 }
 
-int64_t
+bfd_signed_vma
 bfd_getb_signed_64 (const void *p)
 {
   const bfd_byte *addr = (const bfd_byte *) p;
@@ -922,7 +948,7 @@ bfd_getb_signed_64 (const void *p)
   return COERCE64 (v);
 }
 
-int64_t
+bfd_signed_vma
 bfd_getl_signed_64 (const void *p)
 {
   const bfd_byte *addr = (const bfd_byte *) p;
@@ -938,6 +964,130 @@ bfd_getl_signed_64 (const void *p)
   v |= addr[0];
 
   return COERCE64 (v);
+}
+
+bfd_vma
+bfd_getb128 (const void *p ATTRIBUTE_UNUSED)
+{
+#ifdef BFD128
+  const bfd_byte *addr = (const bfd_byte *) p;
+  __uint128_t v;
+
+  v  = addr[0]; v <<= 8;
+  v |= addr[1]; v <<= 8;
+  v |= addr[2]; v <<= 8;
+  v |= addr[3]; v <<= 8;
+  v |= addr[4]; v <<= 8;
+  v |= addr[5]; v <<= 8;
+  v |= addr[6]; v <<= 8;
+  v |= addr[7]; v <<= 8;
+  v |= addr[8]; v <<= 8;
+  v |= addr[9]; v <<= 8;
+  v |= addr[10]; v <<= 8;
+  v |= addr[11]; v <<= 8;
+  v |= addr[12]; v <<= 8;
+  v |= addr[13]; v <<= 8;
+  v |= addr[14]; v <<= 8;
+  v |= addr[15];
+
+  return v;
+#else
+  BFD_FAIL();
+  return 0;
+#endif
+}
+
+bfd_vma
+bfd_getl128 (const void *p ATTRIBUTE_UNUSED)
+{
+#ifdef BFD128
+  const bfd_byte *addr = (const bfd_byte *) p;
+  __uint128_t v;
+
+  v  = addr[15]; v <<= 8;
+  v |= addr[14]; v <<= 8;
+  v |= addr[13]; v <<= 8;
+  v |= addr[12]; v <<= 8;
+  v |= addr[11]; v <<= 8;
+  v |= addr[10]; v <<= 8;
+  v |= addr[9]; v <<= 8;
+  v |= addr[8]; v <<= 8;
+  v |= addr[7]; v <<= 8;
+  v |= addr[6]; v <<= 8;
+  v |= addr[5]; v <<= 8;
+  v |= addr[4]; v <<= 8;
+  v |= addr[3]; v <<= 8;
+  v |= addr[2]; v <<= 8;
+  v |= addr[1]; v <<= 8;
+  v |= addr[0];
+
+  return v;
+#else
+  BFD_FAIL();
+  return 0;
+#endif
+}
+
+bfd_signed_vma
+bfd_getb_signed_128 (const void *p ATTRIBUTE_UNUSED)
+{
+#ifdef BFD128
+  const bfd_byte *addr = (const bfd_byte *) p;
+  __uint128_t v;
+
+  v  = addr[0]; v <<= 8;
+  v |= addr[1]; v <<= 8;
+  v |= addr[2]; v <<= 8;
+  v |= addr[3]; v <<= 8;
+  v |= addr[4]; v <<= 8;
+  v |= addr[5]; v <<= 8;
+  v |= addr[6]; v <<= 8;
+  v |= addr[7]; v <<= 8;
+  v |= addr[8]; v <<= 8;
+  v |= addr[9]; v <<= 8;
+  v |= addr[10]; v <<= 8;
+  v |= addr[11]; v <<= 8;
+  v |= addr[12]; v <<= 8;
+  v |= addr[13]; v <<= 8;
+  v |= addr[14]; v <<= 8;
+  v |= addr[15];
+
+  return COERCE128 (v);
+#else
+  BFD_FAIL();
+  return 0;
+#endif
+}
+
+bfd_signed_vma
+bfd_getl_signed_128 (const void *p ATTRIBUTE_UNUSED)
+{
+#ifdef BFD128
+  const bfd_byte *addr = (const bfd_byte *) p;
+  __uint128_t v;
+
+  v  = addr[15]; v <<= 8;
+  v |= addr[14]; v <<= 8;
+  v |= addr[13]; v <<= 8;
+  v |= addr[12]; v <<= 8;
+  v |= addr[11]; v <<= 8;
+  v |= addr[10]; v <<= 8;
+  v |= addr[9]; v <<= 8;
+  v |= addr[8]; v <<= 8;
+  v |= addr[7]; v <<= 8;
+  v |= addr[6]; v <<= 8;
+  v |= addr[5]; v <<= 8;
+  v |= addr[4]; v <<= 8;
+  v |= addr[3]; v <<= 8;
+  v |= addr[2]; v <<= 8;
+  v |= addr[1]; v <<= 8;
+  v |= addr[0];
+
+  return COERCE128(v);
+#else
+  BFD_FAIL();
+  return 0;
+#endif
 }
 
 void
@@ -961,7 +1111,7 @@ bfd_putl32 (bfd_vma data, void *p)
 }
 
 void
-bfd_putb64 (uint64_t data, void *p)
+bfd_putb64 (bfd_vma data, void *p)
 {
   bfd_byte *addr = (bfd_byte *) p;
   addr[0] = (data >> (7*8)) & 0xff;
@@ -975,7 +1125,7 @@ bfd_putb64 (uint64_t data, void *p)
 }
 
 void
-bfd_putl64 (uint64_t data, void *p)
+bfd_putl64 (bfd_vma data, void *p)
 {
   bfd_byte *addr = (bfd_byte *) p;
   addr[7] = (data >> (7*8)) & 0xff;
@@ -989,7 +1139,60 @@ bfd_putl64 (uint64_t data, void *p)
 }
 
 void
-bfd_put_bits (uint64_t data, void *p, int bits, bool big_p)
+bfd_putb128 (bfd_vma data ATTRIBUTE_UNUSED, void *p ATTRIBUTE_UNUSED)
+{
+#ifdef BFD128
+  bfd_byte *addr = (bfd_byte *) p;
+  addr[0]  = (data >> (15*8)) & 0xff;
+  addr[1]  = (data >> (14*8)) & 0xff;
+  addr[2]  = (data >> (13*8)) & 0xff;
+  addr[3]  = (data >> (12*8)) & 0xff;
+  addr[4]  = (data >> (11*8)) & 0xff;
+  addr[5]  = (data >> (10*8)) & 0xff;
+  addr[6]  = (data >> (9*8)) & 0xff;
+  addr[7]  = (data >> (8*8)) & 0xff;
+  addr[8]  = (data >> (7*8)) & 0xff;
+  addr[9]  = (data >> (6*8)) & 0xff;
+  addr[10] = (data >> (5*8)) & 0xff;
+  addr[11] = (data >> (4*8)) & 0xff;
+  addr[12] = (data >> (3*8)) & 0xff;
+  addr[13] = (data >> (2*8)) & 0xff;
+  addr[14] = (data >> (1*8)) & 0xff;
+  addr[15] = (data >> (0*8)) & 0xff;
+#else
+  BFD_FAIL();
+#endif
+}
+
+void
+bfd_putl128 (bfd_vma data ATTRIBUTE_UNUSED, void *p ATTRIBUTE_UNUSED)
+{
+#ifdef BFD128
+  bfd_byte *addr = (bfd_byte *) p;
+  addr[15] = (data >> (15*8)) & 0xff;
+  addr[14] = (data >> (14*8)) & 0xff;
+  addr[13] = (data >> (13*8)) & 0xff;
+  addr[12] = (data >> (12*8)) & 0xff;
+  addr[11] = (data >> (11*8)) & 0xff;
+  addr[10] = (data >> (10*8)) & 0xff;
+  addr[9]  = (data >> (9*8)) & 0xff;
+  addr[8]  = (data >> (8*8)) & 0xff;
+  addr[7]  = (data >> (7*8)) & 0xff;
+  addr[6]  = (data >> (6*8)) & 0xff;
+  addr[5]  = (data >> (5*8)) & 0xff;
+  addr[4]  = (data >> (4*8)) & 0xff;
+  addr[3]  = (data >> (3*8)) & 0xff;
+  addr[2]  = (data >> (2*8)) & 0xff;
+  addr[1]  = (data >> (1*8)) & 0xff;
+  addr[0]  = (data >> (0*8)) & 0xff;
+#else
+  BFD_FAIL();
+#endif
+}
+/* TODO: verify the signature change in put bits now that we are implementing 128 bits
+  related signatures should bechanged too (bfd-in  and bfd-in2) */
+void
+bfd_put_bits (__uint128_t data, void *p, int bits, bool big_p)
 {
   bfd_byte *addr = (bfd_byte *) p;
   int i;
@@ -1008,11 +1211,11 @@ bfd_put_bits (uint64_t data, void *p, int bits, bool big_p)
     }
 }
 
-uint64_t
+__uint128_t
 bfd_get_bits (const void *p, int bits, bool big_p)
 {
   const bfd_byte *addr = (const bfd_byte *) p;
-  uint64_t data;
+  __uint128_t data;
   int i;
   int bytes;
 

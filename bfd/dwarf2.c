@@ -1058,6 +1058,7 @@ read_alt_indirect_ref (struct comp_unit *unit, uint64_t offset)
   return stash->alt.dwarf_info_buffer + offset;
 }
 
+/* FP: FIXME check if uin64_t can cause issue in 128-bit */
 static uint64_t
 read_address (struct comp_unit *unit, bfd_byte **ptr, bfd_byte *buf_end)
 {
@@ -1078,6 +1079,8 @@ read_address (struct comp_unit *unit, bfd_byte **ptr, bfd_byte *buf_end)
     {
       switch (unit->addr_size)
 	{
+	case 16:
+	  return bfd_get_signed_128 (unit->abfd, buf);
 	case 8:
 	  return bfd_get_signed_64 (unit->abfd, buf);
 	case 4:
@@ -1092,6 +1095,8 @@ read_address (struct comp_unit *unit, bfd_byte **ptr, bfd_byte *buf_end)
     {
       switch (unit->addr_size)
 	{
+	case 16:
+	  return bfd_get_128 (unit->abfd, buf);
 	case 8:
 	  return bfd_get_64 (unit->abfd, buf);
 	case 4:
@@ -1432,6 +1437,8 @@ read_indexed_address (uint64_t idx, struct comp_unit *unit)
     return bfd_get_32 (unit->abfd, info_ptr);
   else if (unit->addr_size == 8)
     return bfd_get_64 (unit->abfd, info_ptr);
+  else if (unit->addr_size == 16)
+    return bfd_get_128 (unit->abfd, info_ptr);
   else
     return 0;
 }
@@ -4452,7 +4459,7 @@ parse_comp_unit (struct dwarf2_debug *stash,
       return NULL;
     }
 
-  if (addr_size != 2 && addr_size != 4 && addr_size != 8)
+  if (addr_size != 2 && addr_size != 4 && addr_size != 8 && addr_size != 16)
     {
       _bfd_error_handler
 	("DWARF error: found address size '%u', this reader"

@@ -45,8 +45,11 @@ extern "C" {
    an object file, but no symbol table.  */
 #define NUM_SHDR_ENTRIES(shdr) ((shdr)->sh_entsize > 0 ? (shdr)->sh_size / (shdr)->sh_entsize : 0)
 
-/* If size isn't specified as 64 or 32, NAME macro should fail.  */
+/* If size isn't specified as 128, 64 or 32, NAME macro should fail.  */
 #ifndef NAME
+#if ARCH_SIZE == 128
+#define NAME(x, y) x ## 128 ## _ ## y
+#endif
 #if ARCH_SIZE == 64
 #define NAME(x, y) x ## 64 ## _ ## y
 #endif
@@ -2690,6 +2693,54 @@ extern void bfd_elf64_write_relocs
 extern bool bfd_elf64_slurp_reloc_table
   (bfd *, asection *, asymbol **, bool);
 
+extern bfd_cleanup bfd_elf128_object_p
+  (bfd *);
+extern bfd_cleanup bfd_elf128_core_file_p
+  (bfd *);
+extern char *bfd_elf128_core_file_failing_command
+  (bfd *);
+extern int bfd_elf128_core_file_failing_signal
+  (bfd *);
+extern bool bfd_elf128_core_file_matches_executable_p
+  (bfd *, bfd *);
+extern int bfd_elf128_core_file_pid
+  (bfd *);
+extern bool _bfd_elf128_core_find_build_id
+  (bfd *, bfd_vma);
+
+extern bool bfd_elf128_swap_symbol_in
+  (bfd *, const void *, const void *, Elf_Internal_Sym *);
+extern void bfd_elf128_swap_symbol_out
+  (bfd *, const Elf_Internal_Sym *, void *, void *);
+extern void bfd_elf128_swap_reloc_in
+  (bfd *, const bfd_byte *, Elf_Internal_Rela *);
+extern void bfd_elf128_swap_reloc_out
+  (bfd *, const Elf_Internal_Rela *, bfd_byte *);
+extern void bfd_elf128_swap_reloca_in
+  (bfd *, const bfd_byte *, Elf_Internal_Rela *);
+extern void bfd_elf128_swap_reloca_out
+  (bfd *, const Elf_Internal_Rela *, bfd_byte *);
+extern void bfd_elf128_swap_phdr_in
+  (bfd *, const Elf128_External_Phdr *, Elf_Internal_Phdr *);
+extern void bfd_elf128_swap_phdr_out
+  (bfd *, const Elf_Internal_Phdr *, Elf128_External_Phdr *);
+extern void bfd_elf128_swap_dyn_in
+  (bfd *, const void *, Elf_Internal_Dyn *);
+extern void bfd_elf128_swap_dyn_out
+  (bfd *, const Elf_Internal_Dyn *, void *);
+extern long bfd_elf128_slurp_symbol_table
+  (bfd *, asymbol **, bool);
+extern bool bfd_elf128_write_shdrs_and_ehdr
+  (bfd *);
+extern int bfd_elf128_write_out_phdrs
+  (bfd *, const Elf_Internal_Phdr *, unsigned int);
+extern bool bfd_elf128_checksum_contents
+  (bfd * , void (*) (const void *, size_t, void *), void *);
+extern void bfd_elf128_write_relocs
+  (bfd *, asection *, void *);
+extern bool bfd_elf128_slurp_reloc_table
+  (bfd *, asection *, asymbol **, bool);
+
 extern bool _bfd_elf_default_relocs_compatible
   (const bfd_target *, const bfd_target *);
 
@@ -2983,6 +3034,9 @@ extern bfd *_bfd_elf32_bfd_from_remote_memory
 extern bfd *_bfd_elf64_bfd_from_remote_memory
   (bfd *templ, bfd_vma ehdr_vma, bfd_size_type size, bfd_vma *loadbasep,
    int (*target_read_memory) (bfd_vma, bfd_byte *, bfd_size_type));
+extern bfd *_bfd_elf128_bfd_from_remote_memory
+  (bfd *templ, bfd_vma ehdr_vma, bfd_size_type size, bfd_vma *loadbasep,
+   int (*target_read_memory) (bfd_vma, bfd_byte *, bfd_size_type));
 
 extern bfd_vma bfd_elf_obj_attr_size (bfd *);
 extern void bfd_elf_set_obj_attr_contents (bfd *, bfd_byte *, bfd_vma);
@@ -3051,6 +3105,8 @@ extern bool _bfd_elf_allocate_ifunc_dyn_relocs
 extern void elf_append_rela (bfd *, asection *, Elf_Internal_Rela *);
 extern void elf_append_rel (bfd *, asection *, Elf_Internal_Rela *);
 
+extern bfd_vma elf128_r_info (bfd_vma, bfd_vma);
+extern bfd_vma elf128_r_sym (bfd_vma);
 extern bfd_vma elf64_r_info (bfd_vma, bfd_vma);
 extern bfd_vma elf64_r_sym (bfd_vma);
 extern bfd_vma elf32_r_info (bfd_vma, bfd_vma);

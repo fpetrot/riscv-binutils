@@ -137,11 +137,13 @@ enum DW_EH_PE
   DW_EH_PE_udata2 = 0x02,
   DW_EH_PE_udata4 = 0x03,
   DW_EH_PE_udata8 = 0x04,
+  DW_EH_PE_udata16 = 0x05,
   DW_EH_PE_signed = 0x08,
   DW_EH_PE_sleb128 = 0x09,
   DW_EH_PE_sdata2 = 0x0a,
   DW_EH_PE_sdata4 = 0x0b,
   DW_EH_PE_sdata8 = 0x0c,
+  DW_EH_PE_sdata16 = 0x0d,
 
   DW_EH_PE_pcrel = 0x10,
   DW_EH_PE_textrel = 0x20,

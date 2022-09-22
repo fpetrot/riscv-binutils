@@ -1,4 +1,6 @@
 bfdver.h
+elf128-riscv.c
+elf128-target.h
 elf32-aarch64.c
 elf32-ia64.c
 elf32-loongarch.c

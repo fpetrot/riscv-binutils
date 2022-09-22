@@ -48,6 +48,7 @@
 #define ELFCLASSNONE	      0	/* Invalid class */
 #define ELFCLASS32	      1	/* 32-bit objects */
 #define ELFCLASS64	      2	/* 64-bit objects */
+#define ELFCLASS128           3 /* 128-bit objects */
 
 #define EI_DATA		5	/* Data encoding */
 #define ELFDATANONE	      0	/* Invalid data encoding */
@@ -1101,6 +1102,11 @@
 #define ELF64_R_SYM(i)		((i) >> 32)
 #define ELF64_R_TYPE(i)		((i) & 0xffffffff)
 #define ELF64_R_INFO(s,t)	(((bfd_vma) (s) << 31 << 1) + (bfd_vma) (t))
+
+/* FP: FIXME Quick and dirty hack to progress on 128-bit assembly: make 128 a 64 */
+#define ELF128_R_SYM(i)		((i) >> 32)
+#define ELF128_R_TYPE(i)	((i) & 0xffffffff)
+#define ELF128_R_INFO(s,t)	(((bfd_vma) (s) << 31 << 1) + (bfd_vma) (t))
 
 /* Dynamic section tags.  */
 
