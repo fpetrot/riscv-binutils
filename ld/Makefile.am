@@ -446,6 +446,9 @@ ALL_64_EMULATION_SOURCES = \
 	eelf64lriscv.c \
 	eelf64lriscv_lp64.c \
 	eelf64lriscv_lp64f.c \
+	eelf128lriscv.c \
+	eelf128lriscv_llp128.c \
+	eelf128lriscv_llp128f.c \
 	eelf64ltsmip.c \
 	eelf64ltsmip_fbsd.c \
 	eelf64mmix.c \
@@ -941,6 +944,9 @@ $(ALL_EMULATION_SOURCES) $(ALL_64_EMULATION_SOURCES): $(GEN_DEPENDS)
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf64lriscv.Pc@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf64lriscv_lp64.Pc@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf64lriscv_lp64f.Pc@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf128lriscv.Pc@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf128lriscv_llp128.Pc@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf128lriscv_llp128f.Pc@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf64ltsmip.Pc@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf64ltsmip_fbsd.Pc@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eelf64mmix.Pc@am__quote@
