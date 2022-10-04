@@ -345,7 +345,7 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
 	    case 'j':
 	      if (((l & MASK_C_ADDI) == MATCH_C_ADDI) && rd != 0)
 		maybe_print_address (pd, rd, EXTRACT_CITYPE_IMM (l), 0);
-	      if (pd->xlen == 64
+	      if ((info->mach == bfd_mach_riscv64 || info->mach == bfd_mach_riscv128) 
 		  && ((l & MASK_C_ADDIW) == MATCH_C_ADDIW) && rd != 0)
 		maybe_print_address (pd, rd, EXTRACT_CITYPE_IMM (l), 1);
 	      print (info->stream, dis_style_immediate, "%d",
@@ -359,6 +359,10 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
 	      print (info->stream, dis_style_address_offset, "%d",
 		     (int)EXTRACT_CLTYPE_LD_IMM (l));
 	      break;
+	    case 'g':
+	      print (info->stream, dis_style_address_offset, "%d", 
+	             (int)EXTRACT_CLTYPE_LQ_IMM (l));
+	      break;
 	    case 'm':
 	      print (info->stream, dis_style_address_offset, "%d",
 		     (int)EXTRACT_CITYPE_LWSP_IMM (l));
@@ -366,6 +370,10 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
 	    case 'n':
 	      print (info->stream, dis_style_address_offset, "%d",
 		     (int)EXTRACT_CITYPE_LDSP_IMM (l));
+	      break;
+	    case 'h':
+	      print (info->stream, dis_style_address_offset, "%d", 
+		     (int)EXTRACT_CITYPE_LQSP_IMM (l));
 	      break;
 	    case 'K':
 	      print (info->stream, dis_style_immediate, "%d",
@@ -382,6 +390,10 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
 	    case 'N':
 	      print (info->stream, dis_style_address_offset, "%d",
 		     (int)EXTRACT_CSSTYPE_SDSP_IMM (l));
+	      break;
+	    case 'H':
+	      print (info->stream, dis_style_address_offset, "%d", 
+	             (int)EXTRACT_CSSTYPE_SQSP_IMM (l));
 	      break;
 	    case 'p':
 	      info->target = EXTRACT_CBTYPE_IMM (l) + pc;
@@ -403,6 +415,22 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
 	      print (info->stream, dis_style_immediate, "0x%x",
 		     (unsigned)EXTRACT_CITYPE_IMM (l) & 0x1f);
 	      break;
+#if 0
+	      /* FIXME: FP Check if what follows makes sense */
+	      {
+	        int imm = 128 + (int) EXTRACT_CITYPE_IMM (l);
+	        print (info->stream, dis_style_immediate, "0x%x", 
+	               imm == 128 ? 64 : (imm > 128 ? imm - 128 : imm));
+	        break;
+              }
+#endif
+            case '^':
+	      {
+	        int imm = (int) EXTRACT_CITYPE_IMM (l) & 0x3f;
+	        print (info->stream, dis_style_immediate, "0x%x", 
+	               imm == 0 ? 64 : imm);
+	        break;
+	      }
 	    case 'T': /* Floating-point RS2.  */
 	      print (info->stream, dis_style_register, "%s",
 		     pd->riscv_fpr_names[EXTRACT_OPERAND (CRS2, l)]);
@@ -599,6 +627,11 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
 	case 'z':
 	  print (info->stream, dis_style_register, "%s",
 		 pd->riscv_gpr_names[0]);
+	  break;
+
+	case '^':
+	  print (info->stream, dis_style_register, "0x%x", 
+	         (int)EXTRACT_OPERAND (SHAMTD, l));
 	  break;
 
 	case '>':
@@ -1058,6 +1091,8 @@ riscv_disassemble_insn (bfd_vma memaddr,
 	pd->xlen = 64;
       else if (info->mach == bfd_mach_riscv32)
 	pd->xlen = 32;
+      else if (info->mach == bfd_mach_riscv128)
+	pd->xlen = 128;
       else if (info->section != NULL)
 	{
 	  Elf_Internal_Ehdr *ehdr = elf_elfheader (info->section->owner);
