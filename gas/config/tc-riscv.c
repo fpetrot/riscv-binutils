@@ -127,7 +127,7 @@ struct riscv_ip_error
 };
 
 #ifndef DEFAULT_ARCH
-#define DEFAULT_ARCH "riscv64"
+#define DEFAULT_ARCH "riscv128"
 #endif
 
 #ifndef DEFAULT_RISCV_ATTR
@@ -166,8 +166,8 @@ enum float_abi
 };
 static enum float_abi float_abi = FLOAT_ABI_DEFAULT;
 
-#define LOAD_ADDRESS_INSN (abi_xlen == 64 ? "ld" : "lw")
-#define ADD32_INSN (xlen == 64 ? "addiw" : "addi")
+#define LOAD_ADDRESS_INSN (abi_xlen == 128 ? "lq" : abi_xlen == 64 ? "ld" : "lw")
+#define ADD32_INSN (xlen == 32 ? "addi" : "addiw")
 
 static unsigned elf_flags = 0;
 
@@ -706,9 +706,19 @@ const char *
 riscv_target_format (void)
 {
   if (target_big_endian)
-    return xlen == 64 ? "elf64-bigriscv" : "elf32-bigriscv";
+    switch (xlen)
+      {
+      case 32: return "elf32-bigriscv";
+      case 64: return "elf64-bigriscv";
+      default: return "elf128-bigriscv";
+      }
   else
-    return xlen == 64 ? "elf64-littleriscv" : "elf32-littleriscv";
+    switch (xlen)
+      {
+      case 32: return "elf32-littleriscv";
+      case 64: return "elf64-littleriscv";
+      default: return "elf128-littleriscv";
+      }
 }
 
 /* Return the length of instruction INSN.  */
@@ -1274,6 +1284,8 @@ validate_riscv_insn (const struct riscv_opcode *opc, int length)
 	    case 'x': break; /* CRS2S, constrained to equal RD.  */
 	    case 'z': break; /* CRS2S, constrained to be x0.  */
 	    case '>': /* CITYPE immediate, compressed shift.  */
+	    case '<': /* CITYPE immediate, compressed shift.  */
+	    case '^': /* CITYPE immediate, compressed shift.  */
 	    case 'u': /* CITYPE immediate, compressed lui.  */
 	    case 'v': /* CITYPE immediate, li to compressed lui.  */
 	    case 'o': /* CITYPE immediate, allow zero.  */
@@ -1281,15 +1293,18 @@ validate_riscv_insn (const struct riscv_opcode *opc, int length)
 	    case 'L': used_bits |= ENCODE_CITYPE_ADDI16SP_IMM (-1U); break;
 	    case 'm': used_bits |= ENCODE_CITYPE_LWSP_IMM (-1U); break;
 	    case 'n': used_bits |= ENCODE_CITYPE_LDSP_IMM (-1U); break;
+	    case 'h': used_bits |= ENCODE_CITYPE_LQSP_IMM (-1U); break;
 	    case '6': used_bits |= ENCODE_CSSTYPE_IMM (-1U); break;
 	    case 'M': used_bits |= ENCODE_CSSTYPE_SWSP_IMM (-1U); break;
 	    case 'N': used_bits |= ENCODE_CSSTYPE_SDSP_IMM (-1U); break;
+	    case 'H': used_bits |= ENCODE_CSSTYPE_SQSP_IMM (-1U); break;
 	    case '8': used_bits |= ENCODE_CIWTYPE_IMM (-1U); break;
 	    case 'K': used_bits |= ENCODE_CIWTYPE_ADDI4SPN_IMM (-1U); break;
 	    /* CLTYPE and CSTYPE have the same immediate encoding.  */
 	    case '5': used_bits |= ENCODE_CLTYPE_IMM (-1U); break;
 	    case 'k': used_bits |= ENCODE_CLTYPE_LW_IMM (-1U); break;
 	    case 'l': used_bits |= ENCODE_CLTYPE_LD_IMM (-1U); break;
+	    case 'g': used_bits |= ENCODE_CLTYPE_LQ_IMM (-1U); break;
 	    case 'p': used_bits |= ENCODE_CBTYPE_IMM (-1U); break;
 	    case 'a': used_bits |= ENCODE_CJTYPE_IMM (-1U); break;
 	    case 'F': /* Compressed funct for .insn directive.  */
@@ -1338,6 +1353,7 @@ validate_riscv_insn (const struct riscv_opcode *opc, int length)
 	case ')': break;
 	case '<': USE_BITS (OP_MASK_SHAMTW, OP_SH_SHAMTW); break;
 	case '>': USE_BITS (OP_MASK_SHAMT, OP_SH_SHAMT); break;
+	case '^': USE_BITS (OP_MASK_SHAMTD, OP_SH_SHAMTD); break;
 	case 'A': break; /* Macro operand, must be symbol.  */
 	case 'B': break; /* Macro operand, must be symbol or constant.  */
 	case 'c': break; /* Macro operand, must be symbol or constant.  */
@@ -1505,7 +1521,8 @@ init_opcode_hash (const struct riscv_opcode *opcodes,
 void
 md_begin (void)
 {
-  unsigned long mach = xlen == 64 ? bfd_mach_riscv64 : bfd_mach_riscv32;
+  unsigned long mach = xlen == 128 ? bfd_mach_riscv128
+                                   : xlen == 64 ? bfd_mach_riscv64 : bfd_mach_riscv32;
 
   if (! bfd_set_arch_mach (stdoutput, bfd_arch_riscv, mach))
     as_warn (_("could not set architecture and machine"));
@@ -1857,7 +1874,7 @@ load_const (int reg, expressionS *ep)
       while (((upper.X_add_number >> shift) & 1) == 0)
 	shift++;
 
-      upper.X_add_number = (int64_t) upper.X_add_number >> shift;
+      upper.X_add_number = (__int128_t) upper.X_add_number >> shift;
       load_const (reg, &upper);
 
       md_assemblef ("slli x%d, x%d, 0x%x", reg, reg, shift);
@@ -2068,6 +2085,16 @@ macro (struct riscv_cl_insn *ip, expressionS *imm_expr,
       pcrel_load (rd, rd, imm_expr, "ld",
 		  BFD_RELOC_RISCV_PCREL_HI20, BFD_RELOC_RISCV_PCREL_LO12_I);
       break;
+   
+    case M_LDU:
+      pcrel_load (rd, rd, imm_expr, "ldu",
+		  BFD_RELOC_RISCV_PCREL_HI20, BFD_RELOC_RISCV_PCREL_LO12_I);
+      break;
+
+    case M_LQ:
+      pcrel_load (rd, rd, imm_expr, "lq",
+		  BFD_RELOC_RISCV_PCREL_HI20, BFD_RELOC_RISCV_PCREL_LO12_I);
+      break;
 
     case M_FLW:
       pcrel_load (rd, rs1, imm_expr, "flw",
@@ -2096,6 +2123,11 @@ macro (struct riscv_cl_insn *ip, expressionS *imm_expr,
 
     case M_SD:
       pcrel_store (rs2, rs1, imm_expr, "sd",
+		   BFD_RELOC_RISCV_PCREL_HI20, BFD_RELOC_RISCV_PCREL_LO12_S);
+      break;
+
+    case M_SQ:
+      pcrel_store (rs2, rs1, imm_expr, "sq",
 		   BFD_RELOC_RISCV_PCREL_HI20, BFD_RELOC_RISCV_PCREL_LO12_S);
       break;
 
@@ -2524,7 +2556,7 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
   asargStart = asarg;
   for ( ; insn && insn->name && strcmp (insn->name, str) == 0; insn++)
     {
-      if ((insn->xlen_requirement != 0) && (xlen != insn->xlen_requirement))
+      if ((insn->xlen_requirement != 0) && (xlen != (insn->xlen_requirement & xlen)))
 	continue;
 
       if (!riscv_multi_subset_supports (&riscv_rps_as, insn->insn_class))
@@ -2671,6 +2703,22 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
 		      || (unsigned long) imm_expr->X_add_number >= xlen)
 		    break;
 		  ip->insn_opcode |= ENCODE_CITYPE_IMM (imm_expr->X_add_number);
+	          goto rvc_imm_done;
+		case '^': /* Shift amount, 0 - (XLEN-1) and 0 = 64.  */
+                  if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p)
+		    || (unsigned long) imm_expr->X_add_number >= (xlen == 128 ? 64 : xlen))
+		    break;
+		  ip->insn_opcode |= ENCODE_CITYPE_IMM (imm_expr->X_add_number);
+	          goto rvc_imm_done;
+		case '<': /* Shift amount, 1 - 31 | 64 | 96 - (XLEN-1).  */
+		  if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p))
+		    break;
+                  unsigned long a = (unsigned long) imm_expr->X_add_number;
+                  if (a >= xlen 
+		   || (a >= 32 && a < 64)
+		   || (a > 64 && a < 96))
+		    break;
+		 ip->insn_opcode |= ENCODE_CITYPE_IMM (imm_expr->X_add_number);
 		rvc_imm_done:
 		  asarg = expr_parse_end;
 		  imm_expr->X_op = O_absent;
@@ -2728,6 +2776,15 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
 		    break;
 		  ip->insn_opcode |= ENCODE_CLTYPE_LD_IMM (imm_expr->X_add_number);
 		  goto rvc_imm_done;
+		case 'g':
+		  if (riscv_handle_implicit_zero_offset (imm_expr, asarg))
+		    continue;
+		  if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p)
+		      || imm_expr->X_op != O_constant
+		      || !VALID_CLTYPE_LQ_IMM ((valueT) imm_expr->X_add_number))
+		    break;
+		  ip->insn_opcode |= ENCODE_CLTYPE_LQ_IMM (imm_expr->X_add_number);
+		  goto rvc_imm_done;
 		case 'm':
 		  if (riscv_handle_implicit_zero_offset (imm_expr, asarg))
 		    continue;
@@ -2747,6 +2804,16 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
 		    break;
 		  ip->insn_opcode |=
 		    ENCODE_CITYPE_LDSP_IMM (imm_expr->X_add_number);
+		  goto rvc_imm_done;
+		case 'h':
+		  if (riscv_handle_implicit_zero_offset (imm_expr, asarg))
+		    continue;
+		  if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p)
+		      || imm_expr->X_op != O_constant
+		      || !VALID_CITYPE_LQSP_IMM ((valueT) imm_expr->X_add_number))
+		    break;
+		  ip->insn_opcode |=
+		    ENCODE_CITYPE_LQSP_IMM (imm_expr->X_add_number);
 		  goto rvc_imm_done;
 		case 'o':
 		  if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p)
@@ -2794,6 +2861,16 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
 		    break;
 		  ip->insn_opcode |=
 		    ENCODE_CSSTYPE_SDSP_IMM (imm_expr->X_add_number);
+		  goto rvc_imm_done;
+		case 'H':
+		  if (riscv_handle_implicit_zero_offset (imm_expr, asarg))
+		    continue;
+		  if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p)
+		      || imm_expr->X_op != O_constant
+		      || !VALID_CSSTYPE_SQSP_IMM ((valueT) imm_expr->X_add_number))
+		    break;
+		  ip->insn_opcode |=
+		    ENCODE_CSSTYPE_SQSP_IMM (imm_expr->X_add_number);
 		  goto rvc_imm_done;
 		case 'u':
 		  p = percent_op_utype;
@@ -3097,8 +3174,19 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
 	      check_absolute_expr (ip, imm_expr, false);
 	      if ((unsigned long) imm_expr->X_add_number > 31)
 		as_bad (_("improper shift amount (%"PRIu64")"),
-			imm_expr->X_add_number);
+			(unsigned long) imm_expr->X_add_number);
 	      INSERT_OPERAND (SHAMTW, *ip, imm_expr->X_add_number);
+	      imm_expr->X_op = O_absent;
+	      asarg = expr_parse_end;
+	      continue;
+
+	    case '^': /* Shift amount, 0 - 63.  */
+	      my_getExpression (imm_expr, asarg);
+	      check_absolute_expr (ip, imm_expr, false);
+	      if ((unsigned long) imm_expr->X_add_number >= 64)
+		as_bad (_("improper shift amount (%lu)"),
+			(unsigned long) imm_expr->X_add_number);
+	      INSERT_OPERAND (SHAMTD, *ip, imm_expr->X_add_number);
 	      imm_expr->X_op = O_absent;
 	      asarg = expr_parse_end;
 	      continue;
@@ -3108,7 +3196,7 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
 	      check_absolute_expr (ip, imm_expr, false);
 	      if ((unsigned long) imm_expr->X_add_number >= xlen)
 		as_bad (_("improper shift amount (%"PRIu64")"),
-			imm_expr->X_add_number);
+			(unsigned long) imm_expr->X_add_number);
 	      INSERT_OPERAND (SHAMT, *ip, imm_expr->X_add_number);
 	      imm_expr->X_op = O_absent;
 	      asarg = expr_parse_end;
@@ -3119,7 +3207,7 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
 	      check_absolute_expr (ip, imm_expr, false);
 	      if ((unsigned long) imm_expr->X_add_number > 31)
 		as_bad (_("improper CSRxI immediate (%"PRIu64")"),
-			imm_expr->X_add_number);
+			(unsigned long) imm_expr->X_add_number);
 	      INSERT_OPERAND (RS1, *ip, imm_expr->X_add_number);
 	      imm_expr->X_op = O_absent;
 	      asarg = expr_parse_end;
@@ -3136,7 +3224,7 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
 		  check_absolute_expr (ip, imm_expr, true);
 		  if ((unsigned long) imm_expr->X_add_number > 0xfff)
 		    as_bad (_("improper CSR address (%"PRIu64")"),
-			    imm_expr->X_add_number);
+			    (unsigned long) imm_expr->X_add_number);
 		  INSERT_OPERAND (CSR, *ip, imm_expr->X_add_number);
 		  imm_expr->X_op = O_absent;
 		  asarg = expr_parse_end;
@@ -3528,13 +3616,13 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
 			{
 			  if (!VALIDATE_U_IMM (imm_expr->X_add_number, n))
 			    as_bad (_("improper immediate value (%"PRIu64")"),
-				    imm_expr->X_add_number);
+				    (unsigned long) imm_expr->X_add_number);
 			}
 		      else
 			{
 			  if (!VALIDATE_S_IMM (imm_expr->X_add_number, n))
 			    as_bad (_("improper immediate value (%"PRIi64")"),
-				    imm_expr->X_add_number);
+				    (unsigned long) imm_expr->X_add_number);
 			}
 		      INSERT_IMM (n, s, *ip, imm_expr->X_add_number);
 		      imm_expr->X_op = O_absent;
@@ -3780,6 +3868,14 @@ md_parse_option (int c, const char *arg)
 	riscv_set_abi (64, FLOAT_ABI_DOUBLE, false);
       else if (strcmp (arg, "lp64q") == 0)
 	riscv_set_abi (64, FLOAT_ABI_QUAD, false);
+      else if (strcmp (arg, "llp128") == 0)
+	riscv_set_abi (128, FLOAT_ABI_SOFT, false);
+      else if (strcmp (arg, "llp128f") == 0)
+	riscv_set_abi (128, FLOAT_ABI_SINGLE, false);
+      else if (strcmp (arg, "llp128d") == 0)
+	riscv_set_abi (128, FLOAT_ABI_DOUBLE, false);
+      else if (strcmp (arg, "llp128q") == 0)
+	riscv_set_abi (128, FLOAT_ABI_QUAD, false);
       else
 	return 0;
       explicit_mabi = true;
@@ -3841,6 +3937,8 @@ riscv_after_parse_args (void)
 	xlen = 32;
       else if (strcmp (default_arch, "riscv64") == 0)
 	xlen = 64;
+      else if (strcmp (default_arch, "riscv128") == 0)
+	xlen = 128;
       else
 	as_bad ("unknown default architecture `%s'", default_arch);
     }
@@ -3944,11 +4042,13 @@ md_apply_fix (fixS *fixP, valueT *valP, segT seg ATTRIBUTE_UNUSED)
     case BFD_RELOC_RISCV_ADD16:
     case BFD_RELOC_RISCV_ADD32:
     case BFD_RELOC_RISCV_ADD64:
+    case BFD_RELOC_RISCV_ADD128:
     case BFD_RELOC_RISCV_SUB6:
     case BFD_RELOC_RISCV_SUB8:
     case BFD_RELOC_RISCV_SUB16:
     case BFD_RELOC_RISCV_SUB32:
     case BFD_RELOC_RISCV_SUB64:
+    case BFD_RELOC_RISCV_SUB128:
     case BFD_RELOC_RISCV_RELAX:
       break;
 
@@ -3988,6 +4088,7 @@ md_apply_fix (fixS *fixP, valueT *valP, segT seg ATTRIBUTE_UNUSED)
 	  break;
 	}
       /* Fall through.  */
+    case BFD_RELOC_128:
     case BFD_RELOC_64:
     case BFD_RELOC_16:
     case BFD_RELOC_8:
@@ -4002,6 +4103,11 @@ md_apply_fix (fixS *fixP, valueT *valP, segT seg ATTRIBUTE_UNUSED)
 
 	  switch (fixP->fx_r_type)
 	    {
+            case BFD_RELOC_128:
+	      fixP->fx_r_type = BFD_RELOC_RISCV_ADD128;
+	      fixP->fx_next->fx_r_type = BFD_RELOC_RISCV_SUB128;
+	      break;
+
 	    case BFD_RELOC_64:
 	      fixP->fx_r_type = BFD_RELOC_RISCV_ADD64;
 	      fixP->fx_next->fx_r_type = BFD_RELOC_RISCV_SUB64;
@@ -4912,7 +5018,8 @@ s_riscv_attribute (int ignored ATTRIBUTE_UNUSED)
       if (old_xlen != xlen)
 	{
 	  /* We must re-init bfd again if xlen is changed.  */
-	  unsigned long mach = xlen == 64 ? bfd_mach_riscv64 : bfd_mach_riscv32;
+          unsigned long mach = xlen == 128 ? bfd_mach_riscv128
+                                           : xlen == 64 ? bfd_mach_riscv64 : bfd_mach_riscv32;
 	  bfd_find_target (riscv_target_format (), stdoutput);
 
 	  if (! bfd_set_arch_mach (stdoutput, bfd_arch_riscv, mach))

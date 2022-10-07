@@ -179,6 +179,8 @@ encoding_size (unsigned char encoding)
       return 4;
     case DW_EH_PE_udata8:
       return 8;
+    case DW_EH_PE_udata16:
+      return 16;
     default:
       abort ();
     }
@@ -1798,6 +1800,9 @@ output_cfi_insn (struct cfi_insn_data *insn)
 	  case DW_EH_PE_udata8:
 	    enc_size = 8;
 	    break;
+          case DW_EH_PE_udata16:
+	    enc_size = 16;
+	    break;
 	  default:
 	    abort ();
 	  }
@@ -1935,6 +1940,9 @@ output_cie (struct cie_entry *cie, bool eh_frame, int align)
       break;
     case 8:
       enc = DW_EH_PE_sdata8;
+      break;
+    case 16:
+      enc = DW_EH_PE_sdata16;
       break;
     default:
       abort ();

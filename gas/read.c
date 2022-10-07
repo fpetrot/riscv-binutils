@@ -4708,6 +4708,9 @@ emit_expr_fix (expressionS *exp, unsigned int nbytes, fragS *frag, char *p,
       case 8:
 	r = BFD_RELOC_64;
 	break;
+      case 16:
+	r = BFD_RELOC_128;
+	break;
       default:
 	as_bad (_("unsupported BFD relocation size %u"), size);
 	return;

@@ -271,6 +271,26 @@ generic_bignum_to_int64 (void)
 	  | ((uint64_t) generic_bignum[0] & LITTLENUM_MASK));
 }
 
+__uint128_t
+generic_bignum_to_int128 (void)
+{
+  return ((((((((((((((((__uint128_t) generic_bignum[7] & LITTLENUM_MASK)
+	               << LITTLENUM_NUMBER_OF_BITS)
+	              | ((__uint128_t) generic_bignum[6] & LITTLENUM_MASK))
+          	     << LITTLENUM_NUMBER_OF_BITS)
+        	    | ((__uint128_t) generic_bignum[5] & LITTLENUM_MASK))
+        	   << LITTLENUM_NUMBER_OF_BITS)
+        	  | ((__uint128_t) generic_bignum[4] & LITTLENUM_MASK))
+                 << LITTLENUM_NUMBER_OF_BITS)
+                | ((__uint128_t) generic_bignum[3] & LITTLENUM_MASK))
+               << LITTLENUM_NUMBER_OF_BITS)
+              | ((__uint128_t) generic_bignum[2] & LITTLENUM_MASK))
+             << LITTLENUM_NUMBER_OF_BITS)
+            | ((__uint128_t) generic_bignum[1] & LITTLENUM_MASK))
+           << LITTLENUM_NUMBER_OF_BITS)
+          | ((__uint128_t) generic_bignum[0] & LITTLENUM_MASK));
+}
+
 static void
 integer_constant (int radix, expressionS *expressionP)
 {
@@ -304,7 +324,9 @@ integer_constant (int radix, expressionS *expressionP)
      you're compiling in 64-bit mode, the target is a 64-bit machine.
      This should be cleaned up.  */
 
-#ifdef BFD64
+#ifdef BFD128
+#define valuesize 128
+#elif defined(BFD64)
 #define valuesize 64
 #else /* includes non-bfd case, mostly */
 #define valuesize 32
@@ -457,6 +479,14 @@ integer_constant (int radix, expressionS *expressionP)
 	  number = generic_bignum_to_int32 ();
 	  small = 1;
 	}
+#ifdef BFD128
+      else if (num_little_digits <= 8)
+	{
+	  /* Will fit into 128 bits.  */
+	  number = generic_bignum_to_int128 ();
+	  small = 1;
+	}
+#endif
 #ifdef BFD64
       else if (num_little_digits <= 4)
 	{
@@ -485,6 +515,10 @@ integer_constant (int radix, expressionS *expressionP)
       generic_bignum[1] = 0;
       generic_bignum[2] = 0;
       generic_bignum[3] = 0;
+      generic_bignum[4] = 0;
+      generic_bignum[5] = 0;
+      generic_bignum[6] = 0;
+      generic_bignum[7] = 0;
       input_line_pointer = start;	/* -> 1st digit.  */
       c = *input_line_pointer++;
       for (; (carry = hex_value (c)) < maxdig; c = *input_line_pointer++)
@@ -515,6 +549,14 @@ integer_constant (int radix, expressionS *expressionP)
 	  number = generic_bignum_to_int32 ();
 	  small = 1;
 	}
+#ifdef BFD128
+      else if (leader < generic_bignum + 8)
+	{
+	  /* Will fit into 128 bits.  */
+	  number = generic_bignum_to_int128 ();
+	  small = 1;
+	}
+#endif
 #ifdef BFD64
       else if (leader < generic_bignum + 4)
 	{
