@@ -1,3 +1,21 @@
+Add-ons for this fork of the binutils
+
+This fork aims at supporting the 128-bit version of the riscv target.
+Summer 2022 efforts of the binutils guys have a bit complexified the issue,
+but we have done our best to upgrade at a slow pace.
+(Recent stuff not pushed yet, I'll do as soon as I can).
+
+There are configuration issues that have to be dealt with when touching the
+various autostuff files, so we have a docker image to ease the setup of an
+appropriate environment without disturbing what is currently installed on
+a machine.
+Check the Dockerfile for that (configured to cross-build for rv64), it
+currently only works for binutils(-gdb), but strangely enough, things are
+easier with gcc.
+Anyway, the first step is having a git-rebasable binutils, so let us focus
+on that for now.
+
+
 		   README for GNU development tools
 
 This directory contains various GNU compilers, assemblers, linkers, 
