@@ -963,6 +963,11 @@ dump_headers (bfd *abfd)
 
 #ifndef BFD64
   bfd_vma_width = 10;
+#ifdef BFD128
+  /* FIMXE: FP This is kind of ugly, ... */
+  bfd_vma_width = 34;
+  max_section_name_length = 18;
+#endif
 #else
   /* With BFD64, non-ELF returns -1 and wants always 64 bit addresses.  */
   if (bfd_get_arch_size (abfd) == 32)
@@ -3228,7 +3233,7 @@ disassemble_bytes (struct disassemble_info *inf,
   skip_addr_chars = 0;
   if (!no_addresses && !prefix_addresses)
     {
-      char buf[30];
+      char buf[60];
 
       bfd_sprintf_vma (aux->abfd, buf, section->vma + section->size / opb);
 
@@ -3315,7 +3320,7 @@ disassemble_bytes (struct disassemble_info *inf,
 	}
       else
 	{
-	  char buf[50];
+	  char buf[100];
 	  unsigned int bpc = 0;
 	  unsigned int pb = 0;
 
