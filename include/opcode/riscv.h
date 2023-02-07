@@ -524,6 +524,7 @@ enum
   M_LWU,
   M_LD,
   M_LDU,
+  M_LPTR,
   M_LQ,
   M_SB,
   M_SH,
