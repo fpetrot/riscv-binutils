@@ -1946,7 +1946,7 @@ dump_relocations (Filedata *filedata,
 	    {
 	      putchar (' ');
 	      printf (_("<unknown addend: %" PRIx64 ">"),
-		      rels[i].r_addend);
+		      (unsigned long) rels[i].r_addend);
 	      res = false;
 	    }
 	}
@@ -2099,7 +2099,7 @@ dump_relocations (Filedata *filedata,
       if (filedata->file_header.e_machine == EM_SPARCV9
 	  && rtype != NULL
 	  && streq (rtype, "R_SPARC_OLO10"))
-	printf (" + %" PRIx64, ELF64_R_TYPE_DATA (inf));
+	printf (" + %" PRIx64, (unsigned long) ELF64_R_TYPE_DATA (inf));
 
       putchar ('\n');
 
@@ -6093,14 +6093,16 @@ process_program_headers (Filedata * filedata)
       else
 	printf (_("\nElf file type is %s\n"), get_file_type (filedata));
       printf (_("Entry point 0x%" PRIx64 "\n"),
-	      filedata->file_header.e_entry);
+	      (unsigned long) filedata->file_header.e_entry);
+#if 0
       printf (ngettext ("There is %d program header,"
 			" starting at offset %" PRIu64 "\n",
 			"There are %d program headers,"
 			" starting at offset %" PRIu64 "\n",
 			filedata->file_header.e_phnum),
-	      filedata->file_header.e_phnum,
-	      filedata->file_header.e_phoff);
+		filedata->file_header.e_phnum,
+		filedata->file_header.e_phoff);
+#endif
     }
 
   if (! get_program_headers (filedata))
@@ -6586,7 +6588,7 @@ get_32bit_elf_symbols (Filedata *filedata,
     {
       error (_("Section %s has an invalid sh_entsize of %#" PRIx64 "\n"),
 	     printable_section_name (filedata, section),
-	     section->sh_entsize);
+	     (unsigned long) section->sh_entsize);
       goto exit_point;
     }
 
@@ -6594,7 +6596,7 @@ get_32bit_elf_symbols (Filedata *filedata,
     {
       error (_("Section %s has an invalid sh_size of %#" PRIx64 "\n"),
 	     printable_section_name (filedata, section),
-	     section->sh_size);
+	     (unsigned long) section->sh_size);
       goto exit_point;
     }
 
@@ -6604,9 +6606,9 @@ get_32bit_elf_symbols (Filedata *filedata,
     {
       error (_("Size (%#" PRIx64 ") of section %s "
 	       "is not a multiple of its sh_entsize (%#" PRIx64 ")\n"),
-	     section->sh_size,
+	     (unsigned long) section->sh_size,
 	     printable_section_name (filedata, section),
-	     section->sh_entsize);
+	     (unsigned long) section->sh_entsize);
       goto exit_point;
     }
 
@@ -6639,8 +6641,8 @@ get_32bit_elf_symbols (Filedata *filedata,
 	{
 	  error (_("Index section %s has an sh_size of %#" PRIx64 " - expected %#" PRIx64 "\n"),
 		 printable_section_name (filedata, entry->hdr),
-		 entry->hdr->sh_size,
-		 section->sh_size);
+		 (unsigned long) entry->hdr->sh_size,
+		 (unsigned long) section->sh_size);
 	  goto exit_point;
 	}
     }
@@ -6703,7 +6705,7 @@ get_64bit_elf_symbols (Filedata *filedata,
     {
       error (_("Section %s has an invalid sh_entsize of %#" PRIx64 "\n"),
 	     printable_section_name (filedata, section),
-	     section->sh_entsize);
+	     (unsigned long) section->sh_entsize);
       goto exit_point;
     }
 
@@ -6711,7 +6713,7 @@ get_64bit_elf_symbols (Filedata *filedata,
     {
       error (_("Section %s has an invalid sh_size of %#" PRIx64 "\n"),
 	     printable_section_name (filedata, section),
-	     section->sh_size);
+	     (unsigned long) section->sh_size);
       goto exit_point;
     }
 
@@ -6721,9 +6723,9 @@ get_64bit_elf_symbols (Filedata *filedata,
     {
       error (_("Size (%#" PRIx64 ") of section %s "
 	       "is not a multiple of its sh_entsize (%#" PRIx64 ")\n"),
-	     section->sh_size,
+	     (unsigned long) section->sh_size,
 	     printable_section_name (filedata, section),
-	     section->sh_entsize);
+	     (unsigned long) section->sh_entsize);
       goto exit_point;
     }
 
@@ -6756,8 +6758,8 @@ get_64bit_elf_symbols (Filedata *filedata,
 	{
 	  error (_("Index section %s has an sh_size of %#" PRIx64 " - expected %#" PRIx64 "\n"),
 		 printable_section_name (filedata, entry->hdr),
-		 entry->hdr->sh_size,
-		 section->sh_size);
+		 (unsigned long) entry->hdr->sh_size,
+		 (unsigned long) section->sh_size);
 	  goto exit_point;
 	}
     }
@@ -7183,14 +7185,16 @@ process_section_headers (Filedata * filedata)
     {
       if (filedata->is_separate && process_links)
 	printf (_("In linked file '%s': "), filedata->file_name);
+#if 0
       if (! filedata->is_separate || process_links)
 	printf (ngettext ("There is %d section header, "
 			  "starting at offset %#" PRIx64 ":\n",
 			  "There are %d section headers, "
 			  "starting at offset %#" PRIx64 ":\n",
 			  filedata->file_header.e_shnum),
-		filedata->file_header.e_shnum,
-		filedata->file_header.e_shoff);
+		(unsigned long) filedata->file_header.e_shnum,
+		(unsigned long) filedata->file_header.e_shoff);
+#endif
     }
 
   if (!get_section_headers (filedata, false))
@@ -7269,9 +7273,9 @@ process_section_headers (Filedata * filedata)
       if (section->sh_entsize != expected_entsize)			\
 	{								\
 	  error (_("Section %d has invalid sh_entsize of %" PRIx64 "\n"), \
-		 i, section->sh_entsize);				\
+		 i, (unsigned long) section->sh_entsize);				\
 	  error (_("(Using the expected size of %" PRIx64 " for the rest of this dump)\n"), \
-		 expected_entsize);					\
+		 (unsigned long) expected_entsize);					\
 	  section->sh_entsize = expected_entsize;			\
 	}								\
     }									\
@@ -8096,8 +8100,8 @@ process_section_groups (Filedata * filedata)
 	      error (_("Section %s has sh_entsize (%#" PRIx64 ")"
 		       " which is larger than its size (%#" PRIx64 ")\n"),
 		     printable_section_name (filedata, section),
-		     section->sh_entsize,
-		     section->sh_size);
+		     (unsigned long) section->sh_entsize,
+		     (unsigned long) section->sh_size);
 	      continue;
 	    }
 
@@ -9091,8 +9095,8 @@ ia64_process_unwind (Filedata * filedata)
 	    printf ("'%s'", printable_section_name (filedata, unwsec));
 
 	  printf (_(" at offset %#" PRIx64 " contains %" PRIu64 " entries:\n"),
-		  unwsec->sh_offset,
-		  unwsec->sh_size / (3 * eh_addr_size));
+		  (unsigned long) unwsec->sh_offset,
+		  (unsigned long) unwsec->sh_size / (3 * eh_addr_size));
 
 	  if (slurp_ia64_unwind_table (filedata, & aux, unwsec)
 	      && aux.table_len > 0)
@@ -9666,7 +9670,7 @@ get_unwind_section_word (Filedata *                 filedata,
       if (rp->r_offset & 3)
 	{
 	  warn (_("Skipping unexpected relocation at offset %#" PRIx64 "\n"),
-		rp->r_offset);
+		(unsigned long) rp->r_offset);
 	  continue;
 	}
 
@@ -9697,7 +9701,7 @@ get_unwind_section_word (Filedata *                 filedata,
 	{
 	  error (_("Bad symbol index in unwind relocation "
 		   "(%" PRIu64 " > %" PRIu64 ")\n"),
-		 ELF32_R_SYM (rp->r_info), aux->nsyms);
+		 (unsigned long) ELF32_R_SYM (rp->r_info), (unsigned long) aux->nsyms);
 	  break;
 	}
 
@@ -10677,7 +10681,7 @@ dynamic_section_mips_val (Filedata * filedata, Elf_Internal_Dyn * entry)
 		get_dynamic_name (filedata, entry->d_un.d_val));
       else
 	printf (_("Interface Version: <corrupt: %" PRIx64 ">"),
-		entry->d_un.d_ptr);
+		(unsigned long) entry->d_un.d_ptr);
       break;
 
     case DT_MIPS_TIME_STAMP:
@@ -12160,9 +12164,9 @@ process_version_sections (Filedata * filedata)
 		      printable_section_name (filedata, section),
 		      section->sh_info);
 
-	    printf (_(" Addr: 0x%016" PRIx64), section->sh_addr);
+	    printf (_(" Addr: 0x%016" PRIx64), (unsigned long) section->sh_addr);
 	    printf (_("  Offset: 0x%08" PRIx64 "  Link: %u (%s)\n"),
-		    section->sh_offset, section->sh_link,
+		    (unsigned long) section->sh_offset, section->sh_link,
 		    printable_section_name_from_index (filedata, section->sh_link));
 
 	    edefs = (Elf_External_Verdef *)
@@ -12306,9 +12310,9 @@ process_version_sections (Filedata * filedata)
 		      printable_section_name (filedata, section),
 		      section->sh_info);
 
-	    printf (_(" Addr: 0x%016" PRIx64), section->sh_addr);
+	    printf (_(" Addr: 0x%016" PRIx64), (unsigned long) section->sh_addr);
 	    printf (_("  Offset: 0x%08" PRIx64 "  Link: %u (%s)\n"),
-		    section->sh_offset, section->sh_link,
+		    (unsigned long) section->sh_offset, section->sh_link,
 		    printable_section_name_from_index (filedata, section->sh_link));
 
 	    eneed = (Elf_External_Verneed *) get_data (NULL, filedata,
@@ -12471,9 +12475,9 @@ process_version_sections (Filedata * filedata)
 		      printable_section_name (filedata, section),
 		      total);
 
-	    printf (_(" Addr: 0x%016" PRIx64), section->sh_addr);
+	    printf (_(" Addr: 0x%016" PRIx64), (unsigned long) section->sh_addr);
 	    printf (_("  Offset: 0x%08" PRIx64 "  Link: %u (%s)\n"),
-		    section->sh_offset, section->sh_link,
+		    (unsigned long) section->sh_offset, section->sh_link,
 		    printable_section_name (filedata, link_section));
 
 	    off = offset_from_vma (filedata,
@@ -13402,7 +13406,7 @@ display_lto_symtab (Filedata *           filedata,
     {
       error (_("Section %s has an invalid sh_size of %#" PRIx64 "\n"),
 	     printable_section_name (filedata, section),
-	     section->sh_size);
+	     (unsigned long) section->sh_size);
       return false;
     }
 
@@ -14079,7 +14083,7 @@ target_specific_reloc_handling (Filedata *filedata,
 		if (leb_ret != 0 || reloc_size == 0 || reloc_size > 8)
 		  error (_("MSP430 ULEB128 field at %#" PRIx64
 			   " contains invalid ULEB128 value\n"),
-			 reloc->r_offset);
+			 (unsigned long) reloc->r_offset);
 		else if (sym_index >= num_syms)
 		  error (_("MSP430 reloc contains invalid symbol index "
 			   "%" PRIu64 "\n"),
@@ -14095,7 +14099,7 @@ target_specific_reloc_handling (Filedata *filedata,
 		      /* PR 21137 */
 		      error (_("MSP430 sym diff reloc contains invalid offset: "
 			       "%#" PRIx64 "\n"),
-			     reloc->r_offset);
+			     (unsigned long) reloc->r_offset);
 		  }
 
 		saved_sym = NULL;
@@ -14156,7 +14160,7 @@ target_specific_reloc_handling (Filedata *filedata,
 		    else
 		      error (_("MN10300 sym diff reloc contains invalid offset:"
 			       " %#" PRIx64 "\n"),
-			     reloc->r_offset);
+			     (unsigned long) reloc->r_offset);
 		  }
 
 		saved_sym = NULL;
@@ -14209,7 +14213,7 @@ target_specific_reloc_handling (Filedata *filedata,
 	    else
 	      error (_("RL78 sym diff reloc contains invalid offset: "
 		       "%#" PRIx64 "\n"),
-		     reloc->r_offset);
+		     (unsigned long) reloc->r_offset);
 	    value = 0;
 	    return true;
 
@@ -14219,7 +14223,7 @@ target_specific_reloc_handling (Filedata *filedata,
 	    else
 	      error (_("RL78 sym diff reloc contains invalid offset: "
 		       "%#" PRIx64 "\n"),
-		     reloc->r_offset);
+		     (unsigned long) reloc->r_offset);
 	    value = 0;
 	    return true;
 
@@ -15129,7 +15133,7 @@ apply_relocations (Filedata *filedata,
 	    {
 	      warn (_("skipping invalid relocation offset %#" PRIx64
 		      " in section %s\n"),
-		    rp->r_offset,
+		    (unsigned long) rp->r_offset,
 		    printable_section_name (filedata, section));
 	      continue;
 	    }
