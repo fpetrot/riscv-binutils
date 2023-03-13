@@ -23,7 +23,7 @@ RUN apt-get update && \
             build-essential bison flex \
             libmpfr-dev libgmp-dev libexpat1-dev libdebuginfod-dev \
             ca-certificates git curl xsltproc babeltrace \
-            file texinfo gperf expect vim vim-gitgutter && \
+            file texinfo gperf expect vim vim-gitgutter openssh-client && \
     apt-get autoclean && \
     mkdir -p $INSTPATH $ROOTSRCS
 
@@ -74,31 +74,84 @@ RUN cd autoconf-2.69 && \
 # Create a user so that development and installation
 # takes place in a non-root environment
 #
-
 RUN useradd -ms /bin/bash $USER
 USER $USER
 ENV HOMEDIR /home/$USER
 WORKDIR $HOMEDIR
 
 #
+# Give access for external ssh key so that the docker image can be shared
+# while being able to use git with ssh
+# FIMXE: I could not have that work, back onto https then
+#RUN mkdir -p -m 0700 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
+#RUN --mount=type=ssh ssh -A -v -l git github.com
+
+#
 # Fetch the binutils sources
 #
-RUN git clone --origin upstream https://sourceware.org/git/binutils-gdb.git
+RUN git clone --origin origin https://github.com/fpetrot/riscv-binutils.git
 #
-# Configure them, local install path
+# Configure them so as to run in 128-bit, local install path
+# Removing the -O2 flags helps avoid run-time errors, ...
+# To be fixed at some point, live with it for now
 #
-RUN cd binutils-gdb && \
-    mkdir build && \
-    cd build && \
-    ../configure --prefix=$HOMEDIR/sandbox --enable-maintainer-mode \
-                 --target=riscv64-linux-gnu --with-arch=rv64imafdc --with-abi=lp64d
+RUN cd riscv-binutils && \
+    git checkout 128up && \
+    mkdir build-128up && \
+    cd build-128up && \
+    CFLAGS=-g ../configure --prefix=$HOMEDIR/sandbox --enable-maintainer-mode \
+                 --target=riscv128-unknown-elf
 #
 # Compile them
+# cxx is a killer when all procs are used, so let leave some space
 #
-RUN cd binutils-gdb/build && \
-    make -j $(nproc) && make install
+RUN cd riscv-binutils/build-128up && \
+    make -j $((1 + $(nproc) / 2)) && make install
+#
+# Add upstream repo for rebasing regularly
+#
+RUN cd riscv-binutils && \
+    git remote add upstream https://sourceware.org/git/binutils-gdb.git
 
-# && \ rm -r /src/riscv-gnu-toolchain
+USER root
+RUN apt-get install -y --no-install-recommends --no-install-suggests \
+            python3-minimal meson ninja-build pkgconf libglib2.0-dev \
+            libpixman-1-dev libcapstone-dev
+USER $USER
+#
+# Fetch QEMU
+#
+RUN git clone --origin origin https://github.com/fpetrot/qemu-riscv128.git
+#
+# Configure for 128-bit, local install path
+#
+RUN cd qemu-riscv128 && \
+    git checkout elf128 && \
+    mkdir build-elf128 && \
+    cd build-elf128 && \
+    ../configure --prefix=$HOMEDIR/sandbox --target-list=riscv64-softmmu \
+                 --enable-debug --enable-capstone
+#
+# Compile it
+#
+RUN cd qemu-riscv128/build-elf128 && \
+    ninja && ninja install
 
-# Expose port to connect GDB and Qemu
-#EXPOSE 1234
+#
+# Add upstream repo for rebasing regularly
+#
+RUN cd qemu-riscv128 && \
+    git remote add upstream https://github.com/qemu/qemu
+
+#
+# Finally fetch the existing 128-bit tests, as examples
+#
+RUN git clone --origin origin https://github.com/fpetrot/128-test.git
+
+#
+# We unfortunately need to debug our stuff, so let us install gdb
+#
+USER root
+RUN apt-get install -y --no-install-recommends --no-install-suggests \
+            gdb
+USER $USER
