@@ -137,7 +137,7 @@ read_addrmap_from_aranges (dwarf2_per_objfile *per_objfile,
       dwarf2_per_cu *const per_cu = per_cu_it->second;
 
       const uint8_t address_size = *addr++;
-      if (address_size < 1 || address_size > 8)
+      if (address_size < 1 || address_size > 16)
 	{
 	  warn->warn
 	    (_("Section .debug_aranges in %ps entry at offset %s "

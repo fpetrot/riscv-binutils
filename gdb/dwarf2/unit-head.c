@@ -208,6 +208,9 @@ unit_head::read_address (bfd *abfd, const gdb_byte *buf,
 	case 8:
 	  retval = bfd_get_signed_64 (abfd, buf);
 	  break;
+  case 16:
+	  retval = bfd_get_signed_128 (abfd, buf);
+	  break;
 	default:
 	  internal_error (_("read_address: bad switch, signed [in module %s]"),
 			  bfd_get_filename (abfd));
@@ -225,6 +228,9 @@ unit_head::read_address (bfd *abfd, const gdb_byte *buf,
 	  break;
 	case 8:
 	  retval = bfd_get_64 (abfd, buf);
+	  break;
+  case 16:
+	  retval = bfd_get_128 (abfd, buf);
 	  break;
 	default:
 	  internal_error (_("read_address: bad switch, "
