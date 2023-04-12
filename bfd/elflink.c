@@ -2681,7 +2681,7 @@ elf_link_read_relocs_from_section (bfd *abfd,
 
       (*swap_in) (abfd, erela, irela);
       r_symndx = ELF32_R_SYM (irela->r_info);
-      if (bed->s->arch_size == 64)
+      if ((bed->s->arch_size == 64) || (bed->s->arch_size == 128))
 	r_symndx >>= 24;
       if (nsyms > 0)
 	{
