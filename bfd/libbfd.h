@@ -1042,6 +1042,7 @@ bool _bfd_free_cached_info (bfd *) ATTRIBUTE_HIDDEN;
 
 static const char *const bfd_reloc_code_real_names[] = { "@@uninitialized@@",
 
+  "BFD_RELOC_128",
   "BFD_RELOC_64",
   "BFD_RELOC_32",
   "BFD_RELOC_26",
@@ -2401,7 +2402,7 @@ static const char *const bfd_reloc_code_real_names[] = { "@@uninitialized@@",
   "BFD_RELOC_RISCV_TLS_DTPREL32",
   "BFD_RELOC_RISCV_TLS_DTPMOD64",
   "BFD_RELOC_RISCV_TLS_DTPREL64",
-  "BFD_RELOC_RISCV_TLS_DTPMO1284",
+  "BFD_RELOC_RISCV_TLS_DTPMOD128",
   "BFD_RELOC_RISCV_TLS_DTPREL128",
   "BFD_RELOC_RISCV_TLS_TPREL32",
   "BFD_RELOC_RISCV_TLS_TPREL64",

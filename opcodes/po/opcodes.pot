@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: https://sourceware.org/bugzilla/\n"
-"POT-Creation-Date: 2022-12-31 12:18+0000\n"
+"POT-Creation-Date: 2023-02-07 20:50+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -85,7 +85,7 @@ msgstr ""
 
 #: aarch64-dis.c:4021 arc-dis.c:1607 arc-dis.c:1630 arc-dis.c:1633
 #: loongarch-dis.c:306 mips-dis.c:2897 mips-dis.c:2909 mips-dis.c:2912
-#: nfp-dis.c:2993 riscv-dis.c:1282 riscv-dis.c:1285
+#: nfp-dis.c:2993 riscv-dis.c:1307 riscv-dis.c:1310
 #, c-format
 msgid "\n"
 msgstr ""
@@ -440,7 +440,7 @@ msgid ""
 "with the -M switch (multiple options should be separated by commas):\n"
 msgstr ""
 
-#: arc-dis.c:1616 mips-dis.c:2904 riscv-dis.c:1277
+#: arc-dis.c:1616 mips-dis.c:2904 riscv-dis.c:1302
 #, c-format
 msgid ""
 "\n"
@@ -1173,212 +1173,6 @@ msgstr ""
 
 #: i386-dis.c:9773
 msgid "64-bit address is disabled"
-msgstr ""
-
-#: i386-gen.c:560
-#, c-format
-msgid "%s: error: "
-msgstr ""
-
-#: i386-gen.c:686
-#, c-format
-msgid "%s: %d: unknown bitfield: %s\n"
-msgstr ""
-
-#: i386-gen.c:688 i386-gen.c:755
-#, c-format
-msgid "unknown bitfield: %s\n"
-msgstr ""
-
-#: i386-gen.c:820
-#, c-format
-msgid "%s: %d: missing `)' in bitfield: %s\n"
-msgstr ""
-
-#: i386-gen.c:920
-#, c-format
-msgid "%s: %d: no memory operand\n"
-msgstr ""
-
-#: i386-gen.c:956
-#, c-format
-msgid "%s: %d: unknown element size: %s\n"
-msgstr ""
-
-#: i386-gen.c:1013
-#, c-format
-msgid "%s:%d: Conflicting opcode space specifications\n"
-msgstr ""
-
-#: i386-gen.c:1017
-#, c-format
-msgid "%s:%d: Warning: redundant opcode space specification\n"
-msgstr ""
-
-#: i386-gen.c:1026
-#, c-format
-msgid "%s:%d: Conflicting prefix specifications\n"
-msgstr ""
-
-#: i386-gen.c:1030
-#, c-format
-msgid "%s:%d: Warning: redundant prefix specification\n"
-msgstr ""
-
-#: i386-gen.c:1239
-#, c-format
-msgid "%s:%d: %s: unrecognized opcode encoding space\n"
-msgstr ""
-
-#: i386-gen.c:1245
-#, c-format
-msgid "%s:%d: %s: residual opcode (0x%0*llx) too large\n"
-msgstr ""
-
-#: i386-gen.c:1612
-#, c-format
-msgid "%s: %d: (continued) line too long\n"
-msgstr ""
-
-#: i386-gen.c:1719
-#, c-format
-msgid "can't find i386-reg.tbl for reading, errno = %s\n"
-msgstr ""
-
-#: i386-gen.c:1796
-#, c-format
-msgid "can't create i386-init.h, errno = %s\n"
-msgstr ""
-
-#: i386-gen.c:1911 ia64-gen.c:2819
-#, c-format
-msgid "unable to change directory to \"%s\", errno = %s\n"
-msgstr ""
-
-#: i386-gen.c:1925 i386-gen.c:1930
-#, c-format
-msgid "CpuMax != %d!\n"
-msgstr ""
-
-#: i386-gen.c:1934
-#, c-format
-msgid "%d unused bits in i386_cpu_flags.\n"
-msgstr ""
-
-#: i386-gen.c:1949
-#, c-format
-msgid "%d unused bits in i386_operand_type.\n"
-msgstr ""
-
-#: i386-gen.c:1963
-#, c-format
-msgid "can't create i386-tbl.h, errno = %s\n"
-msgstr ""
-
-#: ia64-gen.c:297
-#, c-format
-msgid "%s: Error: "
-msgstr ""
-
-#: ia64-gen.c:310
-#, c-format
-msgid "%s: Warning: "
-msgstr ""
-
-#: ia64-gen.c:496 ia64-gen.c:727
-#, c-format
-msgid "multiple note %s not handled\n"
-msgstr ""
-
-#: ia64-gen.c:607
-msgid "can't find ia64-ic.tbl for reading\n"
-msgstr ""
-
-#: ia64-gen.c:809
-#, c-format
-msgid "can't find %s for reading\n"
-msgstr ""
-
-#: ia64-gen.c:1041
-#, c-format
-msgid ""
-"most recent format '%s'\n"
-"appears more restrictive than '%s'\n"
-msgstr ""
-
-#: ia64-gen.c:1052
-#, c-format
-msgid "overlapping field %s->%s\n"
-msgstr ""
-
-#: ia64-gen.c:1249
-#, c-format
-msgid "overwriting note %d with note %d (IC:%s)\n"
-msgstr ""
-
-#: ia64-gen.c:1456
-#, c-format
-msgid "don't know how to specify %% dependency %s\n"
-msgstr ""
-
-#: ia64-gen.c:1478
-#, c-format
-msgid "Don't know how to specify # dependency %s\n"
-msgstr ""
-
-#: ia64-gen.c:1517
-#, c-format
-msgid "IC:%s [%s] has no terminals or sub-classes\n"
-msgstr ""
-
-#: ia64-gen.c:1520
-#, c-format
-msgid "IC:%s has no terminals or sub-classes\n"
-msgstr ""
-
-#: ia64-gen.c:1529
-#, c-format
-msgid "no insns mapped directly to terminal IC %s [%s]"
-msgstr ""
-
-#: ia64-gen.c:1532
-#, c-format
-msgid "no insns mapped directly to terminal IC %s\n"
-msgstr ""
-
-#: ia64-gen.c:1543
-#, c-format
-msgid "class %s is defined but not used\n"
-msgstr ""
-
-#: ia64-gen.c:1556
-#, c-format
-msgid "Warning: rsrc %s (%s) has no chks\n"
-msgstr ""
-
-#: ia64-gen.c:1559
-#, c-format
-msgid "Warning: rsrc %s (%s) has no chks or regs\n"
-msgstr ""
-
-#: ia64-gen.c:1563
-#, c-format
-msgid "rsrc %s (%s) has no regs\n"
-msgstr ""
-
-#: ia64-gen.c:2455
-#, c-format
-msgid "IC note %d in opcode %s (IC:%s) conflicts with resource %s note %d\n"
-msgstr ""
-
-#: ia64-gen.c:2483
-#, c-format
-msgid "IC note %d for opcode %s (IC:%s) conflicts with resource %s note %d\n"
-msgstr ""
-
-#: ia64-gen.c:2497
-#, c-format
-msgid "opcode %s has no class (ops %d %d %d)\n"
 msgstr ""
 
 #. We've been passed a w.  Return with an error message so that
@@ -2168,24 +1962,24 @@ msgid ""
 "mis-matched privilege spec set by %s=%s, the elf privilege attribute is %s"
 msgstr ""
 
-#: riscv-dis.c:631
+#: riscv-dis.c:664
 #, c-format
 msgid "# internal error, undefined modifier (%c)"
 msgstr ""
 
-#: riscv-dis.c:1158
+#: riscv-dis.c:1183
 msgid "Print numeric register names, rather than ABI names."
 msgstr ""
 
-#: riscv-dis.c:1161
+#: riscv-dis.c:1186
 msgid "Disassemble only into canonical instructions."
 msgstr ""
 
-#: riscv-dis.c:1164
+#: riscv-dis.c:1189
 msgid "Print the CSR according to the chosen privilege spec."
 msgstr ""
 
-#: riscv-dis.c:1240
+#: riscv-dis.c:1265
 #, c-format
 msgid ""
 "\n"

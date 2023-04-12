@@ -79,7 +79,10 @@ extern "C" {
 
 #include <inttypes.h>
 
-#if BFD_ARCH_SIZE >= 64
+#if BFD_ARCH_SIZE >= 128
+#define BFD128
+#undef BFD64
+#elif BFD_ARCH_SIZE >= 64
 #define BFD64
 #endif
 
@@ -118,7 +121,14 @@ typedef int64_t bfd_signed_vma;
 typedef uint64_t bfd_size_type;
 typedef uint64_t symvalue;
 
-#else /* not BFD64  */
+#elif defined BFD128
+
+typedef __uint128_t bfd_vma;
+typedef __int128_t bfd_signed_vma;
+typedef __uint128_t bfd_size_type;
+typedef __uint128_t symvalue;
+
+#else /* BFD32 */
 
 typedef uint32_t bfd_vma;
 typedef int32_t bfd_signed_vma;
@@ -226,11 +236,21 @@ bfd_vma bfd_getl24 (const void *p);
 #define bfd_get_signed_64(abfd, ptr) \
   BFD_SEND (abfd, bfd_getx_signed_64, (ptr))
 
+#define bfd_put_128(abfd, val, ptr) \
+  BFD_SEND (abfd, bfd_putx128, ((val), (ptr)))
+#define bfd_put_signed_128 \
+  bfd_put_128
+#define bfd_get_128(abfd, ptr) \
+  BFD_SEND (abfd, bfd_getx128, (ptr))
+#define bfd_get_signed_128(abfd, ptr) \
+  BFD_SEND (abfd, bfd_getx_signed_128, (ptr))
+
 #define bfd_get(bits, abfd, ptr)                       \
   ((bits) == 8 ? bfd_get_8 (abfd, ptr)                 \
    : (bits) == 16 ? bfd_get_16 (abfd, ptr)             \
    : (bits) == 32 ? bfd_get_32 (abfd, ptr)             \
    : (bits) == 64 ? bfd_get_64 (abfd, ptr)             \
+   : (bits) == 128 ? bfd_get_128 (abfd, ptr)           \
    : (abort (), (bfd_vma) - 1))
 
 #define bfd_put(bits, abfd, val, ptr)                  \
@@ -238,6 +258,7 @@ bfd_vma bfd_getl24 (const void *p);
    : (bits) == 16 ? bfd_put_16 (abfd, val, ptr)        \
    : (bits) == 32 ? bfd_put_32 (abfd, val, ptr)        \
    : (bits) == 64 ? bfd_put_64 (abfd, val, ptr)        \
+   : (bits) == 128 ? bfd_put_128 (abfd, val, ptr)      \
    : (abort (), (void) 0))
 
 
@@ -279,24 +300,37 @@ bfd_vma bfd_getl24 (const void *p);
 #define bfd_h_get_signed_64(abfd, ptr) \
   BFD_SEND (abfd, bfd_h_getx_signed_64, (ptr))
 
+#define bfd_h_put_128(abfd, val, ptr) \
+  BFD_SEND (abfd, bfd_h_putx128, (val, ptr))
+#define bfd_h_put_signed_128 \
+  bfd_h_put_128
+#define bfd_h_get_128(abfd, ptr) \
+  BFD_SEND (abfd, bfd_h_getx128, (ptr))
+#define bfd_h_get_signed_128(abfd, ptr) \
+  BFD_SEND (abfd, bfd_h_getx_signed_128, (ptr))
+
 /* Aliases for the above, which should eventually go away.  */
 
-#define H_PUT_64  bfd_h_put_64
-#define H_PUT_32  bfd_h_put_32
-#define H_PUT_16  bfd_h_put_16
-#define H_PUT_8   bfd_h_put_8
-#define H_PUT_S64 bfd_h_put_signed_64
-#define H_PUT_S32 bfd_h_put_signed_32
-#define H_PUT_S16 bfd_h_put_signed_16
-#define H_PUT_S8  bfd_h_put_signed_8
-#define H_GET_64  bfd_h_get_64
-#define H_GET_32  bfd_h_get_32
-#define H_GET_16  bfd_h_get_16
-#define H_GET_8   bfd_h_get_8
-#define H_GET_S64 bfd_h_get_signed_64
-#define H_GET_S32 bfd_h_get_signed_32
-#define H_GET_S16 bfd_h_get_signed_16
-#define H_GET_S8  bfd_h_get_signed_8
+#define H_PUT_128  bfd_h_put_128
+#define H_PUT_64   bfd_h_put_64
+#define H_PUT_32   bfd_h_put_32
+#define H_PUT_16   bfd_h_put_16
+#define H_PUT_8    bfd_h_put_8
+#define H_PUT_S128 bfd_h_put_signed_128
+#define H_PUT_S64  bfd_h_put_signed_64
+#define H_PUT_S32  bfd_h_put_signed_32
+#define H_PUT_S16  bfd_h_put_signed_16
+#define H_PUT_S8   bfd_h_put_signed_8
+#define H_GET_128  bfd_h_get_128
+#define H_GET_64   bfd_h_get_64
+#define H_GET_32   bfd_h_get_32
+#define H_GET_16   bfd_h_get_16
+#define H_GET_8    bfd_h_get_8
+#define H_GET_S128 bfd_h_get_signed_128
+#define H_GET_S64  bfd_h_get_signed_64
+#define H_GET_S32  bfd_h_get_signed_32
+#define H_GET_S16  bfd_h_get_signed_16
+#define H_GET_S8   bfd_h_get_signed_8
 
 
 uint64_t bfd_getb64 (const void *);
@@ -1700,6 +1734,7 @@ enum bfd_architecture
   bfd_arch_riscv,
 #define bfd_mach_riscv32       132
 #define bfd_mach_riscv64       164
+#define bfd_mach_riscv128      228
   bfd_arch_rl78,
 #define bfd_mach_rl78          0x75
   bfd_arch_rx,        /* Renesas RX.  */
@@ -3072,11 +3107,11 @@ struct reloc_howto_struct
   unsigned int type;
 
   /* The size of the item to be relocated in bytes.  */
-  unsigned int size:4;
+  unsigned int size:5;
 
   /* The number of bits in the field to be relocated.  This is used
      when doing overflow checking.  */
-  unsigned int bitsize:7;
+  unsigned int bitsize:8;
 
   /* The value the final relocation is shifted right by.  This drops
      unwanted data from the relocation.  */
@@ -3208,6 +3243,7 @@ enum bfd_reloc_code_real {
 
 
 /* Basic absolute relocations of N bits.  */
+  BFD_RELOC_128,
   BFD_RELOC_64,
   BFD_RELOC_32,
   BFD_RELOC_26,
@@ -5364,10 +5400,12 @@ number for the SBIC, SBIS, SBI and CBI instructions  */
   BFD_RELOC_RISCV_ADD16,
   BFD_RELOC_RISCV_ADD32,
   BFD_RELOC_RISCV_ADD64,
+  BFD_RELOC_RISCV_ADD128,
   BFD_RELOC_RISCV_SUB8,
   BFD_RELOC_RISCV_SUB16,
   BFD_RELOC_RISCV_SUB32,
   BFD_RELOC_RISCV_SUB64,
+  BFD_RELOC_RISCV_SUB128,
   BFD_RELOC_RISCV_GOT_HI20,
   BFD_RELOC_RISCV_TLS_GOT_HI20,
   BFD_RELOC_RISCV_TLS_GD_HI20,
@@ -5376,8 +5414,11 @@ number for the SBIC, SBIS, SBI and CBI instructions  */
   BFD_RELOC_RISCV_TLS_DTPREL32,
   BFD_RELOC_RISCV_TLS_DTPMOD64,
   BFD_RELOC_RISCV_TLS_DTPREL64,
+  BFD_RELOC_RISCV_TLS_DTPMOD128,
+  BFD_RELOC_RISCV_TLS_DTPREL128,
   BFD_RELOC_RISCV_TLS_TPREL32,
   BFD_RELOC_RISCV_TLS_TPREL64,
+  BFD_RELOC_RISCV_TLS_TPREL128,
   BFD_RELOC_RISCV_ALIGN,
   BFD_RELOC_RISCV_RVC_BRANCH,
   BFD_RELOC_RISCV_RVC_JUMP,
@@ -7462,9 +7503,12 @@ typedef struct bfd_target
   /* Entries for byte swapping for data. These are different from the
      other entry points, since they don't take a BFD as the first argument.
      Certain other handlers could do the same.  */
-  uint64_t       (*bfd_getx64) (const void *);
-  int64_t        (*bfd_getx_signed_64) (const void *);
-  void           (*bfd_putx64) (uint64_t, void *);
+  bfd_vma        (*bfd_getx128) (const void *);
+  bfd_signed_vma (*bfd_getx_signed_128) (const void *);
+  void           (*bfd_putx128) (bfd_vma, void *);
+  bfd_vma        (*bfd_getx64) (const void *);
+  bfd_signed_vma (*bfd_getx_signed_64) (const void *);
+  void           (*bfd_putx64) (bfd_vma, void *);
   bfd_vma        (*bfd_getx32) (const void *);
   bfd_signed_vma (*bfd_getx_signed_32) (const void *);
   void           (*bfd_putx32) (bfd_vma, void *);
@@ -7473,9 +7517,12 @@ typedef struct bfd_target
   void           (*bfd_putx16) (bfd_vma, void *);
 
   /* Byte swapping for the headers.  */
-  uint64_t       (*bfd_h_getx64) (const void *);
-  int64_t        (*bfd_h_getx_signed_64) (const void *);
-  void           (*bfd_h_putx64) (uint64_t, void *);
+  bfd_vma        (*bfd_h_getx128) (const void *);
+  bfd_signed_vma (*bfd_h_getx_signed_128) (const void *);
+  void           (*bfd_h_putx128) (bfd_vma, void *);
+  bfd_vma        (*bfd_h_getx64) (const void *);
+  bfd_signed_vma (*bfd_h_getx_signed_64) (const void *);
+  void           (*bfd_h_putx64) (bfd_vma, void *);
   bfd_vma        (*bfd_h_getx32) (const void *);
   bfd_signed_vma (*bfd_h_getx_signed_32) (const void *);
   void           (*bfd_h_putx32) (bfd_vma, void *);

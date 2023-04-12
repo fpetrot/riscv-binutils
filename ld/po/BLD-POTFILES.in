@@ -74,6 +74,9 @@ ed10velf.c
 ed30v_e.c
 ed30v_o.c
 ed30velf.c
+eelf128lriscv.c
+eelf128lriscv_llp128.c
+eelf128lriscv_llp128f.c
 eelf32_dlx.c
 eelf32_sparc.c
 eelf32_sparc_sol2.c
