@@ -260,7 +260,7 @@ cooked_index::dump (gdbarch *arch)
 
       if ((entry->flags & IS_PARENT_DEFERRED) != 0)
 	gdb_printf ("    parent:     deferred (%" PRIx64 ")\n",
-		    entry->get_deferred_parent ());
+		    (unsigned long) entry->get_deferred_parent ());
       else if (entry->get_parent () != nullptr)
 	gdb_printf ("    parent:     ((cooked_index_entry *) %p) [%s]\n",
 		    entry->get_parent (), entry->get_parent ()->name);

@@ -27,7 +27,7 @@
 using gdb_byte = unsigned char;
 
 /* An address in the program being debugged.  Host byte order.  */
-using CORE_ADDR = uint64_t;
+using CORE_ADDR = __uint128_t;
 
 /* Like a CORE_ADDR, but not directly convertible.  This is used to
    represent an unrelocated CORE_ADDR.  */
@@ -35,8 +35,8 @@ DEFINE_OFFSET_TYPE (unrelocated_addr, CORE_ADDR);
 
 /* LONGEST must be at least as big as CORE_ADDR.  */
 
-using LONGEST = int64_t;
-using ULONGEST = uint64_t;
+using LONGEST = __int128_t;
+using ULONGEST = __uint128_t;
 
 /* The largest CORE_ADDR value.  */
 #define CORE_ADDR_MAX (~(CORE_ADDR) 0)

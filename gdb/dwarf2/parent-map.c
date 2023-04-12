@@ -44,7 +44,7 @@ dump_parent_map (dwarf2_per_bfd *per_bfd, const struct addrmap *map)
 	      {
 		gdb_printf (outfile, "(section: %s, offset: 0x%" PRIx64 ")",
 			    section.get_name (),
-			    start_addr - (CORE_ADDR)section.buffer);
+			    (long unsigned int) (start_addr - (CORE_ADDR)section.buffer));
 		found = true;
 		break;
 	      }
