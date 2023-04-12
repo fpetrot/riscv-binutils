@@ -103,7 +103,7 @@ static const bfd_arch_info_type arch_info_struct[] =
 
 /* The default architecture is riscv:rv64.  */
 const bfd_arch_info_type bfd_riscv_arch =
-  N (64, 0, "riscv", true, &arch_info_struct[0]);
+  N (128, 0, "riscv", true, &arch_info_struct[I_riscv128]);
 
 /* List for all supported ISA spec versions.  */
 const struct riscv_spec riscv_isa_specs[] =
