@@ -22,6 +22,7 @@
 
 #include "../features/riscv/32bit-cpu.c"
 #include "../features/riscv/64bit-cpu.c"
+#include "../features/riscv/128bit-cpu.c"
 #include "../features/riscv/32bit-fpu.c"
 #include "../features/riscv/64bit-fpu.c"
 #include "../features/riscv/rv32e-xregs.c"
@@ -67,7 +68,7 @@ riscv_create_target_description (const struct riscv_gdbarch_features features)
 
   long regnum = 0;
 
-  /* For now we only support creating 32-bit or 64-bit x-registers.  */
+  /* For now we only support creating 32-bit, 64-bit, or 128-bit x-registers.  */
   if (features.xlen == 4)
     {
       if (features.embedded)
@@ -77,6 +78,8 @@ riscv_create_target_description (const struct riscv_gdbarch_features features)
     }
   else if (features.xlen == 8)
     regnum = create_feature_riscv_64bit_cpu (tdesc.get (), regnum);
+  else if (features.xlen == 16)
+    regnum = create_feature_riscv_128bit_cpu(tdesc.get (), regnum);
 
   /* For now we only support creating 32-bit or 64-bit f-registers.  */
   if (features.flen == 4)

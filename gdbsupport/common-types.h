@@ -26,12 +26,12 @@
 typedef unsigned char gdb_byte;
 
 /* * An address in the program being debugged.  Host byte order.  */
-typedef uint64_t CORE_ADDR;
+typedef __uint128_t CORE_ADDR;
 
 /* LONGEST must be at least as big as CORE_ADDR.  */
 
-typedef int64_t LONGEST;
-typedef uint64_t ULONGEST;
+typedef __int128_t LONGEST;
+typedef __uint128_t ULONGEST;
 
 /* * The largest CORE_ADDR value.  */
 #define CORE_ADDR_MAX (~(CORE_ADDR) 0)
