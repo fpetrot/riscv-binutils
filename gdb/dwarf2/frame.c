@@ -1463,6 +1463,8 @@ encoding_for_size (unsigned int size)
       return DW_EH_PE_udata4;
     case 8:
       return DW_EH_PE_udata8;
+    case 16:
+      return DW_EH_PE_udata16;
     default:
       internal_error (_("Unsupported address size"));
     }
@@ -1541,6 +1543,9 @@ read_encoded_value (struct comp_unit *unit, gdb_byte encoding,
     case DW_EH_PE_udata8:
       *bytes_read_ptr += 8;
       return (base + bfd_get_64 (unit->abfd, (bfd_byte *) buf));
+    case DW_EH_PE_udata16:
+      *bytes_read_ptr += 16;
+      return (base + bfd_get_128 (unit->abfd, (bfd_byte *) buf));
     case DW_EH_PE_sleb128:
       {
 	int64_t value;
@@ -1558,6 +1563,9 @@ read_encoded_value (struct comp_unit *unit, gdb_byte encoding,
     case DW_EH_PE_sdata8:
       *bytes_read_ptr += 8;
       return (base + bfd_get_signed_64 (unit->abfd, (bfd_byte *) buf));
+    case DW_EH_PE_sdata16:
+      *bytes_read_ptr += 16;
+      return (base + bfd_get_signed_128 (unit->abfd, (bfd_byte *) buf));
     default:
       internal_error (_("Invalid or unsupported encoding"));
     }
