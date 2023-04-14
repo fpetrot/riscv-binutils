@@ -13211,6 +13211,7 @@ _bfd_elf_final_link (bfd *obfd, struct bfd_link_info *info)
 
 		      switch (obed->s->elfclass)
 			{
+			case ELFCLASS128: oclass = "ELFCLASS128"; break;
 			case ELFCLASS64: oclass = "ELFCLASS64"; break;
 			case ELFCLASS32: oclass = "ELFCLASS32"; break;
 			case ELFCLASSNONE: oclass = "ELFCLASSNONE"; break;
@@ -13219,6 +13220,7 @@ _bfd_elf_final_link (bfd *obfd, struct bfd_link_info *info)
 
 		      switch (elf_elfheader (sub)->e_ident[EI_CLASS])
 			{
+			case ELFCLASS128: iclass = "ELFCLASS128"; break;
 			case ELFCLASS64: iclass = "ELFCLASS64"; break;
 			case ELFCLASS32: iclass = "ELFCLASS32"; break;
 			case ELFCLASSNONE: iclass = "ELFCLASSNONE"; break;

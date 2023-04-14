@@ -104,6 +104,7 @@ typedef struct {
 #define ELFCLASSNONE	      0	/* Invalid class */
 #define ELFCLASS32	      1	/* 32-bit objects */
 #define ELFCLASS64	      2	/* 64-bit objects */
+#define ELFCLASS128           3 /* 128-bit objects */
 
 #define EI_DATA		5	/* Data encoding */
 #define ELFDATANONE	      0	/* Invalid data encoding */
