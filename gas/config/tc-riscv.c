@@ -2706,7 +2706,7 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
 	          goto rvc_imm_done;
 		case '^': /* Shift amount, 0 - (XLEN-1) and 0 = 64.  */
                   if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p)
-		    || (unsigned long) imm_expr->X_add_number >= (xlen == 128 ? 64 : xlen))
+		      || (unsigned long) imm_expr->X_add_number >= (xlen == 128 ? 64 : xlen))
 		    break;
 		  ip->insn_opcode |= ENCODE_CITYPE_IMM (imm_expr->X_add_number);
 	          goto rvc_imm_done;
@@ -2715,8 +2715,8 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
 		    break;
                   unsigned long a = (unsigned long) imm_expr->X_add_number;
                   if (a >= xlen 
-		   || (a >= 32 && a < 64)
-		   || (a > 64 && a < 96))
+		      || (a >= 32 && a < 64)
+		      || (a > 64 && a < 96))
 		    break;
 		 ip->insn_opcode |= ENCODE_CITYPE_IMM (imm_expr->X_add_number);
 		rvc_imm_done:
