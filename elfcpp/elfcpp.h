@@ -103,6 +103,7 @@ enum
   ELFCLASSNONE = 0,
   ELFCLASS32 = 1,
   ELFCLASS64 = 2
+  ELFCLASS128 = 3
 };
 
 // The valid values found in Ehdr e_ident[EI_DATA].
