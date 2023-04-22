@@ -61,6 +61,39 @@
 #include "elf-attrs.h"
 #include "bucomm.h"
 #include "elfcomm.h"
+/* Dirty hacks to handle 128-bit quantities since elf_vma was removed.
+ * Probably works only for little-endian elf, but what we are dealing
+ * with right now.
+ * Proper way would be to reintroduce an elf_vma type */
+#define BYTE_SETGET(ffield, efield) \
+do { \
+    if (sizeof (efield) <= 8) \
+      ffield = byte_get (efield, sizeof (efield)); \
+    else \
+      { \
+	assert(sizeof (efield) == 16); \
+	uint64_t v; \
+	unsigned char *f = (unsigned char *) &ffield; \
+	const unsigned char *e = (const unsigned char *) &efield; \
+	v = byte_get (e, 8); \
+	memcpy(f, &v, 8); \
+	v = byte_get (e + 8, 8); \
+	memcpy(f + 8, &v, 8); \
+      } \
+} while (0)
+
+#define PRINT_VMA(value, mode) \
+  if (is_32bit_elf || is_64bit_elf) \
+    print_vma (value, mode); \
+  else \
+    { \
+      uint64_t v; \
+      v = (uint64_t) ((__uint128_t) value >> 64); \
+      print_vma (v, LONG_HEX); \
+      v = value; \
+      print_vma (v, LONG_HEX); \
+    }
+
 #include "demanguse.h"
 #include "dwarf.h"
 #include "ctf-api.h"
@@ -246,6 +279,7 @@ static bool do_notes = false;
 static bool do_archive_index = false;
 static bool check_all = false;
 static bool is_32bit_elf = false;
+static bool is_64bit_elf = false;
 static bool decompress_dumps = false;
 static bool do_not_show_symbol_truncation = false;
 static bool do_demangle = false;	/* Pretty print C++ symbol names.  */
@@ -1423,7 +1457,7 @@ slurp_rela_relocs (Filedata *filedata,
 
       free (erelas);
     }
-  else
+  else if (is_64bit_elf)
     {
       Elf64_External_Rela * erelas;
 
@@ -1467,6 +1501,55 @@ slurp_rela_relocs (Filedata *filedata,
 	      relas[i].r_info = inf;
 	    }
 	}
+
+      free (erelas);
+    }
+  else
+    {
+      Elf128_External_Rela * erelas;
+
+      erelas = (Elf128_External_Rela *) get_data (NULL, filedata, rel_offset, 1,
+                                               rel_size, _("128-bit relocation data"));
+      if (!erelas)
+        return false;
+
+      nrelas = rel_size / sizeof (Elf128_External_Rela);
+
+      relas = (Elf_Internal_Rela *) cmalloc (nrelas,
+                                           sizeof (Elf_Internal_Rela));
+
+      if (relas == NULL)
+        {
+          free (erelas);
+          error (_("out of memory parsing relocs\n"));
+          return false;
+        }
+
+      for (i = 0; i < nrelas; i++)
+        {
+          BYTE_SETGET (relas[i].r_offset , erelas[i].r_offset);
+          BYTE_SETGET (relas[i].r_info   , erelas[i].r_info);
+	  /* Not sure I understand the comment regarding BYTE_GET_SIGNED
+	   * in elfcomm.h, but it says I can forget about the sign */
+          BYTE_SETGET (relas[i].r_addend , erelas[i].r_addend);
+
+	  if (filedata->file_header.e_machine == EM_MIPS
+	      && filedata->file_header.e_ident[EI_DATA] != ELFDATA2MSB)
+	    {
+	      /* In little-endian objects, r_info isn't really a
+		 64-bit little-endian value: it has a 32-bit
+		 little-endian symbol index followed by four
+		 individual byte fields.  Reorder INFO
+		 accordingly.  */
+	      uint64_t inf = relas[i].r_info;
+	      inf = (((inf & 0xffffffff) << 32)
+		      | ((inf >> 56) & 0xff)
+		      | ((inf >> 40) & 0xff00)
+		      | ((inf >> 24) & 0xff0000)
+		      | ((inf >> 8) & 0xff000000));
+	      relas[i].r_info = inf;
+	    }
+        }
 
       free (erelas);
     }
@@ -1515,14 +1598,14 @@ slurp_rel_relocs (Filedata *filedata,
 
       for (i = 0; i < nrels; i++)
 	{
-	  rels[i].r_offset = BYTE_GET (erels[i].r_offset);
-	  rels[i].r_info   = BYTE_GET (erels[i].r_info);
+          rels[i].r_offset = BYTE_GET (erels[i].r_offset);
+          rels[i].r_info   = BYTE_GET (erels[i].r_info);
 	  rels[i].r_addend = 0;
 	}
 
       free (erels);
     }
-  else
+  else if (is_64bit_elf)
     {
       Elf64_External_Rel * erels;
 
@@ -1544,8 +1627,8 @@ slurp_rel_relocs (Filedata *filedata,
 
       for (i = 0; i < nrels; i++)
 	{
-	  rels[i].r_offset = BYTE_GET (erels[i].r_offset);
-	  rels[i].r_info   = BYTE_GET (erels[i].r_info);
+          rels[i].r_offset = BYTE_GET (erels[i].r_offset);
+          rels[i].r_info   = BYTE_GET (erels[i].r_info);
 	  rels[i].r_addend = 0;
 
 	  if (filedata->file_header.e_machine == EM_MIPS
@@ -1568,6 +1651,52 @@ slurp_rel_relocs (Filedata *filedata,
 
       free (erels);
     }
+  else
+    {
+      Elf128_External_Rel * erels;
+
+      erels = (Elf128_External_Rel *) get_data (NULL, filedata, rel_offset, 1,
+                                             rel_size, _("128-bit relocation data"));
+      if (!erels)
+        return false;
+
+      nrels = rel_size / sizeof (Elf128_External_Rel);
+
+      rels = (Elf_Internal_Rela *) cmalloc (nrels, sizeof (Elf_Internal_Rela));
+
+      if (rels == NULL)
+        {
+          free (erels);
+          error (_("out of memory parsing relocs\n"));
+          return false;
+        }
+
+      for (i = 0; i < nrels; i++)
+        {
+          BYTE_SETGET (rels[i].r_offset , erels[i].r_offset);
+          BYTE_SETGET (rels[i].r_info   , erels[i].r_info);
+          rels[i].r_addend = 0;
+
+          if (filedata->file_header.e_machine == EM_MIPS
+	      && filedata->file_header.e_ident[EI_DATA] != ELFDATA2MSB)
+	    {
+	      /* In little-endian objects, r_info isn't really a
+		 64-bit little-endian value: it has a 32-bit
+		 little-endian symbol index followed by four
+		 individual byte fields.  Reorder INFO
+		 accordingly.  */
+	      uint64_t inf = rels[i].r_info;
+	      inf = (((inf & 0xffffffff) << 32)
+		     | ((inf >> 56) & 0xff)
+		     | ((inf >> 40) & 0xff00)
+		     | ((inf >> 24) & 0xff0000)
+		     | ((inf >> 8) & 0xff000000));
+	      rels[i].r_info = inf;
+	    }
+        }
+
+      free (erels);
+    }
 
   *relsp = rels;
   *nrelsp = nrels;
@@ -1581,19 +1710,22 @@ get_reloc_type (Filedata * filedata, uint64_t reloc_info)
 {
   if (is_32bit_elf)
     return ELF32_R_TYPE (reloc_info);
-
-  switch (filedata->file_header.e_machine)
+  else if (is_64bit_elf)
     {
-    case EM_MIPS:
-      /* Note: We assume that reloc_info has already been adjusted for us.  */
-      return ELF64_MIPS_R_TYPE (reloc_info);
+      switch (filedata->file_header.e_machine)
+        {
+        case EM_MIPS:
+          return ELF64_MIPS_R_TYPE (reloc_info);
 
-    case EM_SPARCV9:
-      return ELF64_R_TYPE_ID (reloc_info);
+        case EM_SPARCV9:
+          return ELF64_R_TYPE_ID (reloc_info);
 
-    default:
-      return ELF64_R_TYPE (reloc_info);
+        default:
+          return ELF64_R_TYPE (reloc_info);
+        }
     }
+  else
+    return ELF128_R_TYPE (reloc_info);
 }
 
 /* Return the symbol index extracted from the reloc info field.  */
@@ -1601,7 +1733,7 @@ get_reloc_type (Filedata * filedata, uint64_t reloc_info)
 static uint64_t
 get_reloc_symindex (uint64_t reloc_info)
 {
-  return is_32bit_elf ? ELF32_R_SYM (reloc_info) : ELF64_R_SYM (reloc_info);
+  return is_32bit_elf ? ELF32_R_SYM (reloc_info) : (is_64bit_elf ? ELF64_R_SYM (reloc_info) : ELF128_R_SYM (reloc_info));
 }
 
 static inline bool
@@ -2299,7 +2431,17 @@ dump_relocations (Filedata *          filedata,
 		printf (_(" Offset     Info    Type            Sym.Value  Sym. Name\n"));
 	    }
 	}
-      else if (rel_type == reltype_rela)
+      else
+	{
+	  if (do_wide)
+	    printf (_(" Offset     Info    Type                Sym. Value  Symbol's Name\n"));
+	  else
+	    printf (_(" Offset     Info    Type            Sym.Value  Sym. Name\n"));
+	}
+    }
+  else if (is_64bit_elf)
+    {
+      if (rel_type == reltype_rela)
 	{
 	  if (do_wide)
 	    printf (_("    Offset             Info             Type               Symbol's Value  Symbol's Name + Addend\n"));
@@ -2313,6 +2455,23 @@ dump_relocations (Filedata *          filedata,
 	  else
 	    printf (_("  Offset          Info           Type           Sym. Value    Sym. Name\n"));
 	}
+    }
+  else
+    {
+      if (rel_type == reltype_rela)
+        {
+          if (do_wide)
+            printf (_("      Offset                             Info                             Type               Symbol's Value               Symbol's Name + Addend\n"));
+          else
+            printf (_("    Offset                    Info                     Type           Sym. Value                      Sym. Name + Addend\n"));
+        }
+      else
+        {
+          if (do_wide)
+            printf (_("      Offset                             Info                             Type               Symbol's Value  Symbol's Name\n"));
+          else
+            printf (_("    Offset                    Info                     Type           Sym. Value         Sym. Name\n"));
+        }
     }
 
   for (i = 0; i < rel_size; i++)
@@ -2334,11 +2493,17 @@ dump_relocations (Filedata *          filedata,
 	  if (is_32bit_elf)
 	    printf ("%8.8" PRIx32 "  %8.8" PRIx32 " ",
 		    (uint32_t) offset, (uint32_t) inf);
-	  else
+	  else if (is_64bit_elf)
 	    printf (do_wide
 		    ? "%16.16" PRIx64 "  %16.16" PRIx64 " "
 		    : "%12.12" PRIx64 "  %12.12" PRIx64 " ",
 		    offset, inf);
+	  else
+	    printf (do_wide
+		    ? "%16.16" PRIx64 "%16.16" PRIx64 "  %16.16" PRIx64 "%16.16" PRIx64 " "
+		    : "%12.12" PRIx64 "%12.12" PRIx64 "  %12.12" PRIx64 "%12.12" PRIx64 " ",
+		    (unsigned long) ((__uint128_t) offset >> 64), (unsigned long) offset,
+		    (unsigned long) ((__uint128_t) inf >> 64), (unsigned long) inf);
 	}
 
       switch (filedata->file_header.e_machine)
@@ -2763,7 +2928,7 @@ dump_relocations (Filedata *          filedata,
 		{
 		  const char * name;
 		  unsigned int len;
-		  unsigned int width = is_32bit_elf ? 8 : 14;
+		  unsigned int width = is_32bit_elf ? 8 : (is_64bit_elf ? 14 : 26); /* FIXME value is possibly false */
 
 		  /* Relocations against GNU_IFUNC symbols do not use the value
 		     of the symbol as the address to relocate against.  Instead
@@ -2807,7 +2972,7 @@ dump_relocations (Filedata *          filedata,
 		}
 	      else if (dump_reloc)
 		{
-		  print_vma (psym->st_value, LONG_HEX);
+		  PRINT_VMA (psym->st_value, LONG_HEX);
 
 		  printf (is_32bit_elf ? "   " : " ");
 		}
@@ -7167,6 +7332,7 @@ get_elf_class (unsigned int elf_class)
     case ELFCLASSNONE: return _("none");
     case ELFCLASS32:   return "ELF32";
     case ELFCLASS64:   return "ELF64";
+    case ELFCLASS128: return "ELF128";
     default:
       snprintf (buff, sizeof (buff), _("<unknown: %x>"), elf_class);
       return buff;
@@ -7459,6 +7625,53 @@ get_64bit_program_headers (Filedata * filedata, Elf_Internal_Phdr * pheaders)
   return true;
 }
 
+/* Read in the program headers from FILEDATA and store them in PHEADERS.
+   Returns TRUE upon success, FALSE otherwise.  Loads 128-bit headers.  */
+
+static bool
+get_128bit_program_headers (Filedata * filedata, Elf_Internal_Phdr * pheaders)
+{
+  Elf128_External_Phdr * phdrs;
+  Elf128_External_Phdr * external;
+  Elf_Internal_Phdr *   internal;
+  unsigned int i;
+  unsigned int size = filedata->file_header.e_phentsize;
+  unsigned int num  = filedata->file_header.e_phnum;
+
+  /* PR binutils/17531: Cope with unexpected section header sizes.  */
+  if (size == 0 || num == 0)
+    return false;
+  if (size < sizeof * phdrs)
+  {
+    error (_("The e_phentsize field in the ELF header is less than the size of an ELF program header\n"));
+    return false;
+  }
+  if (size > sizeof * phdrs)
+    warn (_("The e_phentsize field in the ELF header is larger than the size of an ELF program header\n"));
+
+  phdrs = (Elf128_External_Phdr *) get_data (NULL, filedata, filedata->file_header.e_phoff,
+                                            size, num, _("program headers"));
+  if (!phdrs)
+    return false;
+
+  for (i = 0, internal = pheaders, external = phdrs;
+       i < filedata->file_header.e_phnum;
+       i++, internal++, external++)
+  {
+    BYTE_SETGET (internal->p_type   , external->p_type);
+    BYTE_SETGET (internal->p_flags  , external->p_flags);
+    BYTE_SETGET (internal->p_offset , external->p_offset);
+    BYTE_SETGET (internal->p_vaddr  , external->p_vaddr);
+    BYTE_SETGET (internal->p_paddr  , external->p_paddr);
+    BYTE_SETGET (internal->p_filesz , external->p_filesz);
+    BYTE_SETGET (internal->p_memsz  , external->p_memsz);
+    BYTE_SETGET (internal->p_align  , external->p_align);
+  }
+
+  free (phdrs);
+  return true;
+}
+
 /* Returns TRUE if the program headers were read into `program_headers'.  */
 
 static bool
@@ -7473,7 +7686,8 @@ get_program_headers (Filedata * filedata)
   /* Be kind to memory checkers by looking for
      e_phnum values which we know must be invalid.  */
   if (filedata->file_header.e_phnum
-      * (is_32bit_elf ? sizeof (Elf32_External_Phdr) : sizeof (Elf64_External_Phdr))
+      * (is_32bit_elf ? sizeof (Elf32_External_Phdr) :
+      (is_64bit_elf ? sizeof (Elf64_External_Phdr) : sizeof (Elf128_External_Phdr) ))
       >= filedata->file_size)
     {
       error (_("Too many program headers - %#x - the file is not that big\n"),
@@ -7492,7 +7706,8 @@ get_program_headers (Filedata * filedata)
 
   if (is_32bit_elf
       ? get_32bit_program_headers (filedata, phdrs)
-      : get_64bit_program_headers (filedata, phdrs))
+      : (is_64bit_elf ? get_64bit_program_headers (filedata, phdrs) :
+        get_128bit_program_headers (filedata, phdrs)))
     {
       filedata->program_headers = phdrs;
       return true;
@@ -7999,6 +8214,81 @@ get_64bit_section_headers (Filedata * filedata, bool probe)
   return true;
 }
 
+/* Like get_64bit_section_headers, except that it fetches 128-bit headers.  */
+
+static bool
+get_128bit_section_headers (Filedata * filedata, bool probe)
+{
+  Elf128_External_Shdr *  shdrs;
+  Elf_Internal_Shdr *    internal;
+  unsigned int           i;
+  unsigned int           size = filedata->file_header.e_shentsize;
+  unsigned int           num = probe ? 1 : filedata->file_header.e_shnum;
+
+  /* PR binutils/17531: Cope with unexpected section header sizes.  */
+  if (size == 0 || num == 0)
+    return false;
+
+  /* The section header cannot be at the start of the file - that is
+     where the ELF file header is located.  A file with absolutely no
+     sections in it will use a shoff of 0.  */
+  if (filedata->file_header.e_shoff == 0)
+    return false;
+
+  if (size < sizeof * shdrs)
+    {
+      if (! probe)
+	error (_("The e_shentsize field in the ELF header is less than the size of an ELF section header\n"));
+      return false;
+    }
+
+  if (! probe && size > sizeof * shdrs)
+    warn (_("The e_shentsize field in the ELF header is larger than the size of an ELF section header\n"));
+
+  shdrs = (Elf128_External_Shdr *) get_data (NULL, filedata,
+					    filedata->file_header.e_shoff,
+                                            size, num,
+					    probe ? NULL : _("section headers"));
+  if (shdrs == NULL)
+    return false;
+
+  filedata->section_headers = (Elf_Internal_Shdr *)
+    cmalloc (num, sizeof (Elf_Internal_Shdr));
+  if (filedata->section_headers == NULL)
+    {
+      if (! probe)
+	error (_("Out of memory reading %u section headers\n"), num);
+      free (shdrs);
+      return false;
+    }
+
+  for (i = 0, internal = filedata->section_headers;
+       i < num;
+       i++, internal++)
+    {
+      BYTE_SETGET (internal->sh_name      , shdrs[i].sh_name);
+      BYTE_SETGET (internal->sh_type      , shdrs[i].sh_type);
+      BYTE_SETGET (internal->sh_flags     , shdrs[i].sh_flags);
+      BYTE_SETGET (internal->sh_addr      , shdrs[i].sh_addr);
+      BYTE_SETGET (internal->sh_size      , shdrs[i].sh_size);
+      BYTE_SETGET (internal->sh_entsize   , shdrs[i].sh_entsize);
+      BYTE_SETGET (internal->sh_link      , shdrs[i].sh_link);
+      BYTE_SETGET (internal->sh_info      , shdrs[i].sh_info);
+      BYTE_SETGET (internal->sh_offset    , shdrs[i].sh_offset);
+      BYTE_SETGET (internal->sh_addralign , shdrs[i].sh_addralign);
+      if (!probe
+	  && internal->sh_link >= num
+	  && !special_defined_section_index (filedata,
+					     internal->sh_link))
+	warn (_("Section %u has an out of range sh_link value of %u\n"), i, internal->sh_link);
+      if (!probe && internal->sh_flags & SHF_INFO_LINK && internal->sh_info > num)
+	warn (_("Section %u has an out of range sh_info value of %u\n"), i, internal->sh_info);
+    }
+
+  free (shdrs);
+  return true;
+}
+
 static bool
 get_section_headers (Filedata *filedata, bool probe)
 {
@@ -8007,8 +8297,10 @@ get_section_headers (Filedata *filedata, bool probe)
 
   if (is_32bit_elf)
     return get_32bit_section_headers (filedata, probe);
-  else
+  else if (is_64bit_elf)
     return get_64bit_section_headers (filedata, probe);
+  else
+    return get_128bit_section_headers (filedata, probe);
 }
 
 static Elf_Internal_Sym *
@@ -8248,22 +8540,143 @@ get_64bit_elf_symbols (Filedata *filedata,
 }
 
 static Elf_Internal_Sym *
+get_128bit_elf_symbols (Filedata *           filedata,
+		        Elf_Internal_Shdr *  section,
+		        unsigned long *      num_syms_return)
+{
+  unsigned long number = 0;
+  Elf128_External_Sym * esyms = NULL;
+  Elf_External_Sym_Shndx * shndx = NULL;
+  Elf_Internal_Sym * isyms = NULL;
+  Elf_Internal_Sym * psym;
+  unsigned int j;
+  elf_section_list * entry;
+
+  if (section->sh_size == 0)
+    {
+      if (num_syms_return != NULL)
+	* num_syms_return = 0;
+      return NULL;
+    }
+
+  /* Run some sanity checks first.  */
+  if (section->sh_entsize == 0 || section->sh_entsize > section->sh_size)
+    {
+      error (_("Section %s has an invalid sh_entsize of 0x%lx\n"),
+	     printable_section_name (filedata, section),
+	     (unsigned long) section->sh_entsize);
+      goto exit_point;
+    }
+
+  if (section->sh_size > filedata->file_size)
+    {
+      error (_("Section %s has an invalid sh_size of 0x%lx\n"),
+	     printable_section_name (filedata, section),
+	     (unsigned long) section->sh_size);
+      goto exit_point;
+    }
+
+  number = section->sh_size / section->sh_entsize;
+
+  if (number * sizeof (Elf128_External_Sym) > section->sh_size + 1)
+    {
+      error (_("Size (0x%lx) of section %s is not a multiple of its sh_entsize (0x%lx)\n"),
+	     (unsigned long) section->sh_size,
+	     printable_section_name (filedata, section),
+	     (unsigned long) section->sh_entsize);
+      goto exit_point;
+    }
+
+  esyms = (Elf128_External_Sym *) get_data (NULL, filedata, section->sh_offset, 1,
+                                           section->sh_size, _("symbols"));
+  if (!esyms)
+    goto exit_point;
+
+  shndx = NULL;
+  for (entry = filedata->symtab_shndx_list; entry != NULL; entry = entry->next)
+    {
+      if (entry->hdr->sh_link != (unsigned long) (section - filedata->section_headers))
+	continue;
+
+      if (shndx != NULL)
+	{
+	  error (_("Multiple symbol table index sections associated with the same symbol section\n"));
+	  free (shndx);
+	}
+
+      shndx = (Elf_External_Sym_Shndx *) get_data (NULL, filedata,
+						   entry->hdr->sh_offset,
+						   1, entry->hdr->sh_size,
+						   _("symbol table section indices"));
+      if (shndx == NULL)
+	goto exit_point;
+
+      /* PR17531: file: heap-buffer-overflow */
+      if (entry->hdr->sh_size / sizeof (Elf_External_Sym_Shndx) < number)
+	{
+	  error (_("Index section %s has an sh_size of 0x%lx - expected 0x%lx\n"),
+		 printable_section_name (filedata, entry->hdr),
+		 (unsigned long) entry->hdr->sh_size,
+		 (unsigned long) section->sh_size);
+	  goto exit_point;
+	}
+    }
+
+  isyms = (Elf_Internal_Sym *) cmalloc (number, sizeof (Elf_Internal_Sym));
+
+  if (isyms == NULL)
+    {
+      error (_("Out of memory reading %lu symbols\n"),
+	     (unsigned long) number);
+      goto exit_point;
+    }
+
+  for (j = 0, psym = isyms; j < number; j++, psym++)
+    {
+      BYTE_SETGET (psym->st_name  , esyms[j].st_name);
+      BYTE_SETGET (psym->st_info  , esyms[j].st_info);
+      BYTE_SETGET (psym->st_other , esyms[j].st_other);
+      BYTE_SETGET (psym->st_shndx , esyms[j].st_shndx);
+
+      if (psym->st_shndx == (SHN_XINDEX & 0xffff) && shndx != NULL)
+	psym->st_shndx
+	  = byte_get ((unsigned char *) &shndx[j], sizeof (shndx[j]));
+      else if (psym->st_shndx >= (SHN_LORESERVE & 0xffff))
+	psym->st_shndx += SHN_LORESERVE - (SHN_LORESERVE & 0xffff);
+
+      BYTE_SETGET (psym->st_value , esyms[j].st_value);
+      BYTE_SETGET (psym->st_size  , esyms[j].st_size);
+    }
+
+ exit_point:
+  free (shndx);
+  free (esyms);
+
+  if (num_syms_return != NULL)
+    * num_syms_return = isyms == NULL ? 0 : number;
+
+  return isyms;
+}
+
+static Elf_Internal_Sym *
 get_elf_symbols (Filedata *filedata,
 		 Elf_Internal_Shdr *section,
 		 uint64_t *num_syms_return)
 {
   if (is_32bit_elf)
     return get_32bit_elf_symbols (filedata, section, num_syms_return);
-  else
+  else if (is_64bit_elf)
     return get_64bit_elf_symbols (filedata, section, num_syms_return);
+  else
+    return get_128bit_elf_symbols (filedata, section, num_syms_return);
 }
 
 static const char *
 get_elf_section_flags (Filedata * filedata, uint64_t sh_flags)
 {
-  static char buff[1024];
+  static char buff[2048];
   char * p = buff;
-  unsigned int field_size = is_32bit_elf ? 8 : 16;
+  unsigned int field_size = is_32bit_elf ? 8 : (is_64bit_elf ? 16 : 32); /* FIXME  wild guess for 128-bit */
   signed int sindex;
   unsigned int size = sizeof (buff) - (field_size + 4 + 1);
   uint64_t os_flags = 0;
@@ -8585,9 +8998,24 @@ get_compression_header (Elf_Internal_Chdr *chdr, unsigned char *buf,
       chdr->ch_addralign = BYTE_GET (echdr->ch_addralign);
       return sizeof (*echdr);
     }
-  else
+  else if (is_64bit_elf)
     {
       Elf64_External_Chdr *echdr = (Elf64_External_Chdr *) buf;
+
+      if (size < sizeof (* echdr))
+	{
+	  error (_("Compressed section is too small even for a compression header\n"));
+	  return 0;
+	}
+
+      chdr->ch_type = BYTE_GET (echdr->ch_type);
+      chdr->ch_size = BYTE_GET (echdr->ch_size);
+      chdr->ch_addralign = BYTE_GET (echdr->ch_addralign);
+      return sizeof (*echdr);
+    }
+  else
+    {
+      Elf128_External_Chdr *echdr = (Elf128_External_Chdr *) buf;
 
       if (size < sizeof (* echdr))
 	{
@@ -8660,7 +9088,7 @@ process_section_headers (Filedata * filedata)
 
   /* Scan the sections for the dynamic symbol table
      and dynamic string table and debug sections.  */
-  eh_addr_size = is_32bit_elf ? 4 : 8;
+  eh_addr_size = is_32bit_elf ? 4 : (is_64bit_elf ? 8 : 16);
   switch (filedata->file_header.e_machine)
     {
     case EM_MIPS:
@@ -8708,10 +9136,11 @@ process_section_headers (Filedata * filedata)
       break;
     }
 
-#define CHECK_ENTSIZE_VALUES(section, i, size32, size64)		\
+#define CHECK_ENTSIZE_VALUES(section, i, size32, size64, size128)	\
   do									\
     {									\
-      uint64_t expected_entsize = is_32bit_elf ? size32 : size64;	\
+      uint64_t expected_entsize = is_32bit_elf ? size32 :               \
+                                  (is_64bit_elf ? size64 : size128);	\
       if (section->sh_entsize != expected_entsize)			\
 	{								\
 	  error (_("Section %d has invalid sh_entsize of %" PRIx64 "\n"), \
@@ -8725,7 +9154,7 @@ process_section_headers (Filedata * filedata)
 
 #define CHECK_ENTSIZE(section, i, type)					\
   CHECK_ENTSIZE_VALUES (section, i, sizeof (Elf32_External_##type),	\
-			sizeof (Elf64_External_##type))
+			sizeof (Elf64_External_##type), sizeof (Elf128_External_##type))
 
   for (i = 0, section = filedata->section_headers;
        i < filedata->file_header.e_shnum;
@@ -8783,7 +9212,7 @@ process_section_headers (Filedata * filedata)
 	  break;
 
 	case SHT_GROUP:
-	  CHECK_ENTSIZE_VALUES (section, i, GRP_ENTRY_SIZE, GRP_ENTRY_SIZE);
+	  CHECK_ENTSIZE_VALUES (section, i, GRP_ENTRY_SIZE, GRP_ENTRY_SIZE, GRP_ENTRY_SIZE);
 	  break;
 
 	case SHT_REL:
@@ -8924,7 +9353,7 @@ process_section_headers (Filedata * filedata)
 	printf
 	  (_("  [Nr] Name              Type            Address          Off    Size   ES Flg Lk Inf Al\n"));
     }
-  else
+  else if (is_64bit_elf)
     {
       if (do_section_details)
 	{
@@ -8936,6 +9365,20 @@ process_section_headers (Filedata * filedata)
 	{
 	  printf (_("  [Nr] Name              Type             Address           Offset\n"));
 	  printf (_("       Size              EntSize          Flags  Link  Info  Align\n"));
+	}
+    }
+  else
+    {
+      if (do_section_details)
+	{
+	  printf (_("  [Nr] Name\n"));
+	  printf (_("       Type                              Address                          Offset                            Link\n"));
+	  printf (_("       Size                              EntSize                          Info                              Align\n"));
+	}
+      else
+	{
+	  printf (_("  [Nr] Name                              Type                             Address                           Offset\n"));
+	  printf (_("       Size                              EntSize                          Flags     Link Info               Align\n"));
 	}
     }
 
@@ -9083,10 +9526,14 @@ process_section_headers (Filedata * filedata)
       if (do_section_details)
 	printf ("%s\n      ", printable_section_name (filedata, section));
       else
-	print_symbol_name (-17, printable_section_name (filedata, section));
+	print_symbol_name (is_32bit_elf || is_64bit_elf ? -17 : -33, printable_section_name (filedata, section));
 
-      printf (do_wide ? " %-15s " : " %-15.15s ",
-	      get_section_type_name (filedata, section->sh_type));
+      if (is_32bit_elf || is_64bit_elf)
+	printf (do_wide ? " %-15s " : " %-15.15s ",
+		get_section_type_name (filedata, section->sh_type));
+      else
+	printf (do_wide ? " %-32s " : " %-32.32s ",
+		get_section_type_name (filedata, section->sh_type));
 
       bool special_defined_section
 	= special_defined_section_index (filedata, section->sh_link);
@@ -9162,30 +9609,33 @@ process_section_headers (Filedata * filedata)
 	}
       else if (do_wide)
 	{
-	  print_vma (section->sh_addr, LONG_HEX);
+	  PRINT_VMA (section->sh_addr, LONG_HEX);
 
 	  if ((long) section->sh_offset == section->sh_offset)
 	    printf (" %6.6lx", (unsigned long) section->sh_offset);
 	  else
 	    {
-	      putchar (' ');
-	      print_vma (section->sh_offset, LONG_HEX);
+	      if (is_32bit_elf || is_64bit_elf)
+		putchar (' ');
+	      PRINT_VMA (section->sh_offset, LONG_HEX);
 	    }
 
 	  if ((unsigned long) section->sh_size == section->sh_size)
 	    printf (" %6.6lx", (unsigned long) section->sh_size);
 	  else
 	    {
-	      putchar (' ');
-	      print_vma (section->sh_size, LONG_HEX);
+	      if (is_32bit_elf || is_64bit_elf)
+		putchar (' ');
+	      PRINT_VMA (section->sh_size, LONG_HEX);
 	    }
 
 	  if ((unsigned long) section->sh_entsize == section->sh_entsize)
 	    printf (" %2.2lx", (unsigned long) section->sh_entsize);
 	  else
 	    {
-	      putchar (' ');
-	      print_vma (section->sh_entsize, LONG_HEX);
+	      if (is_32bit_elf || is_64bit_elf)
+		putchar (' ');
+	      PRINT_VMA (section->sh_entsize, LONG_HEX);
 	    }
 
 	  if (do_section_details)
@@ -9207,20 +9657,20 @@ process_section_headers (Filedata * filedata)
 	    printf ("%2lu\n", (unsigned long) section->sh_addralign);
 	  else
 	    {
-	      print_vma (section->sh_addralign, DEC);
+	      PRINT_VMA (section->sh_addralign, DEC);
 	      putchar ('\n');
 	    }
 	}
       else if (do_section_details)
 	{
 	  putchar (' ');
-	  print_vma (section->sh_addr, LONG_HEX);
+	  PRINT_VMA (section->sh_addr, LONG_HEX);
 	  if ((long) section->sh_offset == section->sh_offset)
 	    printf ("  %16.16lx", (unsigned long) section->sh_offset);
 	  else
 	    {
 	      printf ("  ");
-	      print_vma (section->sh_offset, LONG_HEX);
+	      PRINT_VMA (section->sh_offset, LONG_HEX);
 	    }
 	  if (special_defined_section)
 	    printf ("  %s\n       ",
@@ -9231,7 +9681,7 @@ process_section_headers (Filedata * filedata)
 	    printf ("  %u\n       ", section->sh_link);
 	  print_vma (section->sh_size, LONG_HEX);
 	  putchar (' ');
-	  print_vma (section->sh_entsize, LONG_HEX);
+	  PRINT_VMA (section->sh_entsize, LONG_HEX);
 
 	  printf ("  %-16u  %lu\n",
 		  section->sh_info,
@@ -9239,19 +9689,20 @@ process_section_headers (Filedata * filedata)
 	}
       else
 	{
-	  putchar (' ');
-	  print_vma (section->sh_addr, LONG_HEX);
+	  if (is_32bit_elf || is_64bit_elf)
+	    putchar (' ');
+	  PRINT_VMA (section->sh_addr, LONG_HEX);
 	  if ((long) section->sh_offset == section->sh_offset)
 	    printf ("  %8.8lx", (unsigned long) section->sh_offset);
 	  else
 	    {
 	      printf ("  ");
-	      print_vma (section->sh_offset, LONG_HEX);
+	      PRINT_VMA (section->sh_offset, LONG_HEX);
 	    }
 	  printf ("\n       ");
-	  print_vma (section->sh_size, LONG_HEX);
+	  PRINT_VMA (section->sh_size, LONG_HEX);
 	  printf ("  ");
-	  print_vma (section->sh_entsize, LONG_HEX);
+	  PRINT_VMA (section->sh_entsize, LONG_HEX);
 
 	  printf (" %3s ", get_elf_section_flags (filedata, section->sh_flags));
 
@@ -12575,6 +13026,58 @@ get_64bit_dynamic_section (Filedata * filedata)
 }
 
 static bool
+get_128bit_dynamic_section (Filedata * filedata)
+{
+  Elf128_External_Dyn * edyn;
+  Elf128_External_Dyn * ext;
+  Elf_Internal_Dyn * entry;
+
+  /* Read in the data.  */
+  edyn = (Elf128_External_Dyn *) get_data (NULL, filedata,
+                                          filedata->dynamic_addr, 1,
+                                          filedata->dynamic_size,
+                                          _("dynamic section"));
+  if (!edyn)
+    return false;
+
+  /* SGI's ELF has more than one section in the DYNAMIC segment, and we
+     might not have the luxury of section headers.  Look for the DT_NULL
+     terminator to determine the number of entries.  */
+  for (ext = edyn, filedata->dynamic_nent = 0;
+    /* PR 17533 file: 033-67080-0.004 - do not read past end of buffer.  */
+       (char *) (ext + 1) <= (char *) edyn + filedata->dynamic_size;
+       ext++)
+  {
+    filedata->dynamic_nent++;
+    if (BYTE_GET (ext->d_tag) == DT_NULL)
+      break;
+  }
+
+  filedata->dynamic_section
+    = (Elf_Internal_Dyn *) cmalloc (filedata->dynamic_nent, sizeof (* entry));
+  if (filedata->dynamic_section == NULL)
+  {
+    error (_("Out of memory allocating space for %lu dynamic entries\n"),
+           (unsigned long) filedata->dynamic_nent);
+    free (edyn);
+    return false;
+  }
+
+  /* Convert from external to internal formats.  */
+  for (ext = edyn, entry = filedata->dynamic_section;
+       entry < filedata->dynamic_section + filedata->dynamic_nent;
+       ext++, entry++)
+  {
+    entry->d_tag      = BYTE_GET (ext->d_tag);
+    entry->d_un.d_val = BYTE_GET (ext->d_un.d_val);
+  }
+
+  free (edyn);
+
+  return true;
+}
+
+static bool
 get_dynamic_section (Filedata *filedata)
 {
   if (filedata->dynamic_section)
@@ -12582,8 +13085,10 @@ get_dynamic_section (Filedata *filedata)
 
   if (is_32bit_elf)
     return get_32bit_dynamic_section (filedata);
-  else
+  else if (is_64bit_elf)
     return get_64bit_dynamic_section (filedata);
+  else
+    return get_128bit_dynamic_section (filedata);
 }
 
 static void
@@ -17716,7 +18221,9 @@ load_specific_debug_section (enum dwarf_section_display_enum  debug,
 
 	  if (size < (is_32bit_elf
 		      ? sizeof (Elf32_External_Chdr)
-		      : sizeof (Elf64_External_Chdr)))
+		      : (is_64bit_elf
+			 ? sizeof (Elf64_External_Chdr)
+			 : sizeof (Elf128_External_Chdr))))
 	    {
 	      warn (_("compressed section %s is too small to contain a compression header\n"),
 		    section->name);
@@ -20359,13 +20866,13 @@ print_mips_got_entry (unsigned char * data, uint64_t pltgot, uint64_t addr,
     printf ("%10s", "");
   printf (" ");
   if (data == NULL)
-    printf ("%*s", is_32bit_elf ? 8 : 16, _("<unknown>"));
+    printf ("%*s", is_32bit_elf ? 8 : (is_64bit_elf ? 16 : 32), _("<unknown>"));
   else
     {
       uint64_t entry;
       unsigned char * from = data + addr - pltgot;
 
-      if (from + (is_32bit_elf ? 4 : 8) > data_end)
+      if (from + (is_32bit_elf ? 4 : (is_64bit_elf ? 8 : 16)) > data_end)
 	{
 	  warn (_("MIPS GOT entry extends beyond the end of available data\n"));
 	  printf ("%*s", is_32bit_elf ? 8 : 16, _("<corrupt>"));
@@ -20373,11 +20880,22 @@ print_mips_got_entry (unsigned char * data, uint64_t pltgot, uint64_t addr,
 	}
       else
 	{
-	  entry = byte_get (data + addr - pltgot, is_32bit_elf ? 4 : 8);
-	  print_vma (entry, LONG_HEX);
+	  if (is_32bit_elf || is_64bit_elf)
+	    {
+	      entry = byte_get (data + addr - pltgot, is_32bit_elf ? 4 : 8);
+	      print_vma (entry, LONG_HEX);
+	    }
+	  else
+	    {
+	      uint64_t entry_hi;
+	      entry = byte_get (data + addr - pltgot, 8);
+	      entry_hi = byte_get (data + addr - pltgot + 8, 8);
+	      print_vma (entry_hi, LONG_HEX);
+	      print_vma (entry, LONG_HEX);
+	    }
 	}
     }
-  return addr + (is_32bit_elf ? 4 : 8);
+  return addr + (is_32bit_elf ? 4 : (is_64bit_elf ? 8 : 16));
 }
 
 /* DATA points to the contents of a MIPS PLT GOT that starts at VMA
@@ -20391,15 +20909,15 @@ print_mips_pltgot_entry (unsigned char * data, uint64_t pltgot, uint64_t addr)
   print_vma (addr, LONG_HEX);
   printf (" ");
   if (data == NULL)
-    printf ("%*s", is_32bit_elf ? 8 : 16, _("<unknown>"));
+    printf ("%*s", is_32bit_elf ? 8 : (is_64bit_elf ? 16 : 32), _("<unknown>"));
   else
     {
       uint64_t entry;
 
-      entry = byte_get (data + addr - pltgot, is_32bit_elf ? 4 : 8);
+      entry = byte_get (data + addr - pltgot, is_32bit_elf ? 4 : (is_64bit_elf ? 8 : 16));
       print_vma (entry, LONG_HEX);
     }
-  return addr + (is_32bit_elf ? 4 : 8);
+  return addr + (is_32bit_elf ? 4 : (is_64bit_elf ? 8 : 16));
 }
 
 static void
@@ -21197,7 +21715,7 @@ process_mips_specific (Filedata * filedata, bool dump_got)
       int addr_size;
 
       ent = pltgot;
-      addr_size = (is_32bit_elf ? 4 : 8);
+      addr_size = (is_32bit_elf ? 4 : (is_64bit_elf ? 8 : 16));
       local_end = pltgot + local_gotno * addr_size;
 
       /* PR binutils/17533 file: 012-111227-0.004  */
@@ -21351,7 +21869,7 @@ process_mips_specific (Filedata * filedata, bool dump_got)
 	}
 
       ent = mips_pltgot;
-      addr_size = (is_32bit_elf ? 4 : 8);
+      addr_size = (is_32bit_elf ? 4 : (is_64bit_elf ? 8 : 16));
       end = mips_pltgot + (2 + count) * addr_size;
 
       offset = offset_from_vma (filedata, mips_pltgot, end - mips_pltgot);
@@ -21378,7 +21896,7 @@ process_mips_specific (Filedata * filedata, bool dump_got)
 	      addr_size * 2, _("Address"),
 	      addr_size * 2, _("Initial"),
 	      addr_size * 2, _("Sym.Val."), _("Type"), _("Ndx"), _("Name"));
-      sym_width = (is_32bit_elf ? 80 : 160) - 17 - addr_size * 6 - 1;
+      sym_width = (is_32bit_elf ? 80 : (is_64bit_elf ? 160 : 320)) - 17 - addr_size * 6 - 1;
       for (i = 0; i < count; i++)
 	{
 	  uint64_t idx = get_reloc_symindex (rels[i].r_info);
@@ -21966,7 +22484,7 @@ get_note_type (Filedata * filedata, unsigned e_type)
 static bool
 print_core_note (Elf_Internal_Note *pnote)
 {
-  unsigned int addr_size = is_32bit_elf ? 4 : 8;
+  unsigned int addr_size = is_32bit_elf ? 4 : (is_64bit_elf ? 8 : 16);
   uint64_t count, page_size;
   unsigned char *descdata, *filenames, *descend;
 
@@ -22478,7 +22996,7 @@ print_gnu_property_note (Filedata * filedata, Elf_Internal_Note * pnote)
 {
   unsigned char * ptr = (unsigned char *) pnote->descdata;
   unsigned char * ptr_end = ptr + pnote->descsz;
-  unsigned int    size = is_32bit_elf ? 4 : 8;
+  unsigned int    size = is_32bit_elf ? 4 : (is_64bit_elf ? 8 : 16);
 
   printf (_("      Properties: "));
 
@@ -23187,7 +23705,7 @@ static bool
 print_stapsdt_note (Elf_Internal_Note *pnote)
 {
   size_t len, maxlen;
-  size_t addr_size = is_32bit_elf ? 4 : 8;
+  size_t addr_size = is_32bit_elf ? 4 : (is_64bit_elf ? 8 : 16);
   char *data = pnote->descdata;
   char *data_end = pnote->descdata + pnote->descsz;
   uint64_t pc, base_addr, semaphore;
@@ -24687,8 +25205,9 @@ get_file_header (Filedata * filedata)
       break;
     }
 
-  /* For now we only support 32 bit and 64 bit ELF files.  */
-  is_32bit_elf = (filedata->file_header.e_ident[EI_CLASS] != ELFCLASS64);
+  /* For now we only support 32 bit, 64 bit, and 128 bit ELF files.  */
+  is_32bit_elf = (filedata->file_header.e_ident[EI_CLASS] == ELFCLASS32);
+  is_64bit_elf = (filedata->file_header.e_ident[EI_CLASS] == ELFCLASS64);
 
   /* Read in the rest of the header.  */
   if (is_32bit_elf)
@@ -24712,7 +25231,7 @@ get_file_header (Filedata * filedata)
       filedata->file_header.e_shnum     = BYTE_GET (ehdr32.e_shnum);
       filedata->file_header.e_shstrndx  = BYTE_GET (ehdr32.e_shstrndx);
     }
-  else
+  else if (is_64bit_elf)
     {
       Elf64_External_Ehdr ehdr64;
 
@@ -24732,6 +25251,27 @@ get_file_header (Filedata * filedata)
       filedata->file_header.e_shentsize = BYTE_GET (ehdr64.e_shentsize);
       filedata->file_header.e_shnum     = BYTE_GET (ehdr64.e_shnum);
       filedata->file_header.e_shstrndx  = BYTE_GET (ehdr64.e_shstrndx);
+    }
+  else
+    {
+      Elf128_External_Ehdr ehdr128;
+
+      if (fread (ehdr128.e_type, sizeof (ehdr128) - EI_NIDENT, 1, filedata->handle) != 1)
+	return false;
+
+      BYTE_SETGET(filedata->file_header.e_type      , ehdr128.e_type);
+      BYTE_SETGET(filedata->file_header.e_machine   , ehdr128.e_machine);
+      BYTE_SETGET(filedata->file_header.e_version   , ehdr128.e_version);
+      BYTE_SETGET(filedata->file_header.e_entry     , ehdr128.e_entry);
+      BYTE_SETGET(filedata->file_header.e_phoff     , ehdr128.e_phoff);
+      BYTE_SETGET(filedata->file_header.e_shoff     , ehdr128.e_shoff);
+      BYTE_SETGET(filedata->file_header.e_flags     , ehdr128.e_flags);
+      BYTE_SETGET(filedata->file_header.e_ehsize    , ehdr128.e_ehsize);
+      BYTE_SETGET(filedata->file_header.e_phentsize , ehdr128.e_phentsize);
+      BYTE_SETGET(filedata->file_header.e_phnum     , ehdr128.e_phnum);
+      BYTE_SETGET(filedata->file_header.e_shentsize , ehdr128.e_shentsize);
+      BYTE_SETGET(filedata->file_header.e_shnum     , ehdr128.e_shnum);
+      BYTE_SETGET(filedata->file_header.e_shstrndx  , ehdr128.e_shstrndx);
     }
 
   return true;
