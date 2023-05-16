@@ -4183,8 +4183,8 @@ riscv_gdbarch_init (struct gdbarch_info info,
   int xlen = riscv_isa_xlen (gdbarch);
   set_gdbarch_short_bit (gdbarch, 16);
   set_gdbarch_int_bit (gdbarch, 32);
-  set_gdbarch_long_bit (gdbarch, (xlen == 128) ? 64 : xlen * 8);
-  set_gdbarch_long_long_bit (gdbarch, (xlen == 128) ? 128 : 64);
+  set_gdbarch_long_bit (gdbarch, (xlen == 16) ? 64 : xlen * 8);
+  set_gdbarch_long_long_bit (gdbarch, (xlen == 16) ? 128 : 64);
   set_gdbarch_long_double_bit (gdbarch, 128);
   set_gdbarch_long_double_format (gdbarch, floatformats_ieee_quad);
   set_gdbarch_ptr_bit (gdbarch, riscv_isa_xlen (gdbarch) * 8);
