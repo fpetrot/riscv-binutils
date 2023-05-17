@@ -3396,9 +3396,15 @@ riscv_elf_finish_dynamic_sections (bfd *output_bfd,
 	{
 	  /* Write the first two entries in .got.plt, needed for the dynamic
 	     linker.  */
+#if 0
 	  bfd_put_NN (output_bfd, (bfd_vma) -1, htab->elf.sgotplt->contents);
 	  bfd_put_NN (output_bfd, (bfd_vma) 0,
 		      htab->elf.sgotplt->contents + GOT_ENTRY_SIZE);
+#else
+	  bfd_put_NN (output_bfd, -1, htab->elf.sgotplt->contents);
+	  bfd_put_NN (output_bfd, 0,
+		      htab->elf.sgotplt->contents + GOT_ENTRY_SIZE);
+#endif
 	}
 
       elf_section_data (output_section)->this_hdr.sh_entsize = GOT_ENTRY_SIZE;

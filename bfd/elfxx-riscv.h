@@ -37,6 +37,8 @@ extern void riscv_elf32_set_options (struct bfd_link_info *,
 				     struct riscv_elf_params *);
 extern void riscv_elf64_set_options (struct bfd_link_info *,
 				     struct riscv_elf_params *);
+extern void riscv_elf128_set_options (struct bfd_link_info *,
+				      struct riscv_elf_params *);
 
 extern reloc_howto_type *
 riscv_reloc_name_lookup (bfd *, const char *);

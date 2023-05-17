@@ -732,6 +732,10 @@ FUNCTION
 	Byte swapping routines.
 
 SYNOPSIS
+        __uint128_t bfd_getb128 (const void *);
+        __uint128_t bfd_getl128 (const void *);
+        __int128_t bfd_getb_signed_128 (const void *);
+        __int128_t bfd_getl_signed_128 (const void *);
 	uint64_t bfd_getb64 (const void *);
 	uint64_t bfd_getl64 (const void *);
 	int64_t bfd_getb_signed_64 (const void *);
@@ -744,6 +748,8 @@ SYNOPSIS
 	bfd_vma bfd_getl16 (const void *);
 	bfd_signed_vma bfd_getb_signed_16 (const void *);
 	bfd_signed_vma bfd_getl_signed_16 (const void *);
+	void bfd_putb128 (__uint128_t, void *);
+	void bfd_putl128 (__uint128_t, void *);
 	void bfd_putb64 (uint64_t, void *);
 	void bfd_putl64 (uint64_t, void *);
 	void bfd_putb32 (bfd_vma, void *);
@@ -752,8 +758,8 @@ SYNOPSIS
 	void bfd_putl24 (bfd_vma, void *);
 	void bfd_putb16 (bfd_vma, void *);
 	void bfd_putl16 (bfd_vma, void *);
-	uint64_t bfd_get_bits (const void *, int, bool);
-	void bfd_put_bits (uint64_t, void *, int, bool);
+	__uint128_t bfd_get_bits (const void *, int, bool);
+	void bfd_put_bits (__uint128_t, void *, int, bool);
 */
 
 bfd_vma
@@ -894,7 +900,7 @@ bfd_getl_signed_32 (const void *p)
   return COERCE32 (v);
 }
 
-bfd_vma
+uint64_t
 bfd_getb64 (const void *p)
 {
   const bfd_byte *addr = (const bfd_byte *) p;
@@ -912,7 +918,7 @@ bfd_getb64 (const void *p)
   return v;
 }
 
-bfd_vma
+uint64_t
 bfd_getl64 (const void *p)
 {
   const bfd_byte *addr = (const bfd_byte *) p;
@@ -930,7 +936,7 @@ bfd_getl64 (const void *p)
   return v;
 }
 
-bfd_signed_vma
+int64_t
 bfd_getb_signed_64 (const void *p)
 {
   const bfd_byte *addr = (const bfd_byte *) p;
@@ -948,7 +954,7 @@ bfd_getb_signed_64 (const void *p)
   return COERCE64 (v);
 }
 
-bfd_signed_vma
+int64_t
 bfd_getl_signed_64 (const void *p)
 {
   const bfd_byte *addr = (const bfd_byte *) p;
@@ -966,7 +972,7 @@ bfd_getl_signed_64 (const void *p)
   return COERCE64 (v);
 }
 
-bfd_vma
+__uint128_t
 bfd_getb128 (const void *p ATTRIBUTE_UNUSED)
 {
 #ifdef BFD128
@@ -997,7 +1003,7 @@ bfd_getb128 (const void *p ATTRIBUTE_UNUSED)
 #endif
 }
 
-bfd_vma
+__uint128_t
 bfd_getl128 (const void *p ATTRIBUTE_UNUSED)
 {
 #ifdef BFD128
@@ -1028,7 +1034,7 @@ bfd_getl128 (const void *p ATTRIBUTE_UNUSED)
 #endif
 }
 
-bfd_signed_vma
+__int128_t
 bfd_getb_signed_128 (const void *p ATTRIBUTE_UNUSED)
 {
 #ifdef BFD128
@@ -1059,7 +1065,7 @@ bfd_getb_signed_128 (const void *p ATTRIBUTE_UNUSED)
 #endif
 }
 
-bfd_signed_vma
+__int128_t
 bfd_getl_signed_128 (const void *p ATTRIBUTE_UNUSED)
 {
 #ifdef BFD128
@@ -1111,7 +1117,7 @@ bfd_putl32 (bfd_vma data, void *p)
 }
 
 void
-bfd_putb64 (bfd_vma data, void *p)
+bfd_putb64 (uint64_t data, void *p)
 {
   bfd_byte *addr = (bfd_byte *) p;
   addr[0] = (data >> (7*8)) & 0xff;
@@ -1125,7 +1131,7 @@ bfd_putb64 (bfd_vma data, void *p)
 }
 
 void
-bfd_putl64 (bfd_vma data, void *p)
+bfd_putl64 (uint64_t data, void *p)
 {
   bfd_byte *addr = (bfd_byte *) p;
   addr[7] = (data >> (7*8)) & 0xff;
@@ -1139,7 +1145,7 @@ bfd_putl64 (bfd_vma data, void *p)
 }
 
 void
-bfd_putb128 (bfd_vma data ATTRIBUTE_UNUSED, void *p ATTRIBUTE_UNUSED)
+bfd_putb128 (__uint128_t data ATTRIBUTE_UNUSED, void *p ATTRIBUTE_UNUSED)
 {
 #ifdef BFD128
   bfd_byte *addr = (bfd_byte *) p;
@@ -1165,7 +1171,7 @@ bfd_putb128 (bfd_vma data ATTRIBUTE_UNUSED, void *p ATTRIBUTE_UNUSED)
 }
 
 void
-bfd_putl128 (bfd_vma data ATTRIBUTE_UNUSED, void *p ATTRIBUTE_UNUSED)
+bfd_putl128 (__uint128_t data ATTRIBUTE_UNUSED, void *p ATTRIBUTE_UNUSED)
 {
 #ifdef BFD128
   bfd_byte *addr = (bfd_byte *) p;
