@@ -186,7 +186,7 @@ value::bits_available (LONGEST offset, ULONGEST length) const
 bool
 value::bytes_available (LONGEST offset, ULONGEST length) const
 {
-  ULONGEST sign = (1ULL << (sizeof (ULONGEST) * 8 - 1)) / TARGET_CHAR_BIT;
+  ULONGEST sign = ((ULONGEST)1 << (sizeof (ULONGEST) * 8 - 1)) / TARGET_CHAR_BIT;
   ULONGEST mask = (sign << 1) - 1;
 
   if (offset != ((offset & mask) ^ sign) - sign
