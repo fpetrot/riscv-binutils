@@ -192,13 +192,6 @@ match_opcode (const struct riscv_opcode *op, insn_t insn)
 }
 
 static int
-match_never (const struct riscv_opcode *op ATTRIBUTE_UNUSED,
-	     insn_t insn ATTRIBUTE_UNUSED)
-{
-  return 0;
-}
-
-static int
 match_rs1_eq_rs2 (const struct riscv_opcode *op, insn_t insn)
 {
   int rs1 = (insn & MASK_RS1) >> OP_SH_RS1;
@@ -3622,19 +3615,19 @@ const struct riscv_opcode riscv_opcodes[] =
 
 /* rv128i instructions.  */
 {"ldu",       128, INSN_CLASS_I, "d,o(s)",    MATCH_LDU, MASK_LDU, match_opcode, INSN_DREF|INSN_8_BYTE },
-{"ldu",       128, INSN_CLASS_I, "d,A",       0, (int) M_LDU, match_never, INSN_MACRO },
+{"ldu",       128, INSN_CLASS_I, "d,A",       0, (int) M_Lx, match_rd_nonzero, INSN_MACRO },
 {"c.lqsp",    128, INSN_CLASS_C, "d,Ch(Cc)",  MATCH_C_LQSP, MASK_C_LQSP, match_rd_nonzero, INSN_DREF|INSN_16_BYTE },
 {"c.lq",      128, INSN_CLASS_C, "Ct,Cg(Cs)", MATCH_C_LQ, MASK_C_LQ, match_opcode, INSN_DREF|INSN_16_BYTE },
 {"lq",        128, INSN_CLASS_C, "d,Ch(Cc)",  MATCH_C_LQSP, MASK_C_LQSP, match_rd_nonzero, INSN_ALIAS|INSN_DREF|INSN_16_BYTE },
 {"lq",        128, INSN_CLASS_C, "Ct,Cg(Cs)", MATCH_C_LQ, MASK_C_LQ, match_opcode, INSN_ALIAS|INSN_DREF|INSN_16_BYTE },
 {"lq",        128, INSN_CLASS_I, "d,o(s)",    MATCH_LQ, MASK_LQ, match_opcode, INSN_DREF|INSN_16_BYTE },
-{"lq",        128, INSN_CLASS_I, "d,A",       0, (int) M_LQ, match_never, INSN_MACRO },
+{"lq",        128, INSN_CLASS_I, "d,A",       0, (int) M_Lx, match_rd_nonzero, INSN_MACRO },
 {"c.sqsp",    128, INSN_CLASS_C, "CV,CH(Cc)", MATCH_C_SQSP, MASK_C_SQSP, match_opcode, INSN_DREF|INSN_16_BYTE },
 {"c.sq",      128, INSN_CLASS_C, "Ct,Cg(Cs)", MATCH_C_SQ, MASK_C_SQ, match_opcode, INSN_DREF|INSN_16_BYTE },
 {"sq",        128, INSN_CLASS_C, "CV,CH(Cc)", MATCH_C_SQSP, MASK_C_SQSP, match_opcode, INSN_ALIAS|INSN_DREF|INSN_16_BYTE },
 {"sq",        128, INSN_CLASS_C, "Ct,Cg(Cs)", MATCH_C_SQ, MASK_C_SQ, match_opcode, INSN_ALIAS|INSN_DREF|INSN_16_BYTE },
 {"sq",        128, INSN_CLASS_I, "t,q(s)",    MATCH_SQ, MASK_SQ, match_opcode, INSN_DREF|INSN_16_BYTE },
-{"sq",        128, INSN_CLASS_I, "t,A,s",     0, (int) M_SQ, match_never, INSN_MACRO },
+{"sq",        128, INSN_CLASS_I, "t,A,s",     0, (int) M_Sx_FSx, match_rs1_nonzero, INSN_MACRO },
 {"addid",     128, INSN_CLASS_I, "d,s,j",     MATCH_ADDID, MASK_ADDID, match_opcode, 0 },
 {"sllid",     128, INSN_CLASS_I, "d,s,^",     MATCH_SLLID, MASK_SLLID, match_opcode, 0 },
 {"slld",      128, INSN_CLASS_I, "d,s,t",     MATCH_SLLD, MASK_SLLD, match_opcode, 0 },
