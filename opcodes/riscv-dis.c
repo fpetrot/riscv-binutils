@@ -413,19 +413,17 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
 	      break;
 	    case '<':
 	      print (info->stream, dis_style_immediate, "0x%x",
-		     (unsigned)EXTRACT_CITYPE_IMM (l) & 0x1f);
+		(unsigned)EXTRACT_CITYPE_IMM (l) & 0x1f);
 	      break;
-#if 0
-	      /* FIXME: FP Check if what follows makes sense */
-	      {
-	        int imm = 128 + (int) EXTRACT_CITYPE_IMM (l);
-	        print (info->stream, dis_style_immediate, "0x%x", 
-	               imm == 128 ? 64 : (imm > 128 ? imm - 128 : imm));
+	    case '_':
+	      { /* 128-bit shift right immediat */
+		int imm = (unsigned) EXTRACT_CITYPE_IMM (l) & 0x3f;
+		print (info->stream, dis_style_immediate, "0x%x",
+		       imm == 0 ? 64 : ((imm & 0x20) << 1) | imm);
 	        break;
               }
-#endif
             case '^':
-	      {
+	      { /* 128-bit shift left immediat */
 	        int imm = (int) EXTRACT_CITYPE_IMM (l) & 0x3f;
 	        print (info->stream, dis_style_immediate, "0x%x", 
 	               imm == 0 ? 64 : imm);

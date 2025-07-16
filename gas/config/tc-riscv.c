@@ -1539,6 +1539,7 @@ validate_riscv_insn (const struct riscv_opcode *opc, int length)
 	    case '>': /* CITYPE immediate, compressed shift.  */
 	    case '<': /* CITYPE immediate, compressed shift.  */
 	    case '^': /* CITYPE immediate, compressed shift.  */
+	    case '_': /* CITYPE immediate, compressed shift.  */
 	    case 'u': /* CITYPE immediate, compressed lui.  */
 	    case 'v': /* CITYPE immediate, li to compressed lui.  */
 	    case 'o': /* CITYPE immediate, allow zero.  */
@@ -3099,6 +3100,13 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
 		      || regno != 0)
 		    break;
 		  continue;
+		case '<': /* Shift amount, 0 - 31.  */
+		  if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p)
+		      || imm_expr->X_op != O_constant
+		      || (unsigned long) imm_expr->X_add_number >= 32)
+		    break;
+		  ip->insn_opcode |= ENCODE_CITYPE_IMM (imm_expr->X_add_number);
+	          goto rvc_imm_done;
 		case '>': /* Shift amount, 0 - (XLEN-1).  */
 		  if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p)
 		      || imm_expr->X_op != O_constant
@@ -3108,19 +3116,22 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
 	          goto rvc_imm_done;
 		case '^': /* Shift amount, 0 - (XLEN-1) and 0 = 64.  */
                   if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p)
-		      || (unsigned long) imm_expr->X_add_number >= (xlen == 128 ? 64 : xlen))
+		      || (unsigned long) imm_expr->X_add_number >= (xlen == 128 ? 65 : xlen)
+		      || (unsigned long) imm_expr->X_add_number == 0)
 		    break;
 		  ip->insn_opcode |= ENCODE_CITYPE_IMM (imm_expr->X_add_number);
 	          goto rvc_imm_done;
-		case '<': /* Shift amount, 1 - 31 | 64 | 96 - (XLEN-1).  */
+		case '_': /* Shift amount, 1 - 31 | 64 | 96 - (XLEN-1).  */
 		  if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p))
 		    break;
                   unsigned long a = (unsigned long) imm_expr->X_add_number;
                   if (a >= xlen 
-		      || (a >= 32 && a < 64)
-		      || (a > 64 && a < 96))
+		      || a == 0
+		      || (a > 31 && a < 64)
+		      || (a > 64 && a < 96)
+		      || a > 127)
 		    break;
-		 ip->insn_opcode |= ENCODE_CITYPE_IMM (imm_expr->X_add_number);
+		  ip->insn_opcode |= ENCODE_CITYPE_IMM (imm_expr->X_add_number);
 		rvc_imm_done:
 		  asarg = expr_parse_end;
 		  imm_expr->X_op = O_absent;
@@ -3574,8 +3585,8 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
 	    case '^': /* Shift amount, 0 - 63.  */
 	      my_getExpression (imm_expr, asarg, force_reloc);
 	      check_absolute_expr (ip, imm_expr, false);
-	      if ((unsigned long) imm_expr->X_add_number >= 64)
-		as_bad (_("improper shift amount (%lu)"),
+	      if ((unsigned long) imm_expr->X_add_number > 63)
+		as_bad (_("improper shift amount (%"PRIu64")"),
 			(unsigned long) imm_expr->X_add_number);
 	      INSERT_OPERAND (SHAMTD, *ip, imm_expr->X_add_number);
 	      imm_expr->X_op = O_absent;
