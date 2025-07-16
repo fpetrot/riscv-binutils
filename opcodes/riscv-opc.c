@@ -333,13 +333,16 @@ match_c_slli64 (const struct riscv_opcode *op, insn_t insn)
   return match_opcode (op, insn) && EXTRACT_CITYPE_IMM (insn) == 0;
 }
 
-/* This is used for both srli and srai.  This requires a non-zero shift.
+/* This is used for both srli and srai.  This requires a non-zero shamt
+   field for xlen != 128.
    A zero rd is not possible.  */
 
 static int
 match_srxi_as_c_srxi (const struct riscv_opcode *op, insn_t insn)
 {
-  return match_opcode (op, insn) && EXTRACT_CITYPE_IMM (insn) != 0;
+  return match_opcode (op, insn)
+	  && (op->xlen_requirement == 128
+	      || (op->xlen_requirement != 128 && EXTRACT_CITYPE_IMM (insn) != 0));
 }
 
 static int
@@ -573,23 +576,28 @@ const struct riscv_opcode riscv_opcodes[] =
 {"mips.ehb", 0, INSN_CLASS_XMIPSEXECTL, "", MATCH_MIPS_EHB, MASK_MIPS_EHB, match_opcode, 0 },
 {"mips.ihb", 0, INSN_CLASS_XMIPSEXECTL, "", MATCH_MIPS_IHB, MASK_MIPS_IHB, match_opcode, 0 },
 {"mips.pause", 0, INSN_CLASS_XMIPSEXECTL, "", MATCH_MIPS_PAUSE, MASK_MIPS_PAUSE, match_opcode, 0 },
-{"slli",        0, INSN_CLASS_ZCA, "d,CU,C>",   MATCH_C_SLLI, MASK_C_SLLI, match_slli_as_c_slli, INSN_ALIAS },
+
+{"slli",    32+64, INSN_CLASS_ZCA, "d,CU,C>",   MATCH_C_SLLI, MASK_C_SLLI, match_slli_as_c_slli, INSN_ALIAS },
+{"slli",      128, INSN_CLASS_ZCA, "d,CU,C^",   MATCH_C_SLLI, MASK_C_SLLI, match_slli_as_c_slli, INSN_ALIAS },
 {"slli",        0, INSN_CLASS_I, "d,s,>",     MATCH_SLLI, MASK_SLLI, match_opcode, 0 },
-{"sll",         0, INSN_CLASS_ZCA, "d,CU,C>",   MATCH_C_SLLI, MASK_C_SLLI, match_slli_as_c_slli, INSN_ALIAS },
+{"sll",     32+64, INSN_CLASS_ZCA, "d,CU,C>",   MATCH_C_SLLI, MASK_C_SLLI, match_slli_as_c_slli, INSN_ALIAS },
+{"sll",       128, INSN_CLASS_ZCA, "d,CU,C^",   MATCH_C_SLLI, MASK_C_SLLI, match_slli_as_c_slli, INSN_ALIAS },
 {"sll",         0, INSN_CLASS_I, "d,s,t",     MATCH_SLL, MASK_SLL, match_opcode, 0 },
 {"sll",         0, INSN_CLASS_I, "d,s,>",     MATCH_SLLI, MASK_SLLI, match_opcode, INSN_ALIAS },
-{"srli",        0, INSN_CLASS_ZCA, "Cs,Cw,C>",  MATCH_C_SRLI, MASK_C_SRLI, match_srxi_as_c_srxi, INSN_ALIAS },
+{"srli",    32+64, INSN_CLASS_ZCA, "Cs,Cw,C>",  MATCH_C_SRLI, MASK_C_SRLI, match_srxi_as_c_srxi, INSN_ALIAS },
+{"srli",      128, INSN_CLASS_ZCA, "Cs,Cw,C_",  MATCH_C_SRLI, MASK_C_SRLI, match_srxi_as_c_srxi, INSN_ALIAS },
 {"srli",        0, INSN_CLASS_I, "d,s,>",     MATCH_SRLI, MASK_SRLI, match_opcode, 0 },
-{"srl",         0, INSN_CLASS_ZCA, "Cs,Cw,C>",  MATCH_C_SRLI, MASK_C_SRLI, match_srxi_as_c_srxi, INSN_ALIAS },
+{"srl",     32+64, INSN_CLASS_ZCA, "Cs,Cw,C>",  MATCH_C_SRLI, MASK_C_SRLI, match_srxi_as_c_srxi, INSN_ALIAS },
+{"srl",       128, INSN_CLASS_ZCA, "Cs,Cw,C_",  MATCH_C_SRLI, MASK_C_SRLI, match_srxi_as_c_srxi, INSN_ALIAS },
 {"srl",         0, INSN_CLASS_I, "d,s,t",     MATCH_SRL, MASK_SRL, match_opcode, 0 },
 {"srl",         0, INSN_CLASS_I, "d,s,>",     MATCH_SRLI, MASK_SRLI, match_opcode, INSN_ALIAS },
-
-{"sra",         0, INSN_CLASS_ZCA, "Cs,Cw,C>",  MATCH_C_SRAI, MASK_C_SRAI, match_srxi_as_c_srxi, INSN_ALIAS },
+{"srai",    32+64, INSN_CLASS_ZCA, "Cs,Cw,C>",  MATCH_C_SRAI, MASK_C_SRAI, match_srxi_as_c_srxi, INSN_ALIAS },
+{"srai",      128, INSN_CLASS_ZCA, "Cs,Cw,C_",  MATCH_C_SRAI, MASK_C_SRAI, match_srxi_as_c_srxi, INSN_ALIAS },
+{"srai",        0, INSN_CLASS_I, "d,s,>",     MATCH_SRAI, MASK_SRAI, match_opcode, 0 },
+{"sra",     32+64, INSN_CLASS_ZCA, "Cs,Cw,C>",  MATCH_C_SRAI, MASK_C_SRAI, match_srxi_as_c_srxi, INSN_ALIAS },
+{"sra",       128, INSN_CLASS_ZCA, "Cs,Cw,C_",  MATCH_C_SRAI, MASK_C_SRAI, match_srxi_as_c_srxi, INSN_ALIAS },
 {"sra",         0, INSN_CLASS_I, "d,s,t",     MATCH_SRA, MASK_SRA, match_opcode, 0 },
 {"sra",         0, INSN_CLASS_I, "d,s,>",     MATCH_SRAI, MASK_SRAI, match_opcode, INSN_ALIAS },
-{"srai",    32+64, INSN_CLASS_ZCA, "Cs,Cw,C>",  MATCH_C_SRAI, MASK_C_SRAI, match_srxi_as_c_srxi, INSN_ALIAS },
-{"srai",        0, INSN_CLASS_I, "d,s,>",     MATCH_SRAI, MASK_SRAI, match_opcode, 0 },
-{"srai",      128, INSN_CLASS_ZCA, "Cs,Cw,C<",  MATCH_C_SRAI, MASK_C_SRAI, match_opcode, INSN_ALIAS },
 {"sub",         0, INSN_CLASS_ZCA, "Cs,Cw,Ct",  MATCH_C_SUB, MASK_C_SUB, match_opcode, INSN_ALIAS },
 {"sub",         0, INSN_CLASS_I, "d,s,t",     MATCH_SUB, MASK_SUB, match_opcode, 0 },
 {"lb",          0, INSN_CLASS_I, "d,o(s)",    MATCH_LB, MASK_LB, match_opcode, INSN_DREF|INSN_1_BYTE },
@@ -1218,9 +1226,9 @@ const struct riscv_opcode riscv_opcodes[] =
 {"c.slli", 32+64, INSN_CLASS_ZCA,   "d,C>",      MATCH_C_SLLI, MASK_C_SLLI, match_opcode, 0 },
 {"c.slli",   128, INSN_CLASS_ZCA,   "d,C^",      MATCH_C_SLLI, MASK_C_SLLI, match_opcode, 0 },
 {"c.srli", 32+64, INSN_CLASS_ZCA,   "Cs,C>",     MATCH_C_SRLI, MASK_C_SRLI, match_opcode, 0 },
-{"c.srli",   128, INSN_CLASS_ZCA,   "Cs,C<",     MATCH_C_SRLI, MASK_C_SRLI, match_opcode, 0 },
+{"c.srli",   128, INSN_CLASS_ZCA,   "Cs,C_",     MATCH_C_SRLI, MASK_C_SRLI, match_opcode, 0 },
 {"c.srai", 32+64, INSN_CLASS_ZCA,   "Cs,C>",     MATCH_C_SRAI, MASK_C_SRAI, match_opcode, 0 },
-{"c.srai",   128, INSN_CLASS_ZCA,   "Cs,C<",     MATCH_C_SRAI, MASK_C_SRAI, match_opcode, 0 },
+{"c.srai",   128, INSN_CLASS_ZCA,   "Cs,C_",     MATCH_C_SRAI, MASK_C_SRAI, match_opcode, 0 },
 {"c.slli64",   0, INSN_CLASS_ZCA,   "d",         MATCH_C_SLLI64, MASK_C_SLLI64, match_c_slli64, INSN_ALIAS }, /* Deprecated.  */
 {"c.srli64",   0, INSN_CLASS_ZCA,   "Cs",        MATCH_C_SRLI64, MASK_C_SRLI64, match_c_slli64, INSN_ALIAS }, /* Deprecated.  */
 {"c.srai64",   0, INSN_CLASS_ZCA,   "Cs",        MATCH_C_SRAI64, MASK_C_SRAI64, match_c_slli64, INSN_ALIAS }, /* Deprecated.  */
@@ -3616,16 +3624,16 @@ const struct riscv_opcode riscv_opcodes[] =
 /* rv128i instructions.  */
 {"ldu",       128, INSN_CLASS_I, "d,o(s)",    MATCH_LDU, MASK_LDU, match_opcode, INSN_DREF|INSN_8_BYTE },
 {"ldu",       128, INSN_CLASS_I, "d,A",       0, (int) M_Lx, match_rd_nonzero, INSN_MACRO },
-{"c.lqsp",    128, INSN_CLASS_C, "d,Ch(Cc)",  MATCH_C_LQSP, MASK_C_LQSP, match_rd_nonzero, INSN_DREF|INSN_16_BYTE },
-{"c.lq",      128, INSN_CLASS_C, "Ct,Cg(Cs)", MATCH_C_LQ, MASK_C_LQ, match_opcode, INSN_DREF|INSN_16_BYTE },
-{"lq",        128, INSN_CLASS_C, "d,Ch(Cc)",  MATCH_C_LQSP, MASK_C_LQSP, match_rd_nonzero, INSN_ALIAS|INSN_DREF|INSN_16_BYTE },
-{"lq",        128, INSN_CLASS_C, "Ct,Cg(Cs)", MATCH_C_LQ, MASK_C_LQ, match_opcode, INSN_ALIAS|INSN_DREF|INSN_16_BYTE },
+{"c.lqsp",    128, INSN_CLASS_ZCA, "d,Ch(Cc)",  MATCH_C_LQSP, MASK_C_LQSP, match_rd_nonzero, INSN_DREF|INSN_16_BYTE },
+{"c.lq",      128, INSN_CLASS_ZCA, "Ct,Cg(Cs)", MATCH_C_LQ, MASK_C_LQ, match_opcode, INSN_DREF|INSN_16_BYTE },
+{"lq",        128, INSN_CLASS_ZCA, "d,Ch(Cc)",  MATCH_C_LQSP, MASK_C_LQSP, match_rd_nonzero, INSN_ALIAS|INSN_DREF|INSN_16_BYTE },
+{"lq",        128, INSN_CLASS_ZCA, "Ct,Cg(Cs)", MATCH_C_LQ, MASK_C_LQ, match_opcode, INSN_ALIAS|INSN_DREF|INSN_16_BYTE },
 {"lq",        128, INSN_CLASS_I, "d,o(s)",    MATCH_LQ, MASK_LQ, match_opcode, INSN_DREF|INSN_16_BYTE },
 {"lq",        128, INSN_CLASS_I, "d,A",       0, (int) M_Lx, match_rd_nonzero, INSN_MACRO },
-{"c.sqsp",    128, INSN_CLASS_C, "CV,CH(Cc)", MATCH_C_SQSP, MASK_C_SQSP, match_opcode, INSN_DREF|INSN_16_BYTE },
-{"c.sq",      128, INSN_CLASS_C, "Ct,Cg(Cs)", MATCH_C_SQ, MASK_C_SQ, match_opcode, INSN_DREF|INSN_16_BYTE },
-{"sq",        128, INSN_CLASS_C, "CV,CH(Cc)", MATCH_C_SQSP, MASK_C_SQSP, match_opcode, INSN_ALIAS|INSN_DREF|INSN_16_BYTE },
-{"sq",        128, INSN_CLASS_C, "Ct,Cg(Cs)", MATCH_C_SQ, MASK_C_SQ, match_opcode, INSN_ALIAS|INSN_DREF|INSN_16_BYTE },
+{"c.sqsp",    128, INSN_CLASS_ZCA, "CV,CH(Cc)", MATCH_C_SQSP, MASK_C_SQSP, match_opcode, INSN_DREF|INSN_16_BYTE },
+{"c.sq",      128, INSN_CLASS_ZCA, "Ct,Cg(Cs)", MATCH_C_SQ, MASK_C_SQ, match_opcode, INSN_DREF|INSN_16_BYTE },
+{"sq",        128, INSN_CLASS_ZCA, "CV,CH(Cc)", MATCH_C_SQSP, MASK_C_SQSP, match_opcode, INSN_ALIAS|INSN_DREF|INSN_16_BYTE },
+{"sq",        128, INSN_CLASS_ZCA, "Ct,Cg(Cs)", MATCH_C_SQ, MASK_C_SQ, match_opcode, INSN_ALIAS|INSN_DREF|INSN_16_BYTE },
 {"sq",        128, INSN_CLASS_I, "t,q(s)",    MATCH_SQ, MASK_SQ, match_opcode, INSN_DREF|INSN_16_BYTE },
 {"sq",        128, INSN_CLASS_I, "t,A,s",     0, (int) M_Sx_FSx, match_rs1_nonzero, INSN_MACRO },
 {"addid",     128, INSN_CLASS_I, "d,s,j",     MATCH_ADDID, MASK_ADDID, match_opcode, 0 },
