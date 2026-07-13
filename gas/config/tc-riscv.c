@@ -4852,6 +4852,8 @@ md_parse_option (int c, const char *arg)
 	riscv_set_abi (64, FLOAT_ABI_DOUBLE, false);
       else if (strcmp (arg, "lp64q") == 0)
 	riscv_set_abi (64, FLOAT_ABI_QUAD, false);
+      else if (strcmp (arg, "ll128") == 0)
+	riscv_set_abi (128, FLOAT_ABI_SOFT, false);
       else if (strcmp (arg, "llp128") == 0)
 	riscv_set_abi (128, FLOAT_ABI_SOFT, false);
       else if (strcmp (arg, "llp128f") == 0)
