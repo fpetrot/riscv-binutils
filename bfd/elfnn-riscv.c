@@ -5611,6 +5611,10 @@ elfNN_riscv_merge_gnu_properties (struct bfd_link_info *info, bfd *abfd,
 #define elf_backend_want_dynrelro		1
 #define elf_backend_rela_normal			1
 #define elf_backend_default_execstack		0
+// When targeting 64bits with a 128bits BFD, vma should be sign extended as when targeting 32bits
+#if ARCH_SIZE == 64 && defined (BFD128)
+#define elf_backend_sign_extend_vma                true
+#endif
 
 #undef  elf_backend_obj_attrs_vendor
 #define elf_backend_obj_attrs_vendor		"riscv"
