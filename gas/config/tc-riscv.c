@@ -2524,6 +2524,10 @@ macro (struct riscv_cl_insn *ip, expressionS *imm_expr,
       riscv_ext (rd, rs1, xlen - 32, false);
       break;
 
+    case M_ZEXTD:
+      riscv_ext (rd, rs1, xlen - 64, false);
+      break;
+
     case M_SEXTB:
       riscv_ext (rd, rs1, xlen - 8, true);
       break;

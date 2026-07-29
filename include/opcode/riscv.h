@@ -750,6 +750,7 @@ enum
   M_LI,
   M_EXTH,
   M_ZEXTW,
+  M_ZEXTD,
   M_SEXTB,
   M_VMSGE,
   M_NUM_MACROS
