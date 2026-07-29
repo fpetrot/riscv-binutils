@@ -30,14 +30,14 @@ extern void error (const char *, ...) ATTRIBUTE_PRINTF_1;
 extern void warn (const char *, ...) ATTRIBUTE_PRINTF_1;
 extern void inform (const char *, ...) ATTRIBUTE_PRINTF_1;
 
-extern void (*byte_put) (unsigned char *, uint64_t, unsigned int);
-extern void byte_put_little_endian (unsigned char *, uint64_t, unsigned int);
-extern void byte_put_big_endian (unsigned char *, uint64_t, unsigned int);
+extern void (*byte_put) (unsigned char *, __uint128_t, unsigned int);
+extern void byte_put_little_endian (unsigned char *, __uint128_t, unsigned int);
+extern void byte_put_big_endian (unsigned char *, __uint128_t, unsigned int);
 
-extern uint64_t (*byte_get) (const unsigned char *, unsigned int);
-extern uint64_t byte_get_signed (const unsigned char *, unsigned int);
-extern uint64_t byte_get_little_endian (const unsigned char *, unsigned int);
-extern uint64_t byte_get_big_endian (const unsigned char *, unsigned int);
+extern __uint128_t (*byte_get) (const unsigned char *, unsigned int);
+extern __uint128_t byte_get_signed (const unsigned char *, unsigned int);
+extern __uint128_t byte_get_little_endian (const unsigned char *, unsigned int);
+extern __uint128_t byte_get_big_endian (const unsigned char *, unsigned int);
 
 #define BYTE_PUT(field, val)	byte_put (field, val, sizeof (field))
 #define BYTE_GET(field)		byte_get (field, sizeof (field))
