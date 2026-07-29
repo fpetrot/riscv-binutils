@@ -13107,7 +13107,7 @@ elf_parse_notes (bfd *abfd, char *buf, size_t size, file_ptr offset,
      align is less than 4, we use 4 byte alignment.   */
   if (align < 4)
     align = 4;
-  if (align != 4 && align != 8)
+  if (align != 4 && align != 8 && align != 16)
     return false;
 
   p = buf;

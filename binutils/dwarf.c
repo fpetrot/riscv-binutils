@@ -268,7 +268,7 @@ print_hex (uint64_t value, unsigned num_bytes)
     num_bytes = 2;
 
   printf ("%0*" PRIx64 " ", num_bytes * 2,
-	  value & ~(~(uint64_t) 0 << num_bytes * 4 << num_bytes * 4));
+	  value & ~(num_bytes == 16 ? (uint64_t) 0 : ~(uint64_t) 0 << num_bytes * 4 << num_bytes * 4));
 }
 
 /* Like print_hex, but no trailing space.  */
@@ -280,7 +280,7 @@ print_hex_ns (uint64_t value, unsigned num_bytes)
     num_bytes = 2;
 
   printf ("%0*" PRIx64, num_bytes * 2,
-	  value & ~(~(uint64_t) 0 << num_bytes * 4 << num_bytes * 4));
+	  value & ~(num_bytes == 16 ? (uint64_t) 0 : ~(uint64_t) 0 << num_bytes * 4 << num_bytes * 4));
 }
 
 /* Print a view number in hexadecimal value, with the same width as
@@ -293,7 +293,7 @@ print_view (uint64_t value, unsigned num_bytes)
     num_bytes = 2;
 
   printf ("v%0*" PRIx64 " ", num_bytes * 2 - 1,
-	  value & ~(~(uint64_t) 0 << num_bytes * 4 << num_bytes * 4));
+	  value & ~(num_bytes == 16 ? (uint64_t) 0 : ~(uint64_t) 0 << num_bytes * 4 << num_bytes * 4));
 }
 
 static const char *
@@ -417,7 +417,7 @@ read_leb128 (const unsigned char *data,
 
 typedef struct State_Machine_Registers
 {
-  uint64_t address;
+  __uint128_t address;
   unsigned int view;
   unsigned int file;
   unsigned int line;
@@ -460,7 +460,7 @@ process_extended_line_op (unsigned char * data,
   size_t len, header_len;
   unsigned char *name;
   unsigned char *orig_data = data;
-  uint64_t adr, val;
+  __uint128_t adr, val;
 
   READ_ULEB (len, data, end);
   header_len = data - orig_data;
@@ -484,7 +484,7 @@ process_extended_line_op (unsigned char * data,
 
     case DW_LNE_set_address:
       /* PR 17512: file: 002-100480-0.004.  */
-      if (len - 1 > 8)
+      if (len - 1 > 16)
 	{
 	  warn (_("Length (%zu) of DW_LNE_set_address op is too long\n"),
 		len - 1);
@@ -492,7 +492,7 @@ process_extended_line_op (unsigned char * data,
 	}
       else
 	SAFE_BYTE_GET (adr, data, len - 1, end);
-      printf (_("set Address to %#" PRIx64 "\n"), adr);
+      printf128 (_("set Address to %#" PRIx128 "\n"), adr);
       state_machine_regs.address = adr;
       state_machine_regs.view = 0;
       state_machine_regs.op_index = 0;
@@ -512,11 +512,11 @@ process_extended_line_op (unsigned char * data,
 	if (data < end)
 	  data++;
 	READ_ULEB (val, data, end);
-	printf ("%" PRIu64 "\t", val);
+	printf128 ("%" PRIu128 "\t", val);
 	READ_ULEB (val, data, end);
-	printf ("%" PRIu64 "\t", val);
+	printf128 ("%" PRIu128 "\t", val);
 	READ_ULEB (val, data, end);
-	printf ("%" PRIu64 "\t", val);
+	printf128 ("%" PRIu128 "\t", val);
 	printf ("%.*s\n\n", (int) l, name);
       }
 
@@ -526,7 +526,7 @@ process_extended_line_op (unsigned char * data,
 
     case DW_LNE_set_discriminator:
       READ_ULEB (val, data, end);
-      printf (_("set Discriminator to %" PRIu64 "\n"), val);
+      printf128 (_("set Discriminator to %" PRIu128 "\n"), val);
       break;
 
       /* HP extensions.  */
@@ -579,17 +579,17 @@ process_extended_line_op (unsigned char * data,
 		break;
 	      case DW_LNE_HP_SFC_set_listing_line:
 		READ_ULEB (val, data, edata);
-		printf ("    DW_LNE_HP_SFC_set_listing_line (%" PRIu64 ")\n",
+		printf128 ("    DW_LNE_HP_SFC_set_listing_line (%" PRIu128 ")\n",
 			val);
 		break;
 	      case DW_LNE_HP_SFC_associate:
 		printf ("    DW_LNE_HP_SFC_associate ");
 		READ_ULEB (val, data, edata);
-		printf ("(%" PRIu64 , val);
+		printf128 ("(%" PRIu128 , val);
 		READ_ULEB (val, data, edata);
-		printf (",%" PRIu64, val);
+		printf128 (",%" PRIu128, val);
 		READ_ULEB (val, data, edata);
-		printf (",%" PRIu64 ")\n", val);
+		printf128 (",%" PRIu128 ")\n", val);
 		break;
 	      default:
 		printf (_("    UNKNOWN DW_LNE_HP_SFC opcode (%u)\n"), opc);
@@ -1190,7 +1190,7 @@ display_block (unsigned char *data,
   length = length > maxlen ? maxlen : length;
 
   while (length --)
-    printf ("%" PRIx64 " ", byte_get (data++, 1));
+    printf128 ("%" PRIx128 " ", byte_get (data++, 1));
 
   return data;
 }
@@ -3220,7 +3220,7 @@ static void
 insert_element_in_list (enum dwarf_tag dw_tag,
 			enum dwarf_attribute dw_attr,
 			uint64_t die_offset,
-			const uint64_t *uvalue,
+			const __uint128_t *uvalue,
 			const int64_t *svalue,
 			const char *data,
 			bool is_union)
@@ -3542,8 +3542,8 @@ read_and_display_attr_value (unsigned long attribute,
 			     bool is_union)
 {
   int64_t svalue;
-  uint64_t uvalue = 0;
-  uint64_t uvalue_hi = 0;
+  __uint128_t uvalue = 0;
+  __uint128_t uvalue_hi = 0;
   unsigned char *block_start = NULL;
   unsigned char *orig_data = data;
 
@@ -3681,7 +3681,7 @@ read_and_display_attr_value (unsigned long attribute,
     {
     case DW_FORM_ref_addr:
       if (!do_loc)
-	printf ("%c<%#" PRIx64 ">", delimiter, uvalue);
+	printf128 ("%c<%#" PRIx128 ">", delimiter, uvalue);
       if (do_var_map)
 	insert_element_in_list (die_tag, attribute, die_offset,
 			       &uvalue, NULL, NULL, is_union);
@@ -3692,9 +3692,9 @@ read_and_display_attr_value (unsigned long attribute,
 	{
 	  if (do_wide)
 	    /* We have already printed the form name.  */
-	    printf ("%c<%#" PRIx64 ">", delimiter, uvalue);
+	    printf128 ("%c<%#" PRIx128 ">", delimiter, uvalue);
 	  else
-	    printf ("%c<alt %#" PRIx64 ">", delimiter, uvalue);
+	    printf128 ("%c<alt %#" PRIx128 ">", delimiter, uvalue);
 	}
       if (do_var_map)
 	insert_element_in_list (die_tag, attribute, die_offset,
@@ -3708,9 +3708,9 @@ read_and_display_attr_value (unsigned long attribute,
     case DW_FORM_ref_sup4:
     case DW_FORM_ref_udata:
       {
-	uint64_t utmp = uvalue + cu_offset;
+	__uint128_t utmp = uvalue + cu_offset;
 	if (!do_loc)
-	  printf ("%c<%#" PRIx64 ">", delimiter, utmp);
+	  printf128 ("%c<%#" PRIx128 ">", delimiter, utmp);
 	if (do_var_map)
 	  insert_element_in_list (die_tag, attribute, die_offset,
 				 &utmp, NULL, NULL, is_union);
@@ -3721,7 +3721,7 @@ read_and_display_attr_value (unsigned long attribute,
     case DW_FORM_addr:
     case DW_FORM_sec_offset:
       if (!do_loc)
-	printf ("%c%#" PRIx64, delimiter, uvalue);
+	printf128 ("%c%#" PRIx128, delimiter, uvalue);
       if (do_var_map)
 	insert_element_in_list (die_tag, attribute, die_offset,
 			       &uvalue, NULL, NULL, is_union);
@@ -3733,7 +3733,7 @@ read_and_display_attr_value (unsigned long attribute,
     case DW_FORM_data2:
     case DW_FORM_sdata:
       if (!do_loc)
-	printf ("%c%" PRId64, delimiter, uvalue);
+	printf128 ("%c%" PRId128, delimiter, uvalue);
       if (do_var_map)
 	insert_element_in_list (die_tag, attribute, die_offset,
 			       &uvalue, NULL, NULL, is_union);
@@ -3741,7 +3741,7 @@ read_and_display_attr_value (unsigned long attribute,
 
     case DW_FORM_udata:
       if (!do_loc)
-	printf ("%c%" PRIu64, delimiter, uvalue);
+	printf128 ("%c%" PRIu128, delimiter, uvalue);
       if (do_var_map)
 	insert_element_in_list (die_tag, attribute, die_offset,
 			       &uvalue, NULL, NULL, is_union);
@@ -3760,14 +3760,14 @@ read_and_display_attr_value (unsigned long attribute,
     case DW_FORM_data8:
       if (!do_loc || do_var_map)
 	{
-	  uint64_t utmp = uvalue;
+	  __uint128_t utmp = uvalue;
 	  if (form == DW_FORM_ref8)
 	    utmp += cu_offset;
 	  if (do_var_map)
 	    insert_element_in_list (die_tag, attribute, die_offset,
 				   &utmp, NULL, NULL, is_union);
 	  else
-	    printf ("%c%#" PRIx64, delimiter, utmp);
+	    printf128 ("%c%#" PRIx128, delimiter, utmp);
 	}
       break;
 
@@ -3775,9 +3775,9 @@ read_and_display_attr_value (unsigned long attribute,
       if (!do_loc)
 	{
 	  if (uvalue_hi == 0)
-	    printf (" %#" PRIx64, uvalue);
+	    printf128 (" %#" PRIx128, uvalue);
 	  else
-	    printf (" %#" PRIx64 "%016" PRIx64, uvalue_hi, uvalue);
+	    printf128 (" %#" PRIx128 "%016" PRIx128, uvalue_hi, uvalue);
 	}
       if (do_var_map)
 	{
@@ -3844,10 +3844,10 @@ read_and_display_attr_value (unsigned long attribute,
 	{
 	  if (do_wide)
 	    /* We have already displayed the form name.  */
-	    printf (_("%c(offset: %#" PRIx64 "): %s"),
+	    printf128 (_("%c(offset: %#" PRIx128 "): %s"),
 		    delimiter, uvalue, fetch_indirect_string (uvalue));
 	  else
-	    printf (_("%c(indirect string, offset: %#" PRIx64 "): %s"),
+	    printf128 (_("%c(indirect string, offset: %#" PRIx128 "): %s"),
 		    delimiter, uvalue, fetch_indirect_string (uvalue));
 	}
       if (do_var_map)
@@ -3861,10 +3861,10 @@ read_and_display_attr_value (unsigned long attribute,
 	{
 	  if (do_wide)
 	    /* We have already displayed the form name.  */
-	    printf (_("%c(offset: %#" PRIx64 "): %s"),
+	    printf128 (_("%c(offset: %#" PRIx128 "): %s"),
 		    delimiter, uvalue, fetch_indirect_line_string (uvalue));
 	  else
-	    printf (_("%c(indirect line string, offset: %#" PRIx64 "): %s"),
+	    printf128 (_("%c(indirect line string, offset: %#" PRIx128 "): %s"),
 		    delimiter, uvalue, fetch_indirect_line_string (uvalue));
 	}
       if (do_var_map)
@@ -3889,10 +3889,10 @@ read_and_display_attr_value (unsigned long attribute,
 					debug_info_p ? debug_info_p->str_offsets_base : 0);
 	  if (do_wide)
 	    /* We have already displayed the form name.  */
-	    printf (_("%c(offset: %#" PRIx64 "): %s"),
+	    printf128 (_("%c(offset: %#" PRIx128 "): %s"),
 		    delimiter, uvalue, strng);
 	  else
-	    printf (_("%c(indexed string: %#" PRIx64 "): %s"),
+	    printf128 (_("%c(indexed string: %#" PRIx128 "): %s"),
 		    delimiter, uvalue, strng);
 	  if (do_var_map)
 	    insert_element_in_list (die_tag, attribute, die_offset,
@@ -3905,10 +3905,10 @@ read_and_display_attr_value (unsigned long attribute,
 	{
 	  if (do_wide)
 	    /* We have already displayed the form name.  */
-	    printf (_("%c(offset: %#" PRIx64 ") %s"),
+	    printf128 (_("%c(offset: %#" PRIx128 ") %s"),
 		    delimiter, uvalue, fetch_alt_indirect_string (uvalue));
 	  else
-	    printf (_("%c(alt indirect string, offset: %#" PRIx64 ") %s"),
+	    printf128 (_("%c(alt indirect string, offset: %#" PRIx128 ") %s"),
 		    delimiter, uvalue, fetch_alt_indirect_string (uvalue));
 	}
       if (do_var_map)
@@ -3923,7 +3923,7 @@ read_and_display_attr_value (unsigned long attribute,
 
     case DW_FORM_ref_sig8:
       if (!do_loc)
-	printf ("%c%s: %#" PRIx64, delimiter, do_wide ? "" : "signature",
+	printf128 ("%c%s: %#" PRIx128, delimiter, do_wide ? "" : "signature",
 		uvalue);
       if (do_var_map)
 	insert_element_in_list (die_tag, attribute, die_offset,
@@ -3974,7 +3974,7 @@ read_and_display_attr_value (unsigned long attribute,
 		    idx = debug_info_p->loc_offsets [uvalue];
 		  else
 		    {
-		      warn (_("loc_offset %" PRIu64 " too big\n"), uvalue);
+		      warn (_("loc_offset %" PRIu64 " too big\n"), (uint64_t) uvalue);
 		      idx = -1;
 		    }
 		}
@@ -4005,7 +4005,7 @@ read_and_display_attr_value (unsigned long attribute,
 	  /* We have already displayed the form name.  */
 	  if (idx != (uint64_t) -1)
 	    {
-	      printf (_("%c(index: %#" PRIx64 "): %#" PRIx64),
+	      printf128 (_("%c(index: %#" PRIx128 "): %#" PRIx64),
 		      delimiter, uvalue, idx);
 	      if (do_var_map)
 		insert_element_in_list (die_tag, attribute, die_offset,
@@ -4016,9 +4016,9 @@ read_and_display_attr_value (unsigned long attribute,
 
     case DW_FORM_strp_sup:
       {
-	uint64_t utmp = uvalue + cu_offset;
+	__uint128_t utmp = uvalue + cu_offset;
 	if (!do_loc)
-	  printf ("%c<%#" PRIx64 ">", delimiter, utmp);
+	  printf128 ("%c<%#" PRIx128 ">", delimiter, utmp);
 	if (do_var_map)
 	  insert_element_in_list (die_tag, attribute, die_offset,
 				 &utmp, NULL, NULL, is_union);
@@ -4043,7 +4043,7 @@ read_and_display_attr_value (unsigned long attribute,
 	    warn (_("CU @ %#" PRIx64 " has multiple loclists_base values "
 		    "(%#" PRIx64 " and %#" PRIx64 ")\n"),
 		  debug_info_p->cu_offset,
-		  debug_info_p->loclists_base, uvalue);
+		  debug_info_p->loclists_base, (uint64_t) uvalue);
 	  svalue = uvalue;
 	  if (svalue < 0)
 	    {
@@ -4064,7 +4064,7 @@ read_and_display_attr_value (unsigned long attribute,
 	    warn (_("CU @ %#" PRIx64 " has multiple str_offsets_base values "
 		    "%#" PRIx64 " and %#" PRIx64 ")\n"),
 		  debug_info_p->cu_offset,
-		  debug_info_p->str_offsets_base, uvalue);
+		  debug_info_p->str_offsets_base, (uint64_t) uvalue);
 	  svalue = uvalue;
 	  if (svalue < 0)
 	    {
@@ -4425,7 +4425,7 @@ read_and_display_attr_value (unsigned long attribute,
 	  printf (_("(declared as inline and inlined)"));
 	  break;
 	default:
-	  printf (_("  (Unknown inline attribute value: %#" PRIx64 ")"),
+	  printf128 (_("  (Unknown inline attribute value: %#" PRIx128 ")"),
 		  uvalue);
 	  break;
 	}
@@ -4690,7 +4690,7 @@ read_and_display_attr_value (unsigned long attribute,
 	  {
 	    if (form != DW_FORM_GNU_ref_alt)
 	      warn (_("Offset %#" PRIx64 " used as value for DW_AT_import attribute of DIE at offset %#tx is too big.\n"),
-		    uvalue,
+		    (uint64_t) uvalue,
 		    orig_data - section->start);
 	  }
 	else
@@ -5254,7 +5254,7 @@ process_debug_info (struct dwarf_section * section,
 	}
 
       /* PR 17512: file: 001-108546-0.001:0.1.  */
-      if (compunit.cu_pointer_size < 2 || compunit.cu_pointer_size > 8)
+      if (compunit.cu_pointer_size < 2 || compunit.cu_pointer_size > 16)
 	{
 	  warn (_("Invalid pointer size (%d) in compunit header, using %d instead\n"),
 		compunit.cu_pointer_size, offset_size);
@@ -5654,7 +5654,7 @@ address_size_ok (const char *sec_name, unsigned addr_size, unsigned seg_size)
 	    seg_size, sec_name);
       return false;
     }
-  if (addr_size == 0 || addr_size > 8)
+  if (addr_size == 0 || addr_size > 16)
     {
       warn (_("Unsupported address size (%u) in %s section.\n"),
 	    addr_size, sec_name);
@@ -6177,9 +6177,9 @@ display_debug_lines_raw (struct dwarf_section *  section,
 		      state_machine_regs.address += uladv;
 		      if (uladv)
 			state_machine_regs.view = 0;
-		      printf (_("  Special opcode %d: "
+		      printf128 (_("  Special opcode %d: "
 				"advance Address by %" PRIu64
-				" to %#" PRIx64 "%s"),
+				" to %#" PRIx128 "%s"),
 			      op_code, uladv, state_machine_regs.address,
 			      verbose_view && uladv
 			      ? _(" (reset view)") : "");
@@ -6197,9 +6197,9 @@ display_debug_lines_raw (struct dwarf_section *  section,
 			% linfo.li_max_ops_per_insn;
 		      if (addrdelta)
 			state_machine_regs.view = 0;
-		      printf (_("  Special opcode %d: "
-				"advance Address by %" PRIu64
-				" to %#" PRIx64 "[%d]%s"),
+		      printf128 (_("  Special opcode %d: "
+				"advance Address by %" PRIu128
+				" to %#" PRIx128 "[%d]%s"),
 			      op_code, uladv, state_machine_regs.address,
 			      state_machine_regs.op_index,
 			      verbose_view && addrdelta
@@ -6241,8 +6241,8 @@ display_debug_lines_raw (struct dwarf_section *  section,
 			state_machine_regs.address += uladv;
 			if (uladv)
 			  state_machine_regs.view = 0;
-			printf (_("  Advance PC by %" PRIu64
-				  " to %#" PRIx64 "%s\n"),
+			printf128 (_("  Advance PC by %" PRIu64
+				  " to %#" PRIx128 "%s\n"),
 				uladv, state_machine_regs.address,
 				verbose_view && uladv
 				? _(" (reset view)") : "");
@@ -6260,8 +6260,8 @@ display_debug_lines_raw (struct dwarf_section *  section,
 			  % linfo.li_max_ops_per_insn;
 			if (addrdelta)
 			  state_machine_regs.view = 0;
-			printf (_("  Advance PC by %" PRIu64
-				  " to %#" PRIx64 "[%d]%s\n"),
+			printf128 (_("  Advance PC by %" PRIu64
+				  " to %#" PRIx128 "[%d]%s\n"),
 				uladv, state_machine_regs.address,
 				state_machine_regs.op_index,
 				verbose_view && addrdelta
@@ -6309,8 +6309,8 @@ display_debug_lines_raw (struct dwarf_section *  section,
 			state_machine_regs.address += uladv;
 			if (uladv)
 			  state_machine_regs.view = 0;
-			printf (_("  Advance PC by constant %" PRIu64
-				  " to %#" PRIx64 "%s\n"),
+			printf128 (_("  Advance PC by constant %" PRIu64
+				  " to %#" PRIx128 "%s\n"),
 				uladv, state_machine_regs.address,
 				verbose_view && uladv
 				? _(" (reset view)") : "");
@@ -6328,8 +6328,8 @@ display_debug_lines_raw (struct dwarf_section *  section,
 			  % linfo.li_max_ops_per_insn;
 			if (addrdelta)
 			  state_machine_regs.view = 0;
-			printf (_("  Advance PC by constant %" PRIu64
-				  " to %#" PRIx64 "[%d]%s\n"),
+			printf128 (_("  Advance PC by constant %" PRIu64
+				  " to %#" PRIx128 "[%d]%s\n"),
 				uladv, state_machine_regs.address,
 				state_machine_regs.op_index,
 				verbose_view && addrdelta
@@ -6341,8 +6341,8 @@ display_debug_lines_raw (struct dwarf_section *  section,
 		    SAFE_BYTE_GET_AND_INC (uladv, data, 2, end);
 		    state_machine_regs.address += uladv;
 		    state_machine_regs.op_index = 0;
-		    printf (_("  Advance PC by fixed size amount %" PRIu64
-			      " to %#" PRIx64 "\n"),
+		    printf128 (_("  Advance PC by fixed size amount %" PRIu64
+			      " to %#" PRIx128 "\n"),
 			    uladv, state_machine_regs.address);
 		    /* Do NOT reset view.  */
 		    break;
@@ -7104,23 +7104,23 @@ display_debug_lines_decoded (struct dwarf_section *  section,
 		  if (linfo.li_max_ops_per_insn == 1)
 		    {
 		      if (xop == -DW_LNE_end_sequence)
-			printf ("%-31s  %11s  %#18" PRIx64,
+			printf128 ("%-31s  %11s  %#18" PRIx128,
 				newFileName, "-",
 				state_machine_regs.address);
 		      else
-			printf ("%-31s  %11d  %#18" PRIx64,
+			printf128 ("%-31s  %11d  %#18" PRIx128,
 				newFileName, state_machine_regs.line,
 				state_machine_regs.address);
 		    }
 		  else
 		    {
 		      if (xop == -DW_LNE_end_sequence)
-			printf ("%-31s  %11s  %#18" PRIx64 "[%d]",
+			printf128 ("%-31s  %11s  %#18" PRIx128 "[%d]",
 				newFileName, "-",
 				state_machine_regs.address,
 				state_machine_regs.op_index);
 		      else
-			printf ("%-31s  %11d  %#18" PRIx64 "[%d]",
+			printf128 ("%-31s  %11d  %#18" PRIx128 "[%d]",
 				newFileName, state_machine_regs.line,
 				state_machine_regs.address,
 				state_machine_regs.op_index);
@@ -7131,23 +7131,23 @@ display_debug_lines_decoded (struct dwarf_section *  section,
 		  if (linfo.li_max_ops_per_insn == 1)
 		    {
 		      if (xop == -DW_LNE_end_sequence)
-			printf ("%s  %11s  %#18" PRIx64,
+			printf128 ("%s  %11s  %#18" PRIx128,
 				newFileName, "-",
 				state_machine_regs.address);
 		      else
-			printf ("%s  %11d  %#18" PRIx64,
+			printf128 ("%s  %11d  %#18" PRIx128,
 				newFileName, state_machine_regs.line,
 				state_machine_regs.address);
 		    }
 		  else
 		    {
 		      if (xop == -DW_LNE_end_sequence)
-			printf ("%s  %11s  %#18" PRIx64 "[%d]",
+			printf128 ("%s  %11s  %#18" PRIx128 "[%d]",
 				newFileName, "-",
 				state_machine_regs.address,
 				state_machine_regs.op_index);
 		      else
-			printf ("%s  %11d  %#18" PRIx64 "[%d]",
+			printf128 ("%s  %11d  %#18" PRIx128 "[%d]",
 				newFileName, state_machine_regs.line,
 				state_machine_regs.address,
 				state_machine_regs.op_index);
@@ -9017,8 +9017,8 @@ display_debug_aranges (struct dwarf_section *section,
       unsigned char *hdrptr;
       DWARF2_Internal_ARange arange;
       unsigned char *addr_ranges;
-      uint64_t length;
-      uint64_t address;
+      __uint128_t length;
+      __uint128_t address;
       uint64_t sec_off;
       unsigned char tuple_size;
       unsigned int offset_size;

@@ -10197,7 +10197,7 @@ dump_ia64_vms_dynamic_fixups (Filedata *                  filedata,
       const char *rtype;
 
       printf ("%3u ", (unsigned) BYTE_GET (imfs [i].fixup_seg));
-      printf ("%016" PRIx64 " ", BYTE_GET (imfs [i].fixup_offset));
+      printf128 ("%016" PRIx128 " ", BYTE_GET (imfs [i].fixup_offset));
       type = BYTE_GET (imfs [i].type);
       rtype = elf_ia64_reloc_type (type);
       if (rtype == NULL)
@@ -10237,7 +10237,7 @@ dump_ia64_vms_dynamic_relocs (Filedata * filedata, struct ia64_vms_dynimgrela *i
       const char *rtype;
 
       printf ("%3u ", (unsigned) BYTE_GET (imrs [i].rela_seg));
-      printf ("%08" PRIx64 " ", BYTE_GET (imrs [i].rela_offset));
+      printf128 ("%08" PRIx128 " ", BYTE_GET (imrs [i].rela_offset));
       type = BYTE_GET (imrs [i].type);
       rtype = elf_ia64_reloc_type (type);
       if (rtype == NULL)
@@ -10246,7 +10246,7 @@ dump_ia64_vms_dynamic_relocs (Filedata * filedata, struct ia64_vms_dynimgrela *i
         printf ("%-31s ", rtype);
       print_vma (BYTE_GET (imrs [i].addend), FULL_HEX);
       printf ("%3u ", (unsigned) BYTE_GET (imrs [i].sym_seg));
-      printf ("%08" PRIx64 "\n", BYTE_GET (imrs [i].sym_offset));
+      printf128 ("%08" PRIx128 "\n", BYTE_GET (imrs [i].sym_offset));
     }
 
   free (imrs);
@@ -16840,6 +16840,22 @@ is_64bit_pcrel_reloc (Filedata * filedata, unsigned int reloc_type)
 }
 
 /* Like is_32bit_abs_reloc except that it returns TRUE iff RELOC_TYPE is
+   a 128-bit absolute RELA relocation used in DWARF debug sections.  */
+
+static bool
+is_128bit_abs_reloc (Filedata * filedata, unsigned int reloc_type)
+{
+  switch (filedata->file_header.e_machine)
+    {
+    case EM_RISCV:
+      return reloc_type == 71; /* R_RISCV_128.  */
+    default:
+      return false;
+    }
+}
+
+
+/* Like is_32bit_abs_reloc except that it returns TRUE iff RELOC_TYPE is
    a 24-bit absolute RELA relocation used in DWARF debug sections.  */
 
 static bool
@@ -17036,6 +17052,38 @@ is_64bit_inplace_sub_reloc (Filedata * filedata, unsigned int reloc_type)
       return reloc_type == 56; /* R_LARCH_SUB64.  */
     case EM_RISCV:
       return reloc_type == 40; /* R_RISCV_SUB64.  */
+    default:
+      return false;
+    }
+}
+
+/* Like is_32bit_abs_reloc except that it returns TRUE iff RELOC_TYPE is
+   a 128-bit inplace add RELA relocation used in DWARF debug sections.  */
+
+static bool
+is_128bit_inplace_add_reloc (Filedata * filedata, unsigned int reloc_type)
+{
+  /* Please keep this table alpha-sorted for ease of visual lookup.  */
+  switch (filedata->file_header.e_machine)
+    {
+    case EM_RISCV:
+      return reloc_type == 66; /* R_RISCV_ADD128.  */
+    default:
+      return false;
+    }
+}
+
+/* Like is_32bit_abs_reloc except that it returns TRUE iff RELOC_TYPE is
+   a 128-bit inplace sub RELA relocation used in DWARF debug sections.  */
+
+static bool
+is_128bit_inplace_sub_reloc (Filedata * filedata, unsigned int reloc_type)
+{
+  /* Please keep this table alpha-sorted for ease of visual lookup.  */
+  switch (filedata->file_header.e_machine)
+    {
+    case EM_RISCV:
+      return reloc_type == 67; /* R_RISCV_SUB128.  */
     default:
       return false;
     }
@@ -17351,6 +17399,8 @@ apply_relocations (Filedata *filedata,
 	  else if (is_64bit_abs_reloc (filedata, reloc_type)
 		   || is_64bit_pcrel_reloc (filedata, reloc_type))
 	    reloc_size = 8;
+	  else if (is_128bit_abs_reloc (filedata, reloc_type))
+	    reloc_size = 16;
 	  else if (is_24bit_abs_reloc (filedata, reloc_type))
 	    reloc_size = 3;
 	  else if (is_16bit_abs_reloc (filedata, reloc_type))
@@ -17370,6 +17420,13 @@ apply_relocations (Filedata *filedata,
 		   || is_64bit_inplace_add_reloc (filedata, reloc_type))
 	    {
 	      reloc_size = 8;
+	      reloc_inplace = true;
+	    }
+	  else if ((reloc_subtract = is_128bit_inplace_sub_reloc (filedata,
+								 reloc_type))
+		   || is_128bit_inplace_add_reloc (filedata, reloc_type))
+	    {
+	      reloc_size = 16;
 	      reloc_inplace = true;
 	    }
 	  else if ((reloc_subtract = is_16bit_inplace_sub_reloc (filedata,
@@ -18343,7 +18400,7 @@ get_build_id (void * data)
 
       if (align < 4)
         align = 4;
-      else if (align != 4 && align != 8)
+      else if (align != 4 && align != 8 && align != 16)
 	{
 	  free (enote);
 	  continue;
@@ -23000,7 +23057,7 @@ print_gnu_property_note (Filedata * filedata, Elf_Internal_Note * pnote)
 
   printf (_("      Properties: "));
 
-  if (pnote->descsz < 8 || (pnote->descsz % size) != 0)
+  if (pnote->descsz < 8 || (pnote->descsz % 4) != 0)
     {
       printf (_("<corrupt GNU_PROPERTY_TYPE, size = %#lx>\n"), pnote->descsz);
       return;
@@ -23181,7 +23238,7 @@ print_gnu_property_note (Filedata * filedata, Elf_Internal_Note * pnote)
 	      if (datasz != size)
 		printf (_("<corrupt length: %#x> "), datasz);
 	      else
-		printf ("%#" PRIx64, byte_get (ptr, size));
+		printf128 ("%#" PRIx128, byte_get (ptr, size));
 	      goto next;
 
 	    case GNU_PROPERTY_NO_COPY_ON_PROTECTED:
@@ -23878,7 +23935,7 @@ print_ia64_vms_note (Elf_Internal_Note * pnote)
 	goto desc_size_fail;
       /* FIXME: Generate an error if descsz > 8 ?  */
 
-      printf ("0x%016" PRIx64 "\n",
+      printf128 ("0x%016" PRIx128 "\n",
 	      byte_get ((unsigned char *) pnote->descdata, 8));
       break;
 
@@ -23912,7 +23969,7 @@ print_ia64_vms_note (Elf_Internal_Note * pnote)
       printf (_("   Last modified  : "));
       print_vms_time (byte_get ((unsigned char *) pnote->descdata + 8, 8));
       printf (_("\n   Link flags  : "));
-      printf ("0x%016" PRIx64 "\n",
+      printf128 ("0x%016" PRIx128 "\n",
 	      byte_get ((unsigned char *) pnote->descdata + 16, 8));
       printf (_("   Header flags: 0x%08x\n"),
 	      (unsigned) byte_get ((unsigned char *) pnote->descdata + 24, 4));
@@ -24806,9 +24863,9 @@ process_notes_at (Filedata *           filedata,
      alignment is less than 4, we treate alignment as 4 bytes.   */
   if (align < 4)
     align = 4;
-  else if (align != 4 && align != 8)
+  else if (align != 4 && align != 8 && align != 16)
     {
-      warn (_("Corrupt note: alignment %" PRId64 ", expecting 4 or 8\n"),
+      warn (_("Corrupt note: alignment %" PRId64 ", expecting 4, 8 or 16\n"),
 	    align);
       free (pnotes);
       return false;
