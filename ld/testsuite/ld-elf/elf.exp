@@ -32,7 +32,8 @@ proc riscv_little_endian { } {
     if { [istarget "riscv32-*-*"]
 	 || [istarget "riscv64-*-*"]
 	 || [istarget "riscv32le-*-*"]
-	 || [istarget "riscv64le-*-*"] } {
+	 || [istarget "riscv64le-*-*"]
+	 || [istarget "riscv128-*-*"] } {
 	return 1
     }
     return 0
@@ -84,36 +85,46 @@ run_ld_link_tests [list \
 ]
 
 
-if [is_elf64 tmpdir/symbol3w.a] {
-    set ASFLAGS "$ASFLAGS --defsym ALIGN=3"
-    if { [istarget powerpc*-*-linux*] } {
-	set LDFLAGS "$LDFLAGS --no-ld-generated-unwind-info"
-    }
+if [is_elf128 tmpdir/symbol3w.a] {
+    set ASFLAGS "$ASFLAGS --defsym ALIGN=4"
     set pr23900_1_exp "pr23900-1-64.rd"
-    set pr25490_2_exp "pr25490-2-64.rd"
-    set pr25490_3_exp "pr25490-3-64.rd"
-    set pr25490_4_exp "pr25490-4-64.rd"
-    set pr25490_5_exp "pr25490-5-64.rd"
-    set pr25490_6_exp "pr25490-6-64.rd"
+    set pr25490_2_exp "pr25490-2-128.rd"
+    set pr25490_3_exp "pr25490-3-128.rd"
+    set pr25490_4_exp "pr25490-4-128.rd"
+    set pr25490_5_exp "pr25490-5-128.rd"
+    set pr25490_6_exp "pr25490-6-128.rd"
 } else {
-    set ASFLAGS "$ASFLAGS --defsym ALIGN=2"
-    set pr23900_1_exp "pr23900-1-32.rd"
-    if {    [istarget avr-*-*]
-	 || [istarget h8300-*-*]
-	 || [istarget ip2k-*-*]
-	 || [istarget m68hc11-*]
-	 || [istarget "z80-*-*"] } {
-	set pr25490_2_exp "pr25490-2-16.rd"
-	set pr25490_3_exp "pr25490-3-16.rd"
-	set pr25490_4_exp "pr25490-4-16.rd"
-	set pr25490_5_exp "pr25490-5-16.rd"
-	set pr25490_6_exp "pr25490-6-16.rd"
+    if [is_elf64 tmpdir/symbol3w.a] {
+        set ASFLAGS "$ASFLAGS --defsym ALIGN=3"
+        if { [istarget powerpc*-*-linux*] } {
+    	set LDFLAGS "$LDFLAGS --no-ld-generated-unwind-info"
+        }
+        set pr23900_1_exp "pr23900-1-64.rd"
+        set pr25490_2_exp "pr25490-2-64.rd"
+        set pr25490_3_exp "pr25490-3-64.rd"
+        set pr25490_4_exp "pr25490-4-64.rd"
+        set pr25490_5_exp "pr25490-5-64.rd"
+        set pr25490_6_exp "pr25490-6-64.rd"
     } else {
-	set pr25490_2_exp "pr25490-2-32.rd"
-	set pr25490_3_exp "pr25490-3-32.rd"
-	set pr25490_4_exp "pr25490-4-32.rd"
-	set pr25490_5_exp "pr25490-5-32.rd"
-	set pr25490_6_exp "pr25490-6-32.rd"
+        set ASFLAGS "$ASFLAGS --defsym ALIGN=2"
+        set pr23900_1_exp "pr23900-1-32.rd"
+        if {    [istarget avr-*-*]
+    	 || [istarget h8300-*-*]
+    	 || [istarget ip2k-*-*]
+    	 || [istarget m68hc11-*]
+    	 || [istarget "z80-*-*"] } {
+    	set pr25490_2_exp "pr25490-2-16.rd"
+    	set pr25490_3_exp "pr25490-3-16.rd"
+    	set pr25490_4_exp "pr25490-4-16.rd"
+    	set pr25490_5_exp "pr25490-5-16.rd"
+    	set pr25490_6_exp "pr25490-6-16.rd"
+        } else {
+    	set pr25490_2_exp "pr25490-2-32.rd"
+    	set pr25490_3_exp "pr25490-3-32.rd"
+    	set pr25490_4_exp "pr25490-4-32.rd"
+    	set pr25490_5_exp "pr25490-5-32.rd"
+    	set pr25490_6_exp "pr25490-6-32.rd"
+        }
     }
 }
 

@@ -8,5 +8,5 @@
    Version:       5
    Unit Type:     DW_UT_compile \(1\)
    Abbrev Offset: (0x)?0
-   Pointer Size:  .
+   Pointer Size:  ..?
 #pass

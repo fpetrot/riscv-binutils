@@ -8,7 +8,7 @@ PHDRS
 }
 SECTIONS
 {
-  .text 0x100 : { *(.text) } :image
+  .text 0x200 : { *(.text) } :image
   .tdata : { *(.tdata) } :image :tls
   .tbss : { *(.tbss) } :image : tls
   .map : {

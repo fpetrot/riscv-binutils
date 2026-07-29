@@ -7,6 +7,7 @@
 
 Hex dump of section '\.debug_info':
   0x0+ .*
+#?  0x0+10 .*
 
 Hex dump of section '\.debug_abbrev':
   0x0+ 61626364 +abcd

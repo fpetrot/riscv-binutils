@@ -10,13 +10,13 @@ Disassembly of section .text:
 [ 	]+0:[ 	]+[0-9a-f]+[ 	]+auipc[ 	]+x1,0x0
 [ 	]+0:[ 	]+R_RISCV_GOT_HI20[ 	]+sym_abs_before
 [ 	]+0:[ 	]+R_RISCV_RELAX.*
-[ 	]+4:[ 	]+[0-9a-f]+[ 	]+(lw|ld)[ 	]+x1,0\(x1\) # 0 .*
+[ 	]+4:[ 	]+[0-9a-f]+[ 	]+(lw|ld|lq)[ 	]+x1,0\(x1\) # 0 .*
 [ 	]+4:[ 	]+R_RISCV_PCREL_LO12_I[ 	]+.L0.*
 [ 	]+4:[ 	]+R_RISCV_RELAX.*
 [ 	]+8:[ 	]+[0-9a-f]+[ 	]+auipc[ 	]+x2,0x0
 [ 	]+8:[ 	]+R_RISCV_GOT_HI20[ 	]+sym_abs_before
 [ 	]+8:[ 	]+R_RISCV_RELAX.*
-[ 	]+c:[ 	]+[0-9a-f]+[ 	]+(lw|ld)[ 	]+x2,0\(x2\) # 8 .*
+[ 	]+c:[ 	]+[0-9a-f]+[ 	]+(lw|ld|lq)[ 	]+x2,0\(x2\) # 8 .*
 [ 	]+c:[ 	]+R_RISCV_PCREL_LO12_I[ 	]+.L0.*
 [ 	]+c:[ 	]+R_RISCV_RELAX.*
 
@@ -29,13 +29,13 @@ Disassembly of section .text:
 [ 	]+18:[ 	]+[0-9a-f]+[ 	]+auipc[ 	]+x4,0x0
 [ 	]+18:[ 	]+R_RISCV_GOT_HI20[ 	]+sym_abs_after
 [ 	]+18:[ 	]+R_RISCV_RELAX.*
-[ 	]+1c:[ 	]+[0-9a-f]+[ 	]+(lw|ld)[ 	]+x4,0\(x4\) # 18 .*
+[ 	]+1c:[ 	]+[0-9a-f]+[ 	]+(lw|ld|lq)[ 	]+x4,0\(x4\) # 18 .*
 [ 	]+1c:[ 	]+R_RISCV_PCREL_LO12_I[ 	]+.L0.*
 [ 	]+1c:[ 	]+R_RISCV_RELAX.*
 [ 	]+20:[ 	]+[0-9a-f]+[ 	]+auipc[ 	]+x5,0x0
 [ 	]+20:[ 	]+R_RISCV_GOT_HI20[ 	]+sym_abs_after
 [ 	]+20:[ 	]+R_RISCV_RELAX.*
-[ 	]+24:[ 	]+[0-9a-f]+[ 	]+(lw|ld)[ 	]+x5,0\(x5\) # 20 .*
+[ 	]+24:[ 	]+[0-9a-f]+[ 	]+(lw|ld|lq)[ 	]+x5,0\(x5\) # 20 .*
 [ 	]+24:[ 	]+R_RISCV_PCREL_LO12_I[ 	]+.L0.*
 [ 	]+24:[ 	]+R_RISCV_RELAX.*
 

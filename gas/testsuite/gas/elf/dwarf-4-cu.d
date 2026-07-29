@@ -7,5 +7,5 @@
    Length:        0x.*
    Version:       4
    Abbrev Offset: (0x)?0
-   Pointer Size:  .
+   Pointer Size:  ..?
 #pass
