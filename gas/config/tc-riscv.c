@@ -511,6 +511,11 @@ static char *expr_parse_end;
   (((x) &~ (offsetT) 0xffffffff) == 0					\
    || (((x) &~ (offsetT) 0xffffffff) == ~ (offsetT) 0xffffffff))
 
+/* Is the given value a zero-extended 64-bit value?  Or a negated one?  */
+#define IS_ZEXT_64BIT_NUM(x)                                                \
+  (((x) &~ (offsetT) 0xffffffffffffffff) == 0                \
+   || (((x) &~ (offsetT) 0xffffffffffffffff) == ~ (offsetT) 0xffffffffffffffff))
+
 /* Change INSN's opcode so that the operand given by FIELD has value VALUE.
    INSN is a riscv_cl_insn structure and VALUE is evaluated exactly once.  */
 #define INSERT_OPERAND(FIELD, INSN, VALUE) \
@@ -1610,7 +1615,8 @@ validate_riscv_insn (const struct riscv_opcode *opc, int length)
 	case '}': break;
 	case '<': USE_BITS (OP_MASK_SHAMTW, OP_SH_SHAMTW); break;
 	case '>': USE_BITS (OP_MASK_SHAMT, OP_SH_SHAMT); break;
-	case '^': USE_BITS (OP_MASK_SHAMTD, OP_SH_SHAMTD); break;
+	case '^':
+	case '_': USE_BITS (OP_MASK_SHAMTD, OP_SH_SHAMTD); break;
 	case 'A': break; /* Macro operand, must be symbol.  */
 	case 'B': break; /* Macro operand, must be symbol or constant.  */
 	case 'c': break; /* Macro operand, must be symbol or constant.  */
@@ -2232,8 +2238,21 @@ md_assemblef (const char *format, ...)
 static void
 normalize_constant_expr (expressionS *ex)
 {
+#ifdef BFD128
+  if (xlen > 64)
+    return;
+  if (xlen > 32)
+    {
+      if ((ex->X_op == O_constant || ex->X_op == O_symbol)
+          && IS_ZEXT_64BIT_NUM (ex->X_add_number))
+        ex->X_add_number = (((ex->X_add_number & 0xffffffffffffffff) ^ 0x8000000000000000)
+    			- 0x8000000000000000);
+      return;
+    }
+#else
   if (xlen > 32)
     return;
+#endif
   if ((ex->X_op == O_constant || ex->X_op == O_symbol)
       && IS_ZEXT_32BIT_NUM (ex->X_add_number))
     ex->X_add_number = (((ex->X_add_number & 0xffffffff) ^ 0x80000000)
@@ -3107,6 +3126,16 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
 		    break;
 		  ip->insn_opcode |= ENCODE_CITYPE_IMM (imm_expr->X_add_number);
 	          goto rvc_imm_done;
+		case '^': /* Shift amount, 1 - 64, 0 is used to encode 64 (RV128)  */
+		  if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p)
+		      || imm_expr->X_op != O_constant
+		      || (unsigned long) imm_expr->X_add_number == 0
+		      || (unsigned long) imm_expr->X_add_number >= 65)
+		    break;
+		  if (imm_expr->X_add_number == 64)
+		    imm_expr->X_add_number = 0;
+		  ip->insn_opcode |= ENCODE_CITYPE_IMM (imm_expr->X_add_number);
+	          goto rvc_imm_done;
 		case '>': /* Shift amount, 0 - (XLEN-1).  */
 		  if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p)
 		      || imm_expr->X_op != O_constant
@@ -3114,23 +3143,27 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
 		    break;
 		  ip->insn_opcode |= ENCODE_CITYPE_IMM (imm_expr->X_add_number);
 	          goto rvc_imm_done;
-		case '^': /* Shift amount, 0 - (XLEN-1) and 0 = 64.  */
-                  if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p)
-		      || (unsigned long) imm_expr->X_add_number >= (xlen == 128 ? 65 : xlen)
-		      || (unsigned long) imm_expr->X_add_number == 0)
+		case '-': /* Shift amount, 1 - 31 | 96 - 127 (RV128) */
+		  if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p)
+		      || imm_expr->X_op != O_constant)		  
+		    break;
+          unsigned long a = (unsigned long) imm_expr->X_add_number;
+          if (a == 0 || (a > 31 && a < 96) || a > 127)
 		    break;
 		  ip->insn_opcode |= ENCODE_CITYPE_IMM (imm_expr->X_add_number);
 	          goto rvc_imm_done;
-		case '_': /* Shift amount, 1 - 31 | 64 | 96 - (XLEN-1).  */
-		  if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p))
+		case '_': /* Shift amount, 1 - 31 | 64 | 96 - 127, 0 is used to encode 64 (RV128) */
+		  if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p)
+		      || imm_expr->X_op != O_constant)		  
 		    break;
-                  unsigned long a = (unsigned long) imm_expr->X_add_number;
-                  if (a >= xlen 
-		      || a == 0
+          a = (unsigned long) imm_expr->X_add_number;
+          if (a == 0
 		      || (a > 31 && a < 64)
 		      || (a > 64 && a < 96)
 		      || a > 127)
 		    break;
+		  if (imm_expr->X_add_number == 64)
+		    imm_expr->X_add_number = 0;
 		  ip->insn_opcode |= ENCODE_CITYPE_IMM (imm_expr->X_add_number);
 		rvc_imm_done:
 		  asarg = expr_parse_end;
@@ -3582,7 +3615,19 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
 	      asarg = expr_parse_end;
 	      continue;
 
-	    case '^': /* Shift amount, 0 - 63.  */
+	    case '/': /* Shift amount, 1 - 63.  */
+	      my_getExpression (imm_expr, asarg, force_reloc);
+	      check_absolute_expr (ip, imm_expr, false);
+	      if ((unsigned long) imm_expr->X_add_number == 0
+	          || (unsigned long) imm_expr->X_add_number > 63)
+		as_bad (_("improper shift amount (%"PRIu64")"),
+			(unsigned long) imm_expr->X_add_number);
+	      INSERT_OPERAND (SHAMTD, *ip, imm_expr->X_add_number);
+	      imm_expr->X_op = O_absent;
+	      asarg = expr_parse_end;
+	      continue;
+
+	    case '^': /* Shift amount, 0 - 63. 0 is used to encode 64 (RV128)  */
 	      my_getExpression (imm_expr, asarg, force_reloc);
 	      check_absolute_expr (ip, imm_expr, false);
 	      if ((unsigned long) imm_expr->X_add_number > 63)
@@ -3600,6 +3645,19 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
 		as_bad (_("improper shift amount (%"PRIu64")"),
 			(unsigned long) imm_expr->X_add_number);
 	      INSERT_OPERAND (SHAMT, *ip, imm_expr->X_add_number);
+	      imm_expr->X_op = O_absent;
+	      asarg = expr_parse_end;
+	      continue;
+
+	    case '_': /* Shift amount, 0 - 31 | 96 - 127, 0 is used to encode 64 (RV128)  */
+	      my_getExpression (imm_expr, asarg, force_reloc);
+	      check_absolute_expr (ip, imm_expr, false);
+	      if (((unsigned long) imm_expr->X_add_number > 31
+	          && (unsigned long) imm_expr->X_add_number < 96)
+	          || (unsigned long) imm_expr->X_add_number > 127)
+		as_bad (_("improper shift amount (%"PRIu64")"),
+			(unsigned long) imm_expr->X_add_number);
+	      INSERT_OPERAND (SHAMTD, *ip, imm_expr->X_add_number);
 	      imm_expr->X_op = O_absent;
 	      asarg = expr_parse_end;
 	      continue;

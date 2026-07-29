@@ -317,12 +317,14 @@ match_c_addi4spn (const struct riscv_opcode *op, insn_t insn)
   return match_opcode (op, insn) && EXTRACT_CIWTYPE_ADDI4SPN_IMM (insn) != 0;
 }
 
-/* This requires a non-zero rd, and a non-zero shift.  */
+/* This requires a non-zero rd, and a non-zero shift for rv32 and rv64.
+   A zero shift is used to encode a shift of 64 in rv128  */
 
 static int
 match_slli_as_c_slli (const struct riscv_opcode *op, insn_t insn)
 {
-  return match_rd_nonzero (op, insn) && EXTRACT_CITYPE_IMM (insn) != 0;
+  return match_rd_nonzero (op, insn)
+      && (op->xlen_requirement == 128 || EXTRACT_CITYPE_IMM (insn) != 0);
 }
 
 /* This requires a zero shift.  A zero rd is a hint, so is allowed.  */
@@ -335,14 +337,14 @@ match_c_slli64 (const struct riscv_opcode *op, insn_t insn)
 
 /* This is used for both srli and srai.  This requires a non-zero shamt
    field for xlen != 128.
-   A zero rd is not possible.  */
+   A zero rd is not possible.
+   A zero shamt is used to encode a shamt of 64 in rv128  */
 
 static int
 match_srxi_as_c_srxi (const struct riscv_opcode *op, insn_t insn)
 {
   return match_opcode (op, insn)
-	  && (op->xlen_requirement == 128
-	      || (op->xlen_requirement != 128 && EXTRACT_CITYPE_IMM (insn) != 0));
+	  && (op->xlen_requirement == 128 || EXTRACT_CITYPE_IMM (insn) != 0);
 }
 
 static int
