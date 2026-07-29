@@ -479,11 +479,11 @@ static void
 print_vma (bfd_vma vma, char *buf, bool unsignedp, bool hexp)
 {
   if (hexp)
-    sprintf (buf, "%#" PRIx64, (uint64_t) vma);
+    sprintf128 (buf, "%#" PRIx128, (__uint128_t) vma);
   else if (unsignedp)
-    sprintf (buf, "%" PRIu64, (uint64_t) vma);
+    sprintf128 (buf, "%" PRIu128, (__uint128_t) vma);
   else
-    sprintf (buf, "%" PRId64, (int64_t) vma);
+    sprintf128 (buf, "%" PRId128, (__int128_t) vma);
 }
 
 /* Start a new compilation unit.  */
