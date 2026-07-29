@@ -2882,7 +2882,7 @@ bfd_record_phdr (bfd *abfd,
   return true;
 }
 
-#ifdef BFD64
+#if defined (BFD64) || defined (BFD128)
 /* Return true iff this target is 32-bit.  */
 
 static bool
@@ -2896,6 +2896,23 @@ is32bit (bfd *abfd)
 
   /* For non-ELF targets, use architecture information.  */
   return bfd_arch_bits_per_address (abfd) <= 32;
+}
+#endif
+
+#ifdef BFD128
+/* Return true iff this target is 64-bit.  */
+
+static bool
+is64bit (bfd *abfd)
+{
+  if (bfd_get_flavour (abfd) == bfd_target_elf_flavour)
+    {
+      elf_backend_data *bed = get_elf_backend_data (abfd);
+      return bed->s->elfclass == ELFCLASS64;
+    }
+
+  /* For non-ELF targets, use architecture information.  */
+  return bfd_arch_bits_per_address (abfd) <= 64 && bfd_arch_bits_per_address (abfd) > 32;
 }
 #endif
 
@@ -2920,7 +2937,14 @@ EXTERNAL
 void
 bfd_sprintf_vma (bfd *abfd ATTRIBUTE_UNUSED, char *buf, bfd_vma value)
 {
-#ifdef BFD64
+#ifdef BFD128
+  if (!is32bit (abfd) && !is64bit (abfd))
+    {
+      sprintf128 (buf, "%032" PRIx128, value);
+      return;
+    }
+#endif
+#if defined (BFD64) || defined (BFD128)
   if (!is32bit (abfd))
     {
       sprintf (buf, "%016" PRIx64, (uint64_t) value);
@@ -2933,7 +2957,14 @@ bfd_sprintf_vma (bfd *abfd ATTRIBUTE_UNUSED, char *buf, bfd_vma value)
 void
 bfd_fprintf_vma (bfd *abfd ATTRIBUTE_UNUSED, void *stream, bfd_vma value)
 {
-#ifdef BFD64
+#ifdef BFD128
+  if (!is32bit (abfd) && !is64bit (abfd))
+    {
+      fprintf128 ((FILE *) stream, "%032" PRIx128, value);
+      return;
+    }
+#endif
+#if defined (BFD64) || defined (BFD128)
   if (!is32bit (abfd))
     {
       fprintf ((FILE *) stream, "%016" PRIx64, (uint64_t) value);
