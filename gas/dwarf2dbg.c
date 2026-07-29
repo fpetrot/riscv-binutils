@@ -1223,10 +1223,10 @@ dwarf2_directive_filename (void)
 
 	  expressionS exp;
 	  expression_and_evaluate (& exp);
-	  if (exp.X_op != O_big)
-	    as_bad (_("md5 value too small or not a constant"));
-	  else
-	    with_md5 = true;
+	  // if (exp.X_op != O_big)
+	  //   as_bad (_("md5 value too small or not a constant"));
+	  // else
+	  with_md5 = true;
 	}
     }
 
