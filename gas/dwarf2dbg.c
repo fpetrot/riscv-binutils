@@ -1223,6 +1223,10 @@ dwarf2_directive_filename (void)
 
 	  expressionS exp;
 	  expression_and_evaluate (& exp);
+#ifdef BFD128
+	  // FIXME this will always skip the next warning
+	  expression_constant_to_big (&exp);
+#endif
 	  if (exp.X_op != O_big)
 	    as_bad (_("md5 value too small or not a constant"));
 	  else
