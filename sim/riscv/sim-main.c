@@ -441,7 +441,7 @@ execute_i (SIM_CPU *cpu, unsigned_word iw, const struct riscv_opcode *op)
       break;
     case MATCH_JAL:
       TRACE_INSN (cpu, "jal %s, %" PRIiTW ";", rd_name,
-		  EXTRACT_JTYPE_IMM (iw));
+		  (signed_word) EXTRACT_JTYPE_IMM (iw));
       store_rd (cpu, rd, riscv_cpu->pc + 4);
       pc = riscv_cpu->pc + EXTRACT_JTYPE_IMM (iw);
       TRACE_BRANCH (cpu, "to %#" PRIxTW, pc);
@@ -1370,7 +1370,7 @@ void step_once (SIM_CPU *cpu)
       if (op->pinfo & INSN_ALIAS)
 	continue;
       /* Is this instruction restricted to a certain value of XLEN?  */
-      if (op->xlen_requirement != 0 && op->xlen_requirement != xlen)
+      if (op->xlen_requirement != 0 && ((op->xlen_requirement & xlen) != xlen))
 	continue;
 
       /* It's a match.  */
