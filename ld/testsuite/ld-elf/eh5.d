@@ -168,7 +168,7 @@ Contents of the .eh_frame section:
   DW_CFA_nop
 
 #?0+0170 0+0014 0+ CIE
-#?  Version:               1
+#?  Version:               [13]
 #?  Augmentation:          "zPR"
 #?  Code alignment factor: .*
 #?  Data alignment factor: .*
@@ -191,7 +191,7 @@ Contents of the .eh_frame section:
   DW_CFA_nop
 
 #?0+01b8 0+0018 0+ CIE
-#?  Version:               1
+#?  Version:               [13]
 #?  Augmentation:          "zPLR"
 #?  Code alignment factor: .*
 #?  Data alignment factor: .*

@@ -6,10 +6,10 @@
 
 Contents of the .debug_aranges section:
 
-[ 	]+Length:[ 	]+(16|20|28|44)
+[ 	]+Length:[ 	]+(16|20|28|44|92)
 [ 	]+Version:.*
 [ 	]+Offset into .debug_info:[ 	]+(0x)?0
-[ 	]+Address size:[ 	]+(2|3|4|8)
+[ 	]+Address size:[ 	]+(2|3|4|8|16)
 [ 	]+Segment size:[ 	]+0
 
 [ 	]+Address[ 	]+Length

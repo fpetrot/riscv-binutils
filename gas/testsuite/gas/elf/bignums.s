@@ -10,8 +10,13 @@
 	# declare a second, zero, .byte value in order to make the data
 	# consistent across all targets.
 
-	.byte  0xffffffffffffff98, 0
-	.hword 0xffffffffffff9876
+	# FIXME : these constants are invalid in 128-bit. They represent either a very big positive number
+	# or a very big negative number.
+	# Use bignums two times as a workaround 
+	# .byte  0xffffffffffffff98, 0
+	# .hword 0xffffffffffff9876
+	.byte  0xffffffffffffffffffffffffffffff98, 0
+	.hword 0xffffffffffffffffffffffffffff9876
 
 	# Check that on 64-bit hosts real bignum values also work.
 

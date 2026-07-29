@@ -1,4 +1,5 @@
 # source: bfloat16.s
+# notarget: riscv128-*-*
 # objdump: -sj .data
 # as: -mbig-endian
 

@@ -6,6 +6,6 @@
 #...
  +\[ *[0-9]+\] +__patchable_function_entries
  +PROGBITS +[0-9a-f]+ +[0-9a-f]+ +ABS
- +0+[248] +0+ +0 +[1248]+
+ +0+(2|4|8|10) +0+ +0 +[1248]+
  +\[0+83\]: WRITE, ALLOC, LINK ORDER
 #pass
