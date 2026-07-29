@@ -3370,6 +3370,9 @@ LINKED_LIST_MERGE_SORT_PROTOTYPE_ (obj_attr_subsection_v2_t, ATTRIBUTE_HIDDEN);
 LINKED_LIST_MERGE_SORT_PROTOTYPE (obj_attr_subsection_list_t,
 				  obj_attr_subsection_v2_t, ATTRIBUTE_HIDDEN);
 
+extern unsigned int _bfd_elf_get_align_size
+  (unsigned char) ATTRIBUTE_HIDDEN;
+
 extern bool _bfd_elf_parse_gnu_properties
   (bfd *, Elf_Internal_Note *) ATTRIBUTE_HIDDEN;
 extern elf_property_list * _bfd_elf_find_property
