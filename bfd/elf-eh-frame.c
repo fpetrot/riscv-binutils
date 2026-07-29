@@ -2607,7 +2607,16 @@ _bfd_elf_write_section_eh_frame_hdr (bfd *abfd, struct bfd_link_info *info)
 unsigned int
 _bfd_elf_eh_frame_address_size (bfd *abfd, const asection *sec ATTRIBUTE_UNUSED)
 {
-  return elf_elfheader (abfd)->e_ident[EI_CLASS] == ELFCLASS64 ? 8 : 4;
+  switch (elf_elfheader (abfd)->e_ident[EI_CLASS]) {
+    case ELFCLASS32:
+      return 4;
+    case ELFCLASS64:
+      return 8;
+    case ELFCLASS128:
+      return 16;
+    default:
+      abort();
+  }
 }
 
 /* Decide whether we can use a PC-relative encoding within the given
