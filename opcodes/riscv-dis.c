@@ -1555,7 +1555,13 @@ riscv_init_disasm_info (struct disassemble_info *info)
   pd->riscv_rps_dis.xlen = &pd->xlen;
   pd->riscv_rps_dis.isa_spec = &pd->default_isa_spec;
   pd->riscv_rps_dis.check_unknown_prefixed_ext = false;
-  pd->default_arch = "rv64gc";
+  if (info->mach == bfd_mach_riscv128) {
+  	  pd->default_arch = "rv128gc";
+  } else {
+  	  // We should probably check for rv32 too, but 64 was the default even in 32bits before
+  	  // introducing 128bits, so it would probably break something in 32bits
+	  pd->default_arch = "rv64gc";
+  }
   if (info->section != NULL)
     {
       bfd *abfd = info->section->owner;
