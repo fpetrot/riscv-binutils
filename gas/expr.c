@@ -277,6 +277,29 @@ generic_bignum_to_int128 (void)
           | ((__uint128_t) generic_bignum[0] & LITTLENUM_MASK));
 }
 
+void
+expression_constant_to_big (expressionS *exp)
+{
+  valueT v;
+  int nlimbs;
+
+  if (exp->X_op != O_constant)
+    return;
+
+  v = exp->X_add_number;
+  nlimbs = 0;
+
+  do
+    {
+      generic_bignum[nlimbs++] = v & LITTLENUM_MASK;
+      v >>= LITTLENUM_NUMBER_OF_BITS;
+    }
+  while (v != 0);
+
+  exp->X_add_number = nlimbs;
+  exp->X_op = O_big;
+}
+
 static void
 integer_constant (int radix, expressionS *expressionP)
 {
