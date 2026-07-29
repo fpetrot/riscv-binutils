@@ -77,12 +77,12 @@ inform (const char *message, ...)
   va_end (args);
 }
 
-void (*byte_put) (unsigned char *, uint64_t, unsigned int);
+void (*byte_put) (unsigned char *, __uint128_t, unsigned int);
 
 void
-byte_put_little_endian (unsigned char *field, uint64_t value, unsigned int size)
+byte_put_little_endian (unsigned char *field, __uint128_t value, unsigned int size)
 {
-  if (size > sizeof (uint64_t))
+  if (size > sizeof (__uint128_t))
     {
       error (_("Unhandled data length: %d\n"), size);
       abort ();
@@ -95,9 +95,9 @@ byte_put_little_endian (unsigned char *field, uint64_t value, unsigned int size)
 }
 
 void
-byte_put_big_endian (unsigned char *field, uint64_t value, unsigned int size)
+byte_put_big_endian (unsigned char *field, __uint128_t value, unsigned int size)
 {
-  if (size > sizeof (uint64_t))
+  if (size > sizeof (__uint128_t))
     {
       error (_("Unhandled data length: %d\n"), size);
       abort ();
@@ -109,138 +109,48 @@ byte_put_big_endian (unsigned char *field, uint64_t value, unsigned int size)
     }
 }
 
-uint64_t (*byte_get) (const unsigned char *, unsigned int);
+__uint128_t (*byte_get) (const unsigned char *, unsigned int);
 
-uint64_t
+__uint128_t
 byte_get_little_endian (const unsigned char *field, unsigned int size)
 {
-  switch (size)
+  uint8_t i;
+  __uint128_t read = 0;
+
+  if (size > sizeof(__uint128_t))
     {
-    case 1:
-      return *field;
-
-    case 2:
-      return ((uint64_t) field[0]
-	      | ((uint64_t) field[1] << 8));
-
-    case 3:
-      return ((uint64_t) field[0]
-	      | ((uint64_t) field[1] << 8)
-	      | ((uint64_t) field[2] << 16));
-
-    case 4:
-      return ((uint64_t) field[0]
-	      | ((uint64_t) field[1] << 8)
-	      | ((uint64_t) field[2] << 16)
-	      | ((uint64_t) field[3] << 24));
-
-    case 5:
-      return ((uint64_t) field[0]
-	      | ((uint64_t) field[1] << 8)
-	      | ((uint64_t) field[2] << 16)
-	      | ((uint64_t) field[3] << 24)
-	      | ((uint64_t) field[4] << 32));
-
-    case 6:
-      return ((uint64_t) field[0]
-	      | ((uint64_t) field[1] << 8)
-	      | ((uint64_t) field[2] << 16)
-	      | ((uint64_t) field[3] << 24)
-	      | ((uint64_t) field[4] << 32)
-	      | ((uint64_t) field[5] << 40));
-
-    case 7:
-      return ((uint64_t) field[0]
-	      | ((uint64_t) field[1] << 8)
-	      | ((uint64_t) field[2] << 16)
-	      | ((uint64_t) field[3] << 24)
-	      | ((uint64_t) field[4] << 32)
-	      | ((uint64_t) field[5] << 40)
-	      | ((uint64_t) field[6] << 48));
-
-    case 8:
-      return ((uint64_t) field[0]
-	      | ((uint64_t) field[1] << 8)
-	      | ((uint64_t) field[2] << 16)
-	      | ((uint64_t) field[3] << 24)
-	      | ((uint64_t) field[4] << 32)
-	      | ((uint64_t) field[5] << 40)
-	      | ((uint64_t) field[6] << 48)
-	      | ((uint64_t) field[7] << 56));
-
-    default:
       error (_("Unhandled data length: %d\n"), size);
       abort ();
     }
+
+  for (i = 0; i < size; i++)
+    read |= (__uint128_t) field[i] << (i * 8);
+
+  return read;
 }
 
-uint64_t
+__uint128_t
 byte_get_big_endian (const unsigned char *field, unsigned int size)
 {
-  switch (size)
+  uint8_t i;
+  __uint128_t read = 0;
+
+  if (size > sizeof(__uint128_t))
     {
-    case 1:
-      return *field;
-
-    case 2:
-      return ((uint64_t) field[1]
-	      | ((uint64_t) field[0] << 8));
-
-    case 3:
-      return ((uint64_t) field[2]
-	      | ((uint64_t) field[1] << 8)
-	      | ((uint64_t) field[0] << 16));
-
-    case 4:
-      return ((uint64_t) field[3]
-	      | ((uint64_t) field[2] << 8)
-	      | ((uint64_t) field[1] << 16)
-	      | ((uint64_t) field[0] << 24));
-
-    case 5:
-      return ((uint64_t) field[4]
-	      | ((uint64_t) field[3] << 8)
-	      | ((uint64_t) field[2] << 16)
-	      | ((uint64_t) field[1] << 24)
-	      | ((uint64_t) field[0] << 32));
-
-    case 6:
-      return ((uint64_t) field[5]
-	      | ((uint64_t) field[4] << 8)
-	      | ((uint64_t) field[3] << 16)
-	      | ((uint64_t) field[2] << 24)
-	      | ((uint64_t) field[1] << 32)
-	      | ((uint64_t) field[0] << 40));
-
-    case 7:
-      return ((uint64_t) field[6]
-	      | ((uint64_t) field[5] << 8)
-	      | ((uint64_t) field[4] << 16)
-	      | ((uint64_t) field[3] << 24)
-	      | ((uint64_t) field[2] << 32)
-	      | ((uint64_t) field[1] << 40)
-	      | ((uint64_t) field[0] << 48));
-
-    case 8:
-      return ((uint64_t) field[7]
-	      | ((uint64_t) field[6] << 8)
-	      | ((uint64_t) field[5] << 16)
-	      | ((uint64_t) field[4] << 24)
-	      | ((uint64_t) field[3] << 32)
-	      | ((uint64_t) field[2] << 40)
-	      | ((uint64_t) field[1] << 48)
-	      | ((uint64_t) field[0] << 56));
-
-    default:
       error (_("Unhandled data length: %d\n"), size);
       abort ();
     }
+
+  for (i = 0; i < size; i++)
+    read |= (__uint128_t) field[size - i - 1] << (i * 8);
+
+  return read;
 }
 
-uint64_t
+__uint128_t
 byte_get_signed (const unsigned char *field, unsigned int size)
 {
-  uint64_t x = byte_get (field, size);
+  __uint128_t x = byte_get (field, size);
 
   switch (size)
     {
