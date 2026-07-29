@@ -305,6 +305,7 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
   struct riscv_private_data *pd = info->private_data;
   int rs1 = (l >> OP_SH_RS1) & OP_MASK_RS1;
   int rd = (l >> OP_SH_RD) & OP_MASK_RD;
+  int shift_xlen_mask = info->mach == bfd_mach_riscv128 ? OP_MASK_SHAMT : OP_MASK_SHAMTD;
   fprintf_styled_ftype print = info->fprintf_styled_func;
   const char *opargStart;
 
@@ -409,22 +410,22 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
 	      break;
 	    case '>':
 	      print (info->stream, dis_style_immediate, "0x%x",
-		     (unsigned)EXTRACT_CITYPE_IMM (l) & 0x3f);
+		     (unsigned)EXTRACT_CITYPE_IMM (l) & shift_xlen_mask);
 	      break;
 	    case '<':
 	      print (info->stream, dis_style_immediate, "0x%x",
 		(unsigned)EXTRACT_CITYPE_IMM (l) & 0x1f);
 	      break;
-	    case '_':
-	      { /* 128-bit shift right immediat */
-		int imm = (unsigned) EXTRACT_CITYPE_IMM (l) & 0x3f;
-		print (info->stream, dis_style_immediate, "0x%x",
-		       imm == 0 ? 64 : ((imm & 0x20) << 1) | imm);
+	    case '_': /* 128-bit compressed shift right immediat. 0 is used to encode a shift of 64 */
+	      {
+		    int imm = (unsigned) EXTRACT_CITYPE_IMM (l) & OP_MASK_SHAMTD;
+		    print (info->stream, dis_style_immediate, "0x%x",
+		           imm == 0 ? 64 : ((imm & 0x20) << 1) | imm); // Sign extended
 	        break;
-              }
-            case '^':
-	      { /* 128-bit shift left immediat */
-	        int imm = (int) EXTRACT_CITYPE_IMM (l) & 0x3f;
+	      }
+        case '^': /* 128-bit compressed shift left immediat. 0 is used to encode a shift of 64 */
+          {
+	        int imm = (unsigned) EXTRACT_CITYPE_IMM (l) & OP_MASK_SHAMTD;
 	        print (info->stream, dis_style_immediate, "0x%x", 
 	               imm == 0 ? 64 : imm);
 	        break;
@@ -628,7 +629,7 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
 	  break;
 
 	case '^':
-	  print (info->stream, dis_style_register, "0x%x", 
+	  print (info->stream, dis_style_immediate, "0x%x", 
 	         (int)EXTRACT_OPERAND (SHAMTD, l));
 	  break;
 
@@ -641,6 +642,14 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
 	  print (info->stream, dis_style_immediate, "0x%x",
 		 EXTRACT_OPERAND (SHAMTW, l));
 	  break;
+
+	case '_':
+	  {
+	  	int imm = (int)EXTRACT_OPERAND (SHAMTD, l);
+	    print (info->stream, dis_style_immediate, "0x%x", 
+	           ((imm & 0x20) << 1) | imm);
+	    break;
+	  }
 
 	case 'S':
 	case 'U':
@@ -1094,7 +1103,7 @@ riscv_disassemble_insn (bfd_vma memaddr,
       else if (info->section != NULL)
 	{
 	  Elf_Internal_Ehdr *ehdr = elf_elfheader (info->section->owner);
-	  pd->xlen = ehdr->e_ident[EI_CLASS] == ELFCLASS64 ? 64 : 32;
+	  pd->xlen = ehdr->e_ident[EI_CLASS] == ELFCLASS128 ? 128 : (ehdr->e_ident[EI_CLASS] == ELFCLASS64 ? 64 : 32);
 	}
 
       /* If arch has the Zfinx extension, replace FPR with GPR.  */
