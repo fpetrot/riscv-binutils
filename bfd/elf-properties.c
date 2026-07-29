@@ -28,6 +28,28 @@
 #include "libbfd.h"
 #include "elf-bfd.h"
 
+/* Get the alignment for an ELF class */
+unsigned int
+_bfd_elf_get_align_size (unsigned char elfclass) {
+	
+  unsigned int align_size;
+  switch (elfclass)
+    {
+  	  case ELFCLASS32:
+  	  	align_size = 4;
+  	  	break;
+  	  case ELFCLASS64:
+  	  	align_size = 8;
+  	  	break;
+  	  case ELFCLASS128:
+  	  	align_size = 16;
+  	  	break;
+  	  default:
+  	  	abort();
+    }
+  return align_size;
+}
+
 /* Find a property.  */
 elf_property_list *
 _bfd_elf_find_property (elf_property_list *l,
@@ -139,11 +161,11 @@ bool
 _bfd_elf_parse_gnu_properties (bfd *abfd, Elf_Internal_Note *note)
 {
   elf_backend_data *bed = get_elf_backend_data (abfd);
-  unsigned int align_size = bed->s->elfclass == ELFCLASS64 ? 8 : 4;
+  unsigned int align_size = _bfd_elf_get_align_size (bed->s->elfclass);
   bfd_byte *ptr = (bfd_byte *) note->descdata;
   bfd_byte *ptr_end = ptr + note->descsz;
 
-  if (note->descsz < 8 || (note->descsz % align_size) != 0)
+  if (note->descsz < 8 || (note->descsz % 4) != 0)
     {
     bad_size:
       _bfd_error_handler
@@ -660,6 +682,11 @@ elf_write_gnu_properties (struct bfd_link_info *info,
 	      bfd_h_put_64 (abfd, list->property.u.number,
 			    contents + size);
 	      break;
+
+		case 16:
+		  bfd_h_put_128 (abfd, list->property.u.number,
+		        contents + size);
+	      break;
 	    }
 	  break;
 
@@ -694,7 +721,7 @@ _bfd_elf_link_create_gnu_property_sec (struct bfd_link_info *info, bfd *elf_bfd,
 				      | SEC_HAS_CONTENTS
 				      | SEC_DATA));
   if (sec == NULL
-      || !bfd_set_section_alignment (sec, elfclass == ELFCLASS64 ? 3 : 2))
+      || !bfd_set_section_alignment (sec, elfclass == ELFCLASS128 ? 4 : (elfclass == ELFCLASS64 ? 3 : 2)))
     info->callbacks->fatal (_("%P: failed to create %s\n"),
 			    NOTE_GNU_PROPERTY_SECTION_NAME);
 
@@ -864,7 +891,7 @@ _bfd_elf_link_setup_gnu_properties (struct bfd_link_info *info)
     {
       bfd_size_type size;
       bfd_byte *contents;
-      unsigned int align_size = elfclass == ELFCLASS64 ? 8 : 4;
+	  unsigned int align_size = _bfd_elf_get_align_size (bed->s->elfclass);
 
       sec = bfd_get_section_by_name (first_pbfd,
 				     NOTE_GNU_PROPERTY_SECTION_NAME);
@@ -975,7 +1002,7 @@ _bfd_elf_convert_gnu_property_size (bfd *ibfd, bfd *obfd)
   elf_property_list *list = elf_properties (ibfd);
 
   bed = get_elf_backend_data (obfd);
-  align_size = bed->s->elfclass == ELFCLASS64 ? 8 : 4;
+  align_size = _bfd_elf_get_align_size (bed->s->elfclass);
 
   /* Get the output .note.gnu.property section size.  */
   return elf_get_gnu_property_section_size (list, align_size);
@@ -995,7 +1022,7 @@ _bfd_elf_convert_gnu_properties (bfd *ibfd, asection *isec,
   elf_property_list *list = elf_properties (ibfd);
 
   bed = get_elf_backend_data (obfd);
-  align_shift = bed->s->elfclass == ELFCLASS64 ? 3 : 2;
+  align_shift = bed->s->elfclass == ELFCLASS128 ? 4 : (bed->s->elfclass == ELFCLASS64 ? 3 : 2);
 
   /* Get the output .note.gnu.property section size.  */
   size = bfd_section_size (isec->output_section);
