@@ -9849,7 +9849,7 @@ elf_link_adjust_relocs (bfd *abfd,
       elt_size = reldata->hdr->sh_entsize;
       base = reldata->hdr->contents;
       end = base + count * elt_size;
-      if (elt_size > sizeof (Elf64_External_Rela))
+      if (elt_size > sizeof (Elf128_External_Rela))
 	abort ();
 
       /* Ensure the first element is lowest.  This acts as a sentinel,
@@ -9869,7 +9869,7 @@ elf_link_adjust_relocs (bfd *abfd,
 	  /* Don't just swap *base and *loc as that changes the order
 	     of the original base[0] and base[1] if they happen to
 	     have the same r_offset.  */
-	  bfd_byte onebuf[sizeof (Elf64_External_Rela)];
+	  bfd_byte onebuf[sizeof (Elf128_External_Rela)];
 	  memcpy (onebuf, loc, elt_size);
 	  memmove (base + elt_size, base, loc - base);
 	  memcpy (base, onebuf, elt_size);
