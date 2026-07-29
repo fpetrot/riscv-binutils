@@ -187,6 +187,7 @@ extern symbolS *expr_build_dot (void);
 extern uint32_t generic_bignum_to_int32 (void);
 extern uint64_t generic_bignum_to_int64 (void);
 extern __uint128_t generic_bignum_to_int128 (void);
+extern void expression_constant_to_big (expressionS *exp);
 extern int resolve_expression (expressionS *);
 extern void resolve_register (expressionS *);
 

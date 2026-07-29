@@ -4577,7 +4577,18 @@ riscv_ip_hardcode (char *str,
       switch (imm_expr->X_op)
 	{
 	case O_constant:
-	  values[num++] = imm_expr->X_add_number;
+#ifdef BFD128
+      /* For rv128, X_add_number can be 128 bits wide.
+         If the higher bits are not null,
+         we create a new bignum value that would be handled after this loop. */
+      if (imm_expr->X_add_number >> 64 != 0)
+        {
+          expression_constant_to_big (imm_expr);
+          values[num++] = generic_bignum_to_int32 ();
+        }
+      else
+#endif
+    	values[num++] = imm_expr->X_add_number;
 	  break;
 	case O_big:
 	  /* Extract lower 32-bits of a big number.
