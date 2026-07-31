@@ -2517,7 +2517,11 @@ lang_map (void)
       fprintf (config.map_file, " 0x%-16s", buf);
       bfd_sprintf_vma (link_info.output_bfd, buf, m->length);
       fprintf (config.map_file,
-	       " 0x%*s", m->flags || m->not_flags ? -17 : 0, buf);
+	       " 0x%*s", m->flags || m->not_flags ? -16 : 0, buf);
+
+      if (m->flags || m->not_flags)
+	fprintf (config.map_file, " ");
+
       if (m->flags)
 	lang_map_flags (m->flags);
 
@@ -5082,7 +5086,7 @@ print_assignment (lang_assignment_statement_type *assignment,
     }
   expld.assign_name = NULL;
 
-  fprintf (config.map_file, "%-34s", str);
+  fprintf (config.map_file, "%-33s ", str);
   exp_print_tree (assignment->exp);
   print_nl ();
 }
